@@ -17,6 +17,9 @@ import QuienesSomos from "../pages/public/quienesSomos";
 import InicioContacto from "../pages/public/contacto";
 import InicioAyuda from "../pages/public/ayuda";
 
+// 👇 AQUÍ ESTÁ LA CORRECCIÓN: Importamos desde components/public/
+import Login from "../components/public/login";
+
 // Private pages
 import EstudianteInicio from "../pages/estudiante/inicio";
 import DocenteInicio from "../pages/docente/inicio";
@@ -33,6 +36,9 @@ export default function AppRouter() {
         <Route path="/quienes-somos" element={<QuienesSomos />} />
         <Route path="/contacto" element={<InicioContacto />} />
         <Route path="/ayuda" element={<InicioAyuda />} />
+        
+        {/* Ruta para el componente Login */}
+        <Route path="/login" element={<Login />} />
       </Route>
 
       {/* PRIVATE ROUTES */}

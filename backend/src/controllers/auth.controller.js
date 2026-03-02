@@ -5,20 +5,53 @@ import jwt from "jsonwebtoken";
 export async function login(req, res, next) {
   const { username, password } = req.body;
   try {
-    const q = 'SELECT id, username, password_hash, full_name, role FROM users WHERE username = $1';
-    const { rows } = await pool.query(q, [username]);
+    // 1. Buscar el usuario en la tabla central
+    const { rows: userRows } = await pool.query(
+      'SELECT id_usuario, username, password_hash, role, estado FROM users WHERE username = $1',
+      [username]
+    );
 
-    if (rows.length === 0) return res.status(401).json({ error: 'Credenciales inválidas' });
+    if (userRows.length === 0) return res.status(401).json({ error: 'Credenciales inválidas' });
 
-    const user = rows[0];
+    const user = userRows[0];
+
+    // Validar si el usuario está suspendido
+    if (user.estado !== 'Activo') return res.status(403).json({ error: 'Usuario inactivo o suspendido' });
+
+    // 2. Verificar contraseña
     const match = await bcrypt.compare(password, user.password_hash);
-
     if (!match) return res.status(401).json({ error: 'Credenciales inválidas' });
 
-    const payload = { id: user.id, username: user.username, role: user.role };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '8h' });
+    // 3. Buscar el nombre completo según el rol
+    let full_name = 'Usuario del Sistema';
+    if (user.role === 'admin') {
+        const { rows } = await pool.query('SELECT nombre_completo FROM admins WHERE id_usuario = $1', [user.id_usuario]);
+        if(rows.length > 0) full_name = rows[0].nombre_completo;
+    } else if (user.role === 'docente') {
+        const { rows } = await pool.query('SELECT nombre_completo FROM docentes WHERE id_usuario = $1', [user.id_usuario]);
+        if(rows.length > 0) full_name = rows[0].nombre_completo;
+    } else if (user.role === 'acudiente') {
+        const { rows } = await pool.query('SELECT nombre_completo FROM acudientes WHERE id_usuario = $1', [user.id_usuario]);
+        if(rows.length > 0) full_name = rows[0].nombre_completo;
+    } else if (user.role === 'estudiante') {
+        const { rows } = await pool.query('SELECT nombre_completo FROM estudiantes WHERE id_usuario = $1', [user.id_usuario]);
+        if(rows.length > 0) full_name = rows[0].nombre_completo;
+    }
 
-    res.json({ token, user: { id: user.id, username: user.username, full_name: user.full_name, role: user.role } });
+    // 4. Generar Token (Asegúrate de tener un JWT_SECRET en tu archivo .env)
+    const payload = { id: user.id_usuario, username: user.username, role: user.role };
+    const token = jwt.sign(payload, process.env.JWT_SECRET || 'cesl_secret_key_2024', { expiresIn: process.env.JWT_EXPIRES_IN || '8h' });
+
+    // 5. Responder al frontend (Devolvemos id_usuario como "id" para mantener compatibilidad)
+    res.json({ 
+        token, 
+        user: { 
+            id: user.id_usuario, 
+            username: user.username, 
+            full_name: full_name, 
+            role: user.role 
+        } 
+    });
   } catch (err) {
     next(err);
   }
