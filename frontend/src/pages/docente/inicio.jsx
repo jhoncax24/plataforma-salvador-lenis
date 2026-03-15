@@ -1,52 +1,54 @@
-export default function InicioDocente() {
+import { useNavigate } from "react-router-dom";
+
+// Importamos nuestros componentes modulares
+import ObservadorCard from "../../components/docente/ObservadorCard";
+import NotasCard from "../../components/docente/NotasCard";
+import CalendarioCard from "../../components/docente/CalendarioCard";
+
+export default function DocenteInicio() {
+  const navigate = useNavigate();
+
+  // Función simulada para cerrar sesión mientras maquetamos
+  const handleLogout = () => {
+    navigate("/");
+  };
+
   return (
-    <section className="w-full md:w-2/3 flex flex-col justify-center bg-white shadow-md rounded-xl m-6 p-6">
-      <h2 className="text-2xl font-semibold text-center mb-6">Ayuda</h2>
+    <div>
+      {/* SECCIÓN SUPERIOR: Saludo, Editar Perfil y Cerrar Sesión */}
+      <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-10 relative">
+        <div className="text-center md:text-left mb-4 md:mb-0">
+          <h2 className="text-4xl text-gray-800">Buenos Días</h2>
+          {/* Este nombre luego vendrá del backend */}
+          <h2 className="text-4xl text-gray-800 font-medium">Jenny Vasquez</h2> 
+        </div>
 
-      <br />
-      <br />
+        {/* Botón central (Editar perfil) */}
+        <div className="md:absolute md:left-1/2 md:transform md:-translate-x-1/2 md:bottom-2 mb-4 md:mb-0">
+          <button className="bg-[#0033a0] hover:bg-blue-800 text-white font-semibold py-2 px-8 rounded shadow transition-colors">
+            Editar perfil
+          </button>
+        </div>
 
-
-      {/* Contenedor gris */}
-      <div className="bg-gray-200 p-10 rounded-lg flex flex-col items-center text-center">
-
-        {/* Texto guía */}
-        <p className="text-gray-700 mb-3">
-          ¿No sabes cómo interactuar o usar la página?
-        </p>
-
-        {/* Manual de uso */}
-        <a
-          href="#"
-          className="text-blue-600 underline hover:text-blue-800 mb-6"
+        {/* Botón Cerrar Sesión con Icono */}
+        <div 
+          onClick={handleLogout}
+          className="flex flex-col items-center cursor-pointer hover:text-[#0033a0] transition-colors"
         >
-          Haz clic aquí para ver el manual de uso
-        </a>
-
-        {/* Contacto soporte */}
-        <p className="text-gray-700 mb-3">Contacta con soporte</p>
-
-        {/* Icono + correo */}
-        <div className="flex items-center gap-3">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-10 h-10 text-gray-700"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"
-              d="M3 5l9 6 9-6m-18 0v14h18V5m-18 14l9-6 9 6" />
+          {/* Icono de Puerta/Salir */}
+          <svg className="w-12 h-12 text-gray-800 hover:text-[#0033a0] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
-
-          <a
-            href="mailto:Desarrolladores@gmail.com"
-            className="text-blue-600 hover:text-blue-800 underline"
-          >
-            Desarrolladores@gmail.com
-          </a>
+          <span className="text-lg font-medium text-gray-800 mt-1 hover:text-[#0033a0] transition-colors">Cerrar Sesión</span>
         </div>
       </div>
-    </section>
+
+      {/* REJILLA DE LAS 3 TARJETAS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <ObservadorCard />
+        <NotasCard />
+        <CalendarioCard />
+      </div>
+    </div>
   );
 }

@@ -34,3 +34,9 @@ export const obtenerNotasEstudiante = async (idEstudiante) => {
   const { data } = await api.get(`/perfil/estudiante/${idEstudiante}/notas`);
   return data;
 };
+
+// NUEVO: Obtener el perfil del estudiante logueado
+export const obtenerPerfilEstudiante = async (idUsuario) => {
+  const { data } = await api.get(`/perfil/estudiante/${idUsuario}`);
+  return data;
+};

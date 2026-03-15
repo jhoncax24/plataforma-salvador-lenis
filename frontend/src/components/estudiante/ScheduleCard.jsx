@@ -1,69 +1,43 @@
 import React from "react";
 
-function weekdayName(n) {
-  return ["Lunes","Martes","Miércoles","Jueves","Viernes"][n-1] || "";
-}
-
-export default function ScheduleCard({ schedule = [], student }) {
-  // schedule: [{day_of_week, start_time, end_time, subject, location}, ...]
-  const grouped = [1,2,3,4,5].map(d => schedule.filter(s => s.day_of_week === d));
-
-  const downloadSchedule = () => {
-    // simple CSV export
-    let csv = "Día,Hora inicio,Hora fin,Asignatura,Ubicación\n";
-    schedule.forEach(s => {
-      csv += `${weekdayName(s.day_of_week)},${s.start_time || ''},${s.end_time || ''},${s.subject || ''},${s.location || ''}\n`;
-    });
-    const blob = new Blob([csv], {type: 'text/csv'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'horario.csv'; a.click();
-    URL.revokeObjectURL(url);
-  };
-
+export default function ScheduleCard({ student }) {
   return (
-    <div className="cesl-panel">
-      <h3 className="text-xl font-semibold mb-4 text-center">Tu horario e información</h3>
-
-      <div className="mb-4">
-        <table className="w-full border">
+    <div className="bg-[#e9ecef] border-2 border-gray-400 rounded flex flex-col h-full shadow-sm">
+      <h3 className="text-xl text-center text-gray-800 py-4 border-b-2 border-gray-400 m-0">Tu horario e información</h3>
+      
+      {/* Tabla del Horario */}
+      <div className="bg-white p-4">
+        <table className="w-full border-collapse border border-gray-300 text-center text-xs text-gray-600 mb-4">
           <thead>
-            <tr>
-              <th className="p-2 text-left">Lunes</th>
-              <th className="p-2 text-left">Martes</th>
-              <th className="p-2 text-left">Miércoles</th>
-              <th className="p-2 text-left">Jueves</th>
-              <th className="p-2 text-left">Viernes</th>
+            <tr className="border-b border-gray-300">
+              <th className="py-2 border-r border-gray-300 font-semibold">Lunes</th>
+              <th className="py-2 border-r border-gray-300 font-semibold">Martes</th>
+              <th className="py-2 border-r border-gray-300 font-semibold">Miércoles</th>
+              <th className="py-2 border-r border-gray-300 font-semibold">Jueves</th>
+              <th className="py-2 font-semibold">Viernes</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              {grouped.map((arr, i) => (
-                <td key={i} className="p-3 align-top">
-                  {arr.map((it, idx) => (
-                    <div key={idx} className="mb-2 bg-gray-100 p-2 rounded">
-                      <div className="font-semibold">{it.subject}</div>
-                      <div className="text-xs text-gray-600">{it.start_time} - {it.end_time}</div>
-                    </div>
-                  ))}
-                </td>
-              ))}
-            </tr>
+            <tr><td className="p-4 border-r border-gray-300 border-b"></td><td className="border-r border-gray-300 border-b"></td><td className="border-r border-gray-300 border-b"></td><td className="border-r border-gray-300 border-b"></td><td className="border-b border-gray-300"></td></tr>
+            <tr><td className="p-4 border-r border-gray-300 border-b"></td><td className="border-r border-gray-300 border-b"></td><td className="border-r border-gray-300 border-b"></td><td className="border-r border-gray-300 border-b"></td><td className="border-b border-gray-300"></td></tr>
+            <tr><td className="p-4 border-r border-gray-300"></td><td className="border-r border-gray-300"></td><td className="border-r border-gray-300"></td><td className="border-r border-gray-300"></td><td></td></tr>
           </tbody>
         </table>
       </div>
 
-      <div className="text-center mb-4">
-        <button onClick={downloadSchedule} className="btn-cesl px-6 py-2">Descargar Horario</button>
-      </div>
-
-      <div className="bg-gray-100 p-3 rounded">
-        <div className="text-sm"><strong>Nombre:</strong> {student.full_name}</div>
-        <div className="text-sm"><strong>Edad:</strong> {/* approximate */}
-          {student.birth_date ? Math.max(0, new Date().getFullYear() - new Date(student.birth_date).getFullYear()) : '14'}</div>
-        <div className="text-sm"><strong>Documento:</strong> {student.enrollment_number || '1234567890'}</div>
-        <div className="text-sm"><strong>Grado Escolar:</strong> {student.grade_level || 'Noveno'}</div>
-        <div className="text-sm"><strong>Acudiente(s):</strong> {student.guardian_contact || ''}</div>
+      {/* Info del estudiante en el fondo gris */}
+      <div className="bg-[#e9ecef] flex flex-col items-center border-t-2 border-gray-400 p-6 flex-1">
+        <button className="bg-[#0033a0] text-white px-6 py-2 rounded font-semibold hover:bg-blue-800 transition-colors mb-6 w-3/4">
+          Descargar Horario
+        </button>
+        
+        <div className="w-full text-center text-sm text-gray-800 space-y-3">
+          <p>Nombre: {student?.nombre || 'Juan Lucumi'}</p>
+          <p>Edad: 14</p>
+          <p>Documento de Identidad: {student?.documento || '1234567890'}</p>
+          <p>Grado Escolar: {student?.grado || 'Noveno'}</p>
+          <p>Acudiente(s): {student?.acudiente || 'Jhon Solano'}</p>
+        </div>
       </div>
     </div>
   );

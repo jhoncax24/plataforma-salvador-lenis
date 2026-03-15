@@ -56,3 +56,43 @@ export async function login(req, res, next) {
     next(err);
   }
 }
+
+export async function register(req, res, next) {
+  // Recibimos los datos desde Thunder Client
+  const { username, password, role, nombre_completo, documento } = req.body;
+  
+  try {
+    // 1. Encriptamos la contraseña con el bcrypt de tu proyecto (¡Garantía de que funcionará!)
+    const password_hash = await bcrypt.hash(password, 10);
+
+    // 2. Creamos el usuario en la tabla central (users)
+    const { rows: userRows } = await pool.query(
+      'INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3) RETURNING id_usuario',
+      [username, password_hash, role]
+    );
+    const idUsuario = userRows[0].id_usuario;
+
+    // 3. Lo vinculamos a su tabla de perfil según el rol
+    if (role === 'acudiente') {
+      await pool.query(
+        'INSERT INTO acudientes (id_usuario, nombre_completo, documento) VALUES ($1, $2, $3)',
+        [idUsuario, nombre_completo, documento]
+      );
+    } else if (role === 'estudiante') {
+      await pool.query(
+        'INSERT INTO estudiantes (id_usuario, nombre_completo, documento) VALUES ($1, $2, $3)',
+        [idUsuario, nombre_completo, documento]
+      );
+    } else if (role === 'docente') {
+      await pool.query(
+        'INSERT INTO docentes (id_usuario, nombre_completo, documento) VALUES ($1, $2, $3)',
+        [idUsuario, nombre_completo, documento]
+      );
+    }
+
+    res.status(201).json({ message: 'Usuario creado y vinculado exitosamente' });
+  } catch (err) {
+    console.error("Error en registro:", err);
+    res.status(500).json({ error: 'Hubo un error al crear el usuario en la BD' });
+  }
+}

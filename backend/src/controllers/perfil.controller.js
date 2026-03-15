@@ -135,3 +135,21 @@ export async function updateEstudiantePassword(req, res, next) {
       next(err);
     }
   }
+
+  // NUEVO: Obtener el perfil de un estudiante a partir del id de usuario (Login)
+export async function getEstudianteById(req, res, next) {
+  const idUsuario = Number(req.params.id);
+  try {
+    const { rows } = await pool.query(
+      `SELECT e.id_estudiante AS id, e.nombre_completo AS nombre, e.tipo_doc, e.documento, 
+              e.fecha_nacimiento, e.grado, a.nombre_completo AS acudiente
+       FROM estudiantes e
+       LEFT JOIN acudientes a ON e.id_acudiente = a.id_acudiente
+       WHERE e.id_usuario = $1`, [idUsuario]
+    );
+    if (rows.length === 0) return res.status(404).json({ message: 'Estudiante no encontrado' });
+    res.json(rows[0]);
+  } catch (err) {
+    next(err);
+  }
+}
