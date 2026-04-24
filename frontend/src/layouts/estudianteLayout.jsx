@@ -10,17 +10,24 @@ export default function EstudianteLayout() {
           <h1 className="text-3xl font-bold">Bienvenidos al</h1>
           <h1 className="text-3xl font-bold">Centro Educativo Salvador Lenis</h1>
         </div>
-        <div>
-          <img 
-            src="/assets/logo.webp" 
-            alt="Logo CESL" 
-            className="h-20 w-20 bg-white rounded-full p-1" 
-          />
-        </div>
+        {/* 👇 CONTENEDOR DEL LOGO INSTITUCIONAL 👇 */}
+      <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-white shadow-inner p-0.5">
+        <img 
+          src="https://res.cloudinary.com/dmzq2qw0t/image/upload/q_auto/f_auto/v1776445496/logo_g99cn4.svg" // 👈 ⚠️ ¡REEMPLAZA ESTO CON TU LINK! ⚠️
+          alt="Logo Institucional" 
+          className="w-full h-full object-contain" // 'object-contain' asegura que todo el logo se vea sin estirarse
+          // Esta línea es un seguro: si el link se rompe, el círculo no se ve vacío
+          onError={(e) => {
+            e.target.style.display = 'none'; // Oculta la imagen rota
+            e.target.parentNode.style.backgroundColor = 'white'; // Asegura que el fondo sea blanco
+          }}
+        />
+      </div>
       </header>
 
       {/* CONTENIDO PRINCIPAL */}
-      <main className="flex-1 p-8 max-w-7xl mx-auto w-full">
+      {/* 👇 ELIMINAMOS el max-w-7xl. Ahora permitimos que crezca hasta 1800px (casi todo tu monitor) */}
+      <main className="flex-1 p-4 md:p-8 max-w-[1900px] mx-auto w-full">
         <Outlet />
       </main>
       

@@ -6,6 +6,8 @@ import usersRoutes from "./routes/users.routes.js";
 import eventsRoutes from "./routes/events.routes.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 import perfilRoutes from "./routes/perfil.routes.js"; // (Asegúrate de que el nombre del archivo coincida con el tuyo)
+import estudiantesRoutes from './routes/estudiantes.routes.js';
+
 
 dotenv.config();
 
@@ -25,6 +27,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/events", eventsRoutes);
 app.use("/api/perfil", perfilRoutes); // Agrega esta línea para las rutas de perfil
+
+app.use("/api/estudiantes", estudiantesRoutes);
 
 // Health
 app.get("/api/health", (req, res) => res.json({ ok: true, env: process.env.NODE_ENV || 'dev' }));

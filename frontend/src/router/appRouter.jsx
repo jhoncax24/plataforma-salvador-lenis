@@ -21,9 +21,19 @@ import InicioAyuda from "../pages/public/ayuda";
 import Login from "../components/public/login";
 
 // Private pages
+
+//Estudiante
 import EstudianteInicio from "../pages/estudiante/inicio";
+import NotasDetalle from "../pages/estudiante/NotasDetalle";
+import MateriaConsolidado from "../pages/estudiante/MateriaConsolidado";
+import HistorialAcademico from "../pages/estudiante/HistorialAcademico";
+import TareasCalendario from "../pages/estudiante/TareasCalendario";
+//Docente
+
 import DocenteInicio from "../pages/docente/inicio";
 import AcudienteInicio from "../pages/acudiente/inicio";
+
+
 
 export default function AppRouter() {
   return (
@@ -60,6 +70,11 @@ export default function AppRouter() {
           }
         >
           <Route index element={<EstudianteInicio />} />
+          <Route path="/estudiante/notas" element={<NotasDetalle />} />
+          <Route path="/estudiante/historial" element={<HistorialAcademico />} />
+          <Route path="/estudiante/notas/:materia" element={<MateriaConsolidado />} />
+          <Route path="/estudiante/calendario" element={<TareasCalendario />} />
+
         </Route>
 
         {/* DOCENTE */}

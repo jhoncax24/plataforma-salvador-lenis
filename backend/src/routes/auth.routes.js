@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { login, register } from "../controllers/auth.controller.js";
+import { login, register, solicitarCodigo, verificarCodigo, cambiarPasswordFinal } from "../controllers/auth.controller.js";
 import { body } from "express-validator";
 import { validateRequest } from "../utils/validators.js";
 
@@ -13,5 +13,10 @@ router.post(
   login
 );
 router.post("/register", register);
+
+// 👇 NUEVAS RUTAS DE RECUPERACIÓN DE CONTRASEÑA 👇
+router.post("/recovery/solicitar", solicitarCodigo);
+router.post("/recovery/verificar", verificarCodigo);
+router.post("/recovery/cambiar", cambiarPasswordFinal);
 
 export default router;
