@@ -193,3 +193,24 @@ export const actualizarTareaEstudiante = async (req, res, next) => {
     next(error);
   }
 };
+
+// Obtener el total de faltas/retrasos del estudiante
+export const getFaltasEstudiante = async (req, res, next) => {
+  const { idUsuario } = req.params;
+  try {
+    const { rows } = await pool.query(
+      `SELECT COUNT(*) AS total_faltas
+       FROM asistencias
+       WHERE id_estudiante = (SELECT id_estudiante FROM estudiantes WHERE id_usuario = $1)
+       AND estado IN ('Ausente', 'Retraso')`,
+      [idUsuario]
+    );
+    
+    // PostgreSQL devuelve el COUNT como string, lo pasamos a entero
+    const total = parseInt(rows[0].total_faltas, 10);
+    res.json({ totalFaltas: total });
+  } catch (error) {
+    console.error("Error obteniendo faltas:", error);
+    next(error);
+  }
+};

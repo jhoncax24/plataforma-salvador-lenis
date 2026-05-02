@@ -1,36 +1,29 @@
-import { Router } from "express";
-import { body, param } from "express-validator";
-import { validateRequest } from "../utils/validators.js";
-import {
-  createUser,
-  getUsers,
-  getUserById,
-  updateUser,
-  deleteUser
-} from "../controllers/users.controller.js";
+import { Router } from "express"; // <-- ESTO ES VITAL QUE DIGA EXPRESS
 import { authenticateToken } from "../middlewares/auth.middleware.js";
+import { 
+  getAcudienteProfile, 
+  getEstudiantesByAcudiente,
+  updateAcudienteProfile, 
+  updateEstudianteProfile, 
+  changePassword, 
+  vincularEstudianteAcudiente,
+  getNotasEstudiante,
+  getEventosCalendario,
+  crearEventoCalendario, 
+  deleteEventoCalendario
+} from "../controllers/users.controller.js";
 
 const router = Router();
 
-// Public: crear usuario (registro)
-router.post(
-  "/",
-  body('username').isString().isLength({ min: 3 }),
-  body('password').isString().isLength({ min: 6 }),
-  validateRequest,
-  createUser
-);
-
-// Protected read list (admin)
-router.get("/", authenticateToken, getUsers);
-
-// Protected get single
-router.get("/:id", authenticateToken, param('id').isInt(), validateRequest, getUserById);
-
-// Protected update
-router.put("/:id", authenticateToken, param('id').isInt(), validateRequest, updateUser);
-
-// Protected delete
-router.delete("/:id", authenticateToken, param('id').isInt(), validateRequest, deleteUser);
+router.get("/acudiente/perfil/:idUsuario", authenticateToken, getAcudienteProfile);
+router.get("/acudiente/:idAcudiente/estudiantes", authenticateToken, getEstudiantesByAcudiente);
+router.put("/acudiente/perfil/:id", authenticateToken, updateAcudienteProfile);
+router.put("/estudiante/perfil/:id", authenticateToken, updateEstudianteProfile);
+router.put("/password", authenticateToken, changePassword);
+router.post("/vincular", authenticateToken, vincularEstudianteAcudiente);
+router.get("/estudiante/:idEstudiante/notas", authenticateToken, getNotasEstudiante);
+router.get("/acudiente/:idAcudiente/eventos", authenticateToken, getEventosCalendario);
+router.post("/acudiente/eventos", authenticateToken, crearEventoCalendario);
+router.delete("/acudiente/eventos/:idEvento", authenticateToken, deleteEventoCalendario);
 
 export default router;

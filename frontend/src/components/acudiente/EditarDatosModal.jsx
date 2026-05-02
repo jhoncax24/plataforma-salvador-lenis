@@ -8,7 +8,7 @@ export default function EditarDatosModal({ isOpen, onClose, data, onSave }) {
     telefono: "",
     correo: "",
     direccion: "",
-    grado: "" // solo estudiantes
+    grado: "" 
   });
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export default function EditarDatosModal({ isOpen, onClose, data, onSave }) {
         telefono: data.telefono || "",
         correo: data.correo || "",
         direccion: data.direccion || "",
-        grado: data.grado || ""  // si no existe, no afecta acudiente
+        grado: data.grado || ""  
       });
     }
   }, [data]);
@@ -50,94 +50,51 @@ export default function EditarDatosModal({ isOpen, onClose, data, onSave }) {
         </h2>
 
         <div className="grid gap-3">
-
           <label>
             Nombre Completo:
-            <input
-              type="text"
-              name="nombre"
-              value={form.nombre}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2 mt-1"
-            />
+            <input type="text" name="nombre" value={form.nombre} onChange={handleChange} className="w-full border rounded px-3 py-2 mt-1" />
           </label>
 
           <label>
             Tipo de Documento:
-            <select
-              name="tipoDoc"
-              value={form.tipoDoc}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2 mt-1"
-            >
+            <select name="tipoDoc" value={form.tipoDoc} onChange={handleChange} className="w-full border rounded px-3 py-2 mt-1">
               <option value="TI">TI</option>
               <option value="CC">CC</option>
+              <option value="RC">RC</option>
             </select>
           </label>
 
           <label>
             Número de Documento:
-            <input
-              type="text"
-              name="documento"
-              value={form.documento}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2 mt-1"
-            />
+            <input type="text" name="documento" value={form.documento} onChange={handleChange} className="w-full border rounded px-3 py-2 mt-1" />
           </label>
 
+          {/* ESTOS CAMPOS AHORA SON VISIBLES PARA TODOS */}
           <label>
             Teléfono:
-            <input
-              type="text"
-              name="telefono"
-              value={form.telefono}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2 mt-1"
-            />
+            <input type="text" name="telefono" value={form.telefono} onChange={handleChange} className="w-full border rounded px-3 py-2 mt-1" />
           </label>
 
           <label>
             Correo Electrónico:
-            <input
-              type="email"
-              name="correo"
-              value={form.correo}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2 mt-1"
-            />
+            <input type="email" name="correo" value={form.correo} onChange={handleChange} className="w-full border rounded px-3 py-2 mt-1" />
           </label>
 
           <label>
             Dirección de residencia:
-            <input
-              type="text"
-              name="direccion"
-              value={form.direccion}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2 mt-1"
-            />
+            <input type="text" name="direccion" value={form.direccion} onChange={handleChange} className="w-full border rounded px-3 py-2 mt-1" />
           </label>
 
+          {/* El Grado sigue siendo solo para el estudiante */}
           {esEstudiante && (
             <label>
               Grado:
-              <input
-                type="text"
-                name="grado"
-                value={form.grado}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2 mt-1"
-              />
+              <input type="text" name="grado" value={form.grado} onChange={handleChange} className="w-full border rounded px-3 py-2 mt-1" />
             </label>
           )}
-
         </div>
 
-        <button
-          onClick={handleSubmit}
-          className="mt-6 bg-blue-700 text-white w-full py-2 rounded"
-        >
+        <button onClick={handleSubmit} className="mt-6 bg-blue-700 text-white w-full py-2 rounded">
           Guardar
         </button>
       </div>

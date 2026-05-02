@@ -4,7 +4,8 @@ import {
   obtenerPerfilEstudiante, 
   obtenerNotasEstudiante, 
   obtenerHorarioEstudiante, 
-  obtenerTareasEstudiante
+  obtenerTareasEstudiante,
+  obtenerFaltasEstudiante
 } from "../../api/perfilApi";
 
 import GradesCard from "../../components/estudiante/GradesCard";
@@ -22,7 +23,7 @@ export default function EstudianteInicio() {
     navigate("/");
   };
 
-  useEffect(() => {
+useEffect(() => {
     const loadData = async () => {
       try {
         const userStr = localStorage.getItem("cesl_user");
@@ -34,18 +35,21 @@ export default function EstudianteInicio() {
         const user = JSON.parse(userStr);
         const idUsuarioLogueado = user.id || user.id_usuario; 
 
-        const [profile, grades, schedule, tasks] = await Promise.all([
+        // 👇 LA SOLUCIÓN ESTÁ AQUÍ: Agregamos 'faltas' dentro de los corchetes [ ]
+        const [profile, grades, schedule, tasks, faltas] = await Promise.all([
           obtenerPerfilEstudiante(idUsuarioLogueado),
           obtenerNotasEstudiante(idUsuarioLogueado),
           obtenerHorarioEstudiante(idUsuarioLogueado),
-          obtenerTareasEstudiante(idUsuarioLogueado)
+          obtenerTareasEstudiante(idUsuarioLogueado),
+          obtenerFaltasEstudiante(idUsuarioLogueado) 
         ]);
 
         setData({
           student: profile,
           grades: grades,
           schedule: schedule,
-          tasks: tasks
+          tasks: tasks,
+          faltas: faltas // Ahora sí existe la variable
         });
 
       } catch (error) {
@@ -148,8 +152,9 @@ export default function EstudianteInicio() {
       {/* TARJETAS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch px-4">
         <div className="w-full"><GradesCard grades={data.grades} /></div>
-        <div className="w-full"><ScheduleCard student={data.student} schedule={data.schedule} /></div>
+        <div className="w-full"><ScheduleCard student={data.student} schedule={data.schedule} faltas={data.faltas} /></div>
         <div className="w-full"><TasksCard tasks={data.tasks} /></div>
+        
       </div>
     </div>
   );

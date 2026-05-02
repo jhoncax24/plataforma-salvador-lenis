@@ -28,6 +28,9 @@ import NotasDetalle from "../pages/estudiante/NotasDetalle";
 import MateriaConsolidado from "../pages/estudiante/MateriaConsolidado";
 import HistorialAcademico from "../pages/estudiante/HistorialAcademico";
 import TareasCalendario from "../pages/estudiante/TareasCalendario";
+// Agrega esta línea en la parte superior junto a tus otras importaciones
+import AsistenciasEstudiante from "../pages/estudiante/AsistenciasEstudiante"; 
+// 👆 Nota: Cambia "./pages/estudiante/..." por la ruta real si lo guardaste en otro lado.
 //Docente
 
 import DocenteInicio from "../pages/docente/inicio";
@@ -74,6 +77,7 @@ export default function AppRouter() {
           <Route path="/estudiante/historial" element={<HistorialAcademico />} />
           <Route path="/estudiante/notas/:materia" element={<MateriaConsolidado />} />
           <Route path="/estudiante/calendario" element={<TareasCalendario />} />
+          <Route path="/estudiante/asistencia" element={<AsistenciasEstudiante />} />
 
         </Route>
 

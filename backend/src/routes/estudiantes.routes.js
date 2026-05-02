@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getPerfilEstudiante, getNotasEstudiante, getHorarioEstudiante, getTareasEstudiante, getHistorialAcademico, crearTareaEstudiante, actualizarTareaEstudiante } from "../controllers/estudiantes.controller.js";
+import { getPerfilEstudiante, getNotasEstudiante, getHorarioEstudiante, getTareasEstudiante, getHistorialAcademico, crearTareaEstudiante, actualizarTareaEstudiante, getFaltasEstudiante } from "../controllers/estudiantes.controller.js";
 
 const router = Router();
 
@@ -20,3 +20,5 @@ router.post("/tareas/:idUsuario", crearTareaEstudiante);
 // 👇 NUEVA RUTA PARA ACTUALIZAR TAREAS 👇
 router.put("/tareas/editar/:idTarea", actualizarTareaEstudiante);
 export default router;
+// 👇 NUEVA RUTA DE FALTAS 👇
+router.get("/faltas/:idUsuario", getFaltasEstudiante);
