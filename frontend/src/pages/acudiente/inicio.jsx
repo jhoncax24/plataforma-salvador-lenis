@@ -166,7 +166,7 @@ export default function AcudienteInicio() {
     <div>
       <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-10 relative">
         <div className="text-center md:text-left mb-4 md:mb-0">
-          <h2 className="text-4xl text-gray-800">Buenos Días</h2>
+          <h2 className="text-4xl text-gray-800">SISA</h2>
           <h2 className="text-4xl text-gray-800 font-medium">
             {data?.acudiente?.nombre || "Acudiente"}
           </h2>
