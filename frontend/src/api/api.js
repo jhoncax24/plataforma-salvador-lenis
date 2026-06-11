@@ -1,7 +1,11 @@
 import axios from "axios";
 
+// 1. Configuramos la URL dinámica
+// Vite utiliza import.meta.env para leer las variables de entorno
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+
 const api = axios.create({
-  baseURL: "http://localhost:4000/api",
+  baseURL: API_URL,
 });
 
 // Interceptor para enviar token automáticamente
