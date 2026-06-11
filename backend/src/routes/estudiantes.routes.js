@@ -1,5 +1,7 @@
 import { Router } from "express";
-import { getPerfilEstudiante, getNotasEstudiante, getHorarioEstudiante, getTareasEstudiante, getHistorialAcademico, crearTareaEstudiante, actualizarTareaEstudiante, getFaltasEstudiante } from "../controllers/estudiantes.controller.js";
+import { getPerfilEstudiante, getNotasEstudiante, getHorarioEstudiante,
+     getTareasEstudiante, getHistorialAcademico, crearTareaEstudiante, actualizarTareaEstudiante, getFaltasEstudiante, 
+     getDetalleMateria, getDetalleAsistencia } from "../controllers/estudiantes.controller.js";
 
 const router = Router();
 
@@ -22,3 +24,8 @@ router.put("/tareas/editar/:idTarea", actualizarTareaEstudiante);
 export default router;
 // 👇 NUEVA RUTA DE FALTAS 👇
 router.get("/faltas/:idUsuario", getFaltasEstudiante);
+
+// Añade esta línea debajo de tus otras rutas
+router.get("/notas-detalle/:idUsuario/:nombreMateria", getDetalleMateria);
+
+router.get("/asistencia-detalle/:idUsuario", getDetalleAsistencia);

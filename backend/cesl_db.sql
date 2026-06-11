@@ -489,3 +489,36 @@ BEGIN
     (v_id_estudiante, 'Séptimo', 'Lengua Castellana', 'Ana López', 4.0, 4.2, 4.0, 4.5, 4.2, 2022),
     (v_id_estudiante, 'Séptimo', 'Ciencias Naturales', 'Carlos Ruiz', 3.8, 3.5, 4.0, 4.2, 3.9, 2022);
 END $$;
+
+
+
+
+--Ultimos cambios para el usuario de docente
+
+-- 1. Crear tabla puente para la Asignación Académica (Qué dicta cada profe)
+CREATE TABLE public.asignacion_academica (
+    id_asignacion SERIAL PRIMARY KEY,
+    id_docente INTEGER NOT NULL REFERENCES public.docentes(id_docente) ON DELETE CASCADE,
+    id_materia INTEGER NOT NULL REFERENCES public.materias(id_materia) ON DELETE CASCADE,
+    grado VARCHAR(20) NOT NULL,
+    grupo VARCHAR(10),
+    anio_lectivo VARCHAR(10) DEFAULT '2026'
+);
+
+-- 2. Modificar la tabla 'tareas' para soportar tareas globales de profesores
+ALTER TABLE public.tareas
+ADD COLUMN id_materia INTEGER REFERENCES public.materias(id_materia) ON DELETE CASCADE,
+ADD COLUMN grado VARCHAR(20);
+
+-- 3. INSERTAR DATOS DE PRUEBA (Para poder testear de inmediato)
+-- Le asignamos al "Profesor Prueba" (id_docente 1) la materia "Matemáticas" (id_materia 2) en grado "Noveno"
+INSERT INTO public.asignacion_academica (id_docente, id_materia, grado, grupo, anio_lectivo)
+VALUES (1, 2, 'Noveno', NULL, '2026');
+
+-- Tomamos la tarea de prueba que tenías llamada "Examen Final de Matemáticas" (id_tarea 6)
+-- y la convertimos en una tarea global del docente para todo el grado Noveno.
+UPDATE public.tareas 
+SET id_usuario = 2, -- id del usuario 'docente1'
+    id_materia = 2, 
+    grado = 'Noveno' 
+WHERE id_tarea = 6;

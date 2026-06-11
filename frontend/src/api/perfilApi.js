@@ -86,9 +86,15 @@ export const obtenerHorarioEstudiante = async (idUsuario) => {
   }
 };
 
+// Obtener historial académico (boletines pasados)
 export const obtenerHistorialAcademico = async (idUsuario) => {
-  const response = await api.get(`/estudiantes/historial/${idUsuario}`);
-  return response.data;
+  try {
+    const response = await api.get(`/estudiantes/historial/${idUsuario}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener historial:", error);
+    return [];
+  }
 };
 
 // Obtener las tareas del calendario
@@ -120,6 +126,29 @@ export const obtenerFaltasEstudiante = async (idUsuario) => {
   }
 };
 
+// Obtener el detalle de actividades de una materia
+export const obtenerDetalleMateria = async (idUsuario, nombreMateria) => {
+  try {
+    const response = await api.get(`/estudiantes/notas-detalle/${idUsuario}/${nombreMateria}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener detalle de materia:", error);
+    // Devolvemos la estructura vacía si falla para no romper la pantalla
+    return { P1: [], P2: [], P3: [], P4: [] };
+  }
+};
+
+// Obtener historial detallado de asistencias
+export const obtenerDetalleAsistencia = async (idUsuario) => {
+  try {
+    const response = await api.get(`/estudiantes/asistencia-detalle/${idUsuario}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener asistencia:", error);
+    return [];
+  }
+};
+
 // ==========================================
 // EVENTOS DEL ACUDIENTE
 // ==========================================
@@ -140,4 +169,207 @@ export const guardarEventoBD = async (datos) => {
 export const eliminarEventoBD = async (idEvento) => {
   const response = await api.delete(`/users/acudiente/eventos/${idEvento}`);
   return response.data;
+};
+
+
+// ==========================================
+// ENDPOINTS PARA DOCENTES (Usando Axios)
+// ==========================================
+
+// 1. Obtener materias y grados asignados al docente
+export const obtenerAsignaciones = async (idUsuario) => {
+  try {
+    // Axios ya sabe que la base es http://localhost:4000/api
+    const response = await api.get(`/docentes/asignaciones/${idUsuario}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener asignaciones:", error);
+    return [];
+  }
+};
+
+// 2. Obtener tareas que el docente ha creado
+export const obtenerTareasDocente = async (idUsuario) => {
+  try {
+    const response = await api.get(`/docentes/tareas/${idUsuario}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener tareas del docente:", error);
+    return [];
+  }
+};
+
+// 3. Crear una nueva tarea global
+export const crearTareaGlobal = async (idUsuario, tareaData) => {
+  try {
+    const response = await api.post(`/docentes/tareas/${idUsuario}`, tareaData);
+    return response.data;
+  } catch (error) {
+    console.error("Error al crear tarea global:", error);
+    throw error;
+  }
+};
+
+// 4. Obtener estudiantes de un curso con sus notas
+export const obtenerEstudiantesNotas = async (idCurso, idMateria, periodo) => {
+  try {
+    const response = await api.get(`/docentes/estudiantes-notas`, {
+      params: { idCurso, idMateria, periodo }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener estudiantes:", error);
+    return [];
+  }
+};
+
+// 5. Guardar notas masivas
+export const guardarNotasDocente = async (idUsuario, datosNotas) => {
+  try {
+    const response = await api.post(`/docentes/notas/${idUsuario}`, datosNotas);
+    return response.data;
+  } catch (error) {
+    console.error("Error al guardar notas:", error);
+    throw error;
+  }
+};
+
+// OBTENER LA MATRIZ DE NOTAS
+export const obtenerPlanillaNotas = async (idCurso, idMateria, periodo) => {
+  try {
+    const response = await api.get(`/docentes/planilla`, {
+      params: { idCurso, idMateria, periodo }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener planilla:", error);
+    return { actividades: [], planilla: [] };
+  }
+};
+
+// CREAR ACTIVIDAD
+export const crearActividadDocente = async (idUsuario, datos) => {
+  try {
+    const response = await api.post(`/docentes/actividades/${idUsuario}`, datos);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// GUARDAR NOTAS DE LA MATRIZ
+export const guardarNotasMasivas = async (notasArray) => {
+  try {
+    const response = await api.post(`/docentes/notas-masivas`, { notasArray });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Obtener resumen de clases y alumnos para el Dashboard
+export const obtenerResumenCursos = async (idUsuario) => {
+  try {
+    const response = await api.get(`/docentes/resumen-cursos/${idUsuario}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener resumen:", error);
+    return [];
+  }
+};
+
+// ==========================================
+// MÓDULO OBSERVADOR
+// ==========================================
+
+// 1. Obtener lista de estudiantes de un curso
+export const obtenerEstudiantesCurso = async (idCurso) => {
+  try {
+    const response = await api.get(`/docentes/estudiantes-curso/${idCurso}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener estudiantes del curso:", error);
+    return [];
+  }
+};
+
+// 2. Obtener historial de observaciones de un estudiante
+export const obtenerHistorialObservaciones = async (idEstudiante) => {
+  try {
+    const response = await api.get(`/docentes/observaciones/${idEstudiante}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener historial:", error);
+    return [];
+  }
+};
+
+// 3. Crear una nueva anotación
+export const guardarObservacion = async (idUsuario, datos) => {
+  try {
+    const response = await api.post(`/docentes/observaciones/${idUsuario}`, datos);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// ==========================================
+// MÓDULO ASISTENCIA
+// ==========================================
+export const guardarAsistencia = async (idUsuario, datosAsistencia) => {
+  try {
+    const response = await api.post(`/docentes/asistencia/${idUsuario}`, datosAsistencia);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+// Consultar si ya se tomó asistencia en un curso, materia y fecha específicos
+export const obtenerAsistenciaPorFecha = async (idCurso, idMateria, fecha) => {
+  try {
+    const response = await api.get(`/docentes/asistencia-fecha`, {
+      params: { idCurso, idMateria, fecha }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error al cargar asistencia:", error);
+    return [];
+  }
+};
+
+// Consultar el resumen acumulado de inasistencias de un curso Y MATERIA
+export const obtenerResumenAsistencia = async (idCurso, idMateria) => {
+  try {
+    const response = await api.get(`/docentes/asistencia-resumen/${idCurso}/${idMateria}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al cargar el resumen:", error);
+    return [];
+  }
+};
+
+// ==========================================
+// ACTUALIZAR TAREA/EVENTO DEL DOCENTE
+// ==========================================
+export const actualizarTareaGlobal = async (idTarea, tareaData) => {
+  try {
+    // Usamos el método PUT para indicar que es una actualización
+    const response = await api.put(`/docentes/tareas/${idTarea}`, tareaData);
+    return response.data;
+  } catch (error) {
+    console.error("Error al actualizar la tarea del docente:", error);
+    throw error;
+  }
+};
+
+// Enviar los nuevos datos de perfil del docente al backend
+export const modificarPerfilDocente = async (idUsuario, datosNuevos) => {
+  try {
+    const response = await api.put(`/perfil/docente/${idUsuario}`, datosNuevos);
+    return response.data; // Aquí viene el mensaje de éxito y el nuevo objeto "user"
+  } catch (error) {
+    console.error("Error en la petición de modificar perfil:", error);
+    throw error;
+  }
 };

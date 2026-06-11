@@ -10,7 +10,8 @@ import {
   getEstudianteById, // <--- Solo lo importamos una vez aquí
   updateEstudiante,
   updateEstudiantePassword,
-  getNotasEstudiante
+  getNotasEstudiante,
+    actualizarPerfilDocente
 } from "../controllers/perfil.controller.js";
 
 const router = Router();
@@ -47,5 +48,11 @@ router.put("/estudiante/:id/password",
     validateRequest, 
     updateEstudiantePassword
 );
+
+// ==========================================
+// RUTAS DE DOCENTE
+// ==========================================
+// Ruta para actualizar los datos del docente
+router.put("/docente/:idUsuario", actualizarPerfilDocente);
 
 export default router;

@@ -1,70 +1,42 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+// IMPORTAMOS LA API
+import { obtenerDetalleAsistencia } from "../../api/perfilApi"; 
 
 export default function AsistenciasEstudiante() {
   const navigate = useNavigate();
   const [datosAsistencia, setDatosAsistencia] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // 👇 NUEVO ESTADO: Guarda el ID de la materia que está expandida actualmente. 
-  // Si es null, todas están cerradas.
   const [materiaExpandida, setMateriaExpandida] = useState(null);
 
-  // SIMULACIÓN DE CARGA
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Datos simulados. Agregamos "detalle_faltas" a cada materia.
-        setTimeout(() => {
-          setDatosAsistencia([
-            { 
-              id_materia: 1, nombre_materia: 'FILOSOFÍA', docente: 'Sin asignar', clases_totales: 36, fallas_acumuladas: 2, porcentaje: 94.4,
-              detalle_faltas: [
-                { id_falta: 101, fecha: '15 de Abril, 2026', hora: '08:00 AM' },
-                { id_falta: 102, fecha: '22 de Abril, 2026', hora: '09:30 AM' }
-              ]
-            },
-            { 
-              id_materia: 2, nombre_materia: 'FÍSICA', docente: 'Sin asignar', clases_totales: 38, fallas_acumuladas: 1, porcentaje: 97.3,
-              detalle_faltas: [
-                { id_falta: 201, fecha: '02 de Mayo, 2026', hora: '10:00 AM' }
-              ]
-            },
-            { 
-              // 👇 MATERIA CON 0 FALTAS PARA PROBAR EL MENSAJE
-              id_materia: 3, nombre_materia: 'MATEMÁTICAS', docente: 'Sin asignar', clases_totales: 40, fallas_acumuladas: 0, porcentaje: 100.0,
-              detalle_faltas: [] 
-            },
-            { 
-              id_materia: 4, nombre_materia: 'QUÍMICA', docente: 'Dr. Ruiz', clases_totales: 36, fallas_acumuladas: 3, porcentaje: 91.6,
-              detalle_faltas: [
-                { id_falta: 401, fecha: '10 de Marzo, 2026', hora: '07:00 AM' },
-                { id_falta: 402, fecha: '12 de Marzo, 2026', hora: '07:00 AM' },
-                { id_falta: 403, fecha: '28 de Abril, 2026', hora: '08:30 AM' }
-              ]
-            }
-          ]);
-          setLoading(false);
-        }, 800);
-      } catch (error) {
-        console.error("Error al cargar asistencias", error);
-      }
-    };
-    loadData();
-  }, []);
+  // Extraemos el ID del estudiante logueado
+  const userStr = localStorage.getItem("cesl_user") || localStorage.getItem("usuario");
+  const user = userStr ? JSON.parse(userStr) : null;
+  const idUsuario = user?.id_usuario || user?.id;
 
-  // 👇 NUEVA FUNCIÓN: Abre o cierra el detalle de la materia al hacer clic
+  useEffect(() => {
+    if (idUsuario) {
+      cargarAsistencias();
+    } else {
+      setLoading(false);
+    }
+  }, [idUsuario]);
+
+  const cargarAsistencias = async () => {
+    setLoading(true);
+    const data = await obtenerDetalleAsistencia(idUsuario);
+    setDatosAsistencia(data);
+    setLoading(false);
+  };
+
   const toggleExpandir = (id_materia) => {
     if (materiaExpandida === id_materia) {
-      // Si le dio clic a la que ya estaba abierta, la cerramos
       setMateriaExpandida(null);
     } else {
-      // Si le dio clic a una nueva, la abrimos
       setMateriaExpandida(id_materia);
     }
   };
 
-  // Renderizador del "Pill" de Estado
   const renderEstadoPill = (porcentaje) => {
     if (porcentaje < 80) {
       return (
@@ -96,7 +68,7 @@ export default function AsistenciasEstudiante() {
         <div className="flex items-center gap-3">
           <span className="text-2xl">💡</span>
           <p className="text-gray-700 text-sm md:text-base m-0 font-medium">
-            <span className="text-[#0033a0] font-bold">Tip:</span> Haz clic en cualquier materia para ver el historial exacto de tus faltas.
+            <span className="text-[#0033a0] font-bold">Ayuda</span> Haz clic en la fila principal para ver el historial exacto de tus faltas o retrasos en el curso.
           </p>
         </div>
         <button 
@@ -113,9 +85,9 @@ export default function AsistenciasEstudiante() {
             
             <thead className="bg-[#0033a0]">
               <tr>
-                <th className="py-4 px-6 text-white text-sm font-semibold tracking-wider">Materia</th>
-                <th className="py-4 px-6 text-white text-sm font-semibold tracking-wider">Docente</th>
-                <th className="py-4 px-6 text-white text-sm font-semibold tracking-wider text-center">Clases Totales</th>
+                <th className="py-4 px-6 text-white text-sm font-semibold tracking-wider">Módulo</th>
+                <th className="py-4 px-6 text-white text-sm font-semibold tracking-wider">Reporte por</th>
+                <th className="py-4 px-6 text-white text-sm font-semibold tracking-wider text-center">Días Evaluados</th>
                 <th className="py-4 px-6 text-white text-sm font-semibold tracking-wider text-center">Fallas Acumuladas</th>
                 <th className="py-4 px-6 text-white text-sm font-semibold tracking-wider text-center">% Asistencia</th>
                 <th className="py-4 px-6 text-white text-sm font-semibold tracking-wider text-center">Estado</th>
@@ -123,68 +95,88 @@ export default function AsistenciasEstudiante() {
             </thead>
             
             <tbody>
-              {datosAsistencia.map((asistencia, index) => (
-                // Usamos React.Fragment para agrupar la fila principal y la fila de detalles
-                <React.Fragment key={asistencia.id_materia}>
-                  
-                  {/* FILA PRINCIPAL (Al hacer clic ejecuta toggleExpandir) */}
-                  <tr 
-                    onClick={() => toggleExpandir(asistencia.id_materia)}
-                    className={`group cursor-pointer transition-colors border-b border-gray-200 
-                      ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} 
-                      hover:bg-blue-50`}
-                  >
-                    <td className="py-5 px-6 text-gray-800 font-bold text-[15px] flex items-center gap-2">
-                      {/* Agregamos una flechita que gira si la fila está expandida */}
-                      <span className={`text-gray-400 transition-transform duration-200 ${materiaExpandida === asistencia.id_materia ? 'rotate-90' : ''}`}>
-                        ▶
-                      </span>
-                      {asistencia.nombre_materia}
-                    </td>
-                    <td className="py-5 px-6 text-gray-600 text-sm font-medium">{asistencia.docente}</td>
-                    <td className="py-5 px-6 text-gray-800 font-bold text-center">{asistencia.clases_totales}</td>
-                    <td className="py-5 px-6 text-gray-800 font-bold text-center">{asistencia.fallas_acumuladas}</td>
-                    <td className="py-5 px-6 text-gray-800 font-bold text-center">{asistencia.porcentaje.toFixed(1)}%</td>
-                    <td className="py-5 px-6 text-center">{renderEstadoPill(asistencia.porcentaje)}</td>
-                  </tr>
-
-                  {/* 👇 FILA DE DETALLES (Solo se dibuja si esta materia es la expandida) 👇 */}
-                  {materiaExpandida === asistencia.id_materia && (
-                    <tr className="bg-blue-50/50 border-b border-gray-200">
-                      {/* colSpan="6" hace que esta celda ocupe todo el ancho de la tabla */}
-                      <td colSpan="6" className="p-0">
-                        <div className="py-6 px-10 border-l-[4px] border-[#0033a0] ml-6">
-                          
-                          <h4 className="text-[#0033a0] font-bold mb-4">Detalle de Inasistencias</h4>
-                          
-                          {/* Evaluamos si tiene faltas o no */}
-                          {asistencia.fallas_acumuladas === 0 ? (
-                            <div className="bg-green-100 text-green-800 p-4 rounded-lg flex items-center gap-3 font-medium border border-green-200 w-fit">
-                              <span className="text-xl">🎉</span>
-                              ¡Felicidades! No tienes faltas registradas en esta materia. Sigue así.
-                            </div>
-                          ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                              {/* Dibujamos la lista de fechas */}
-                              {asistencia.detalle_faltas.map((falta) => (
-                                <div key={falta.id_falta} className="bg-white border border-gray-300 p-3 rounded-lg shadow-sm flex items-center gap-3">
-                                  <div className="bg-red-100 text-red-600 p-2 rounded-full">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                  </div>
-                                  <div>
-                                    <p className="text-gray-800 font-bold text-sm">{falta.fecha}</p>
-                                    <p className="text-gray-500 text-xs">Hora de clase: {falta.hora}</p>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
+              {datosAsistencia.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="py-12 text-center text-gray-500 font-medium">
+                    No hay registros de asistencia en tu curso actual.
+                  </td>
+                </tr>
+              ) : (
+                datosAsistencia.map((asistencia, index) => (
+                  <React.Fragment key={asistencia.id_materia}>
+                    
+                    {/* FILA PRINCIPAL */}
+                    <tr 
+                      onClick={() => toggleExpandir(asistencia.id_materia)}
+                      className={`group cursor-pointer transition-colors border-b border-gray-200 
+                        ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} 
+                        hover:bg-blue-50`}
+                    >
+                      <td className="py-5 px-6 text-gray-800 font-bold text-[15px] flex items-center gap-2">
+                        <span className={`text-gray-400 transition-transform duration-200 ${materiaExpandida === asistencia.id_materia ? 'rotate-90' : ''}`}>
+                          ▶
+                        </span>
+                        {asistencia.nombre_materia}
                       </td>
+                      <td className="py-5 px-6 text-gray-600 text-sm font-medium">{asistencia.docente}</td>
+                      <td className="py-5 px-6 text-gray-800 font-bold text-center">{asistencia.clases_totales}</td>
+                      <td className="py-5 px-6 text-gray-800 font-bold text-center">{asistencia.fallas_acumuladas}</td>
+                      <td className="py-5 px-6 text-gray-800 font-bold text-center">{asistencia.porcentaje.toFixed(1)}%</td>
+                      <td className="py-5 px-6 text-center">{renderEstadoPill(asistencia.porcentaje)}</td>
                     </tr>
-                  )}
-                </React.Fragment>
-              ))}
+
+                    {/* FILA DE DETALLES */}
+                    {materiaExpandida === asistencia.id_materia && (
+                      <tr className="bg-blue-50/50 border-b border-gray-200">
+                        <td colSpan="6" className="p-0">
+                          <div className="py-6 px-10 border-l-[4px] border-[#0033a0] ml-6">
+                            
+                            {/* EL BLOQUE MODIFICADO EMPIEZA AQUÍ */}
+                            <h4 className="text-[#0033a0] font-bold mb-4">Historial Completo de Asistencia</h4>
+                            
+                            {asistencia.detalle_faltas.length === 0 ? (
+                              <div className="text-gray-500 italic p-4 text-sm">
+                                El docente aún no ha registrado asistencias en esta materia.
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {asistencia.detalle_faltas.map((falta) => (
+                                  <div key={falta.id_falta} className="bg-white border border-gray-300 p-3 rounded-lg shadow-sm flex items-center gap-3">
+                                    
+                                    {/* Lógica de colores según el estado que llegue de la Base de Datos */}
+                                    <div className={`p-2 rounded-full ${
+                                      falta.estado === 'Ausente' ? 'bg-red-100 text-red-600' : 
+                                      falta.estado === 'Llegada Tarde' ? 'bg-yellow-100 text-yellow-600' : 
+                                      'bg-green-100 text-green-600'
+                                    }`}>
+                                      {falta.estado === 'Ausente' && (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                      )}
+                                      {falta.estado === 'Llegada Tarde' && (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                      )}
+                                      {(falta.estado === 'Presente' || falta.estado === 'Excusa') && (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                                      )}
+                                    </div>
+                                    
+                                    <div>
+                                      <p className="text-gray-800 font-bold text-sm">{falta.fecha}</p>
+                                      <p className="text-gray-500 text-xs font-medium uppercase">Estado: {falta.estado}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {/* EL BLOQUE MODIFICADO TERMINA AQUÍ */}
+
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))
+              )}
             </tbody>
             
           </table>

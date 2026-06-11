@@ -46,3 +46,43 @@ export const enviarCorreoCodigo = async (destinatario, codigo) => {
         throw new Error("No se pudo conectar con el servidor de correo");
     }
 };
+
+// --- FUNCIÓN 2: NUEVA FUNCIÓN DE RECORDATORIOS ---
+export const enviarCorreoRecordatorio = async (tarea, diasFaltantes) => {
+    try {
+        const mensajeDias = diasFaltantes > 1 ? '3 días' : '1 día';
+        // Formateamos la fecha para que se vea bonita (Ej: "12/5/2026")
+        const fechaFormateada = new Date(tarea.fecha_entrega).toLocaleDateString('es-ES');
+
+        const mailOptions = {
+            from: `"Centro Educativo Salvador Lenis" <${process.env.EMAIL_USER}>`,
+            to: tarea.email_estudiante,
+            cc: tarea.email_acudiente, // Envía una copia al acudiente
+            subject: `⏰ Recordatorio de Tarea: ${tarea.titulo}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                    <h2 style="color: #0033a0; text-align: center;">Centro Educativo Salvador Lenis</h2>
+                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+                    
+                    <h3 style="color: #333;">¡Hola, ${tarea.nombre_estudiante}!</h3>
+                    <p style="font-size: 16px; color: #333;">Este es un recordatorio automático del sistema.</p>
+                    <p style="font-size: 16px; color: #333;">Falta exactamente <strong>${mensajeDias}</strong> para la entrega de tu tarea:</p>
+                    
+                    <div style="background-color: #f4f6f9; padding: 15px; border-left: 5px solid #ffc107; margin: 20px 0; border-radius: 0 8px 8px 0;">
+                        <h3 style="margin: 0; color: #0033a0;">${tarea.titulo}</h3>
+                        <p style="margin: 5px 0 0 0; color: #555;">Fecha límite: <strong>${fechaFormateada}</strong></p>
+                    </div>
+                    
+                    <p style="font-size: 14px; color: #666; background-color: #fff3cd; padding: 10px; border-radius: 5px;">
+                        <strong>Nota para el acudiente (${tarea.nombre_acudiente}):</strong> Por favor asegúrese de que el estudiante complete la asignación a tiempo.
+                    </p>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`📧 Recordatorio enviado a: ${tarea.email_estudiante} y ${tarea.email_acudiente}`);
+    } catch (error) {
+        console.error("❌ Error al enviar el correo de recordatorio:", error);
+    }
+};

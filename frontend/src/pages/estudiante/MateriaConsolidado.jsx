@@ -1,38 +1,49 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+// IMPORTANTE: Ajusta la ruta de importación si es necesario
+import { obtenerDetalleMateria } from "../../api/perfilApi"; 
 
 export default function MateriaConsolidado() {
   const { materia } = useParams(); // Capturamos el nombre de la materia de la URL
   const navigate = useNavigate();
+  
   const [loading, setLoading] = useState(true);
+  const [periodos, setPeriodos] = useState({ P1: [], P2: [], P3: [], P4: [] });
 
-  // 🚨 DATOS SIMULADOS: Esto lo reemplazaremos con una llamada al backend 
-  // cuando construyamos el módulo del Docente.
-  const [periodos, setPeriodos] = useState({
-    P1: [
-      { id: 1, actividad: "Taller en Clase", nota: 3.4 },
-      { id: 2, actividad: "Tarea Ecuaciones", nota: 3.8 },
-      { id: 3, actividad: "Quiz Sorpresa", nota: 3.4 }
-    ],
-    P2: [
-      { id: 4, actividad: "Exposición Final", nota: 4.5 },
-      { id: 5, actividad: "Cuaderno al día", nota: 5.0 }
-    ],
-    P3: [], // Sin notas aún
-    P4: []  // Sin notas aún
-  });
+  // Extraemos el ID del estudiante logueado
+  const userStr = localStorage.getItem("cesl_user") || localStorage.getItem("usuario");
+  const user = userStr ? JSON.parse(userStr) : null;
+  const idUsuario = user?.id_usuario || user?.id;
 
   useEffect(() => {
-    // Aquí a futuro haremos: const data = await obtenerActividades(materia, idUsuario);
-    // Por ahora solo simulamos un tiempo de carga chiquito.
-    setTimeout(() => setLoading(false), 400);
-  }, [materia]);
+    if (idUsuario && materia) {
+      cargarDetalles();
+    }
+  }, [idUsuario, materia]);
 
-  // Función para calcular el promedio de un periodo específico
+  const cargarDetalles = async () => {
+    setLoading(true);
+    // Llamamos a la API con el ID del estudiante y el nombre de la materia
+    const data = await obtenerDetalleMateria(idUsuario, materia);
+    setPeriodos(data);
+    setLoading(false);
+  };
+
+ // Función para calcular el promedio PONDERADO de un periodo específico
   const calcularPromedio = (notasArray) => {
     if (notasArray.length === 0) return "-";
-    const suma = notasArray.reduce((acc, curr) => acc + curr.nota, 0);
-    return (suma / notasArray.length).toFixed(1);
+    
+    // Calculamos cuánto suma el porcentaje de lo que el profesor ha calificado hasta ahora
+    const totalPorcentajeCalificado = notasArray.reduce((acc, curr) => acc + curr.porcentaje, 0);
+    
+    // Calculamos la sumatoria de (nota * porcentaje)
+    const sumaPonderada = notasArray.reduce((acc, curr) => acc + (curr.nota * curr.porcentaje), 0);
+    
+    // Dividimos la nota ponderada entre el porcentaje evaluado hasta el momento
+    // Esto evita que el estudiante vea un 1.5 de definitiva si el profesor solo ha subido una tarea del 30%
+    const definitivaReal = sumaPonderada / totalPorcentajeCalificado;
+    
+    return definitivaReal.toFixed(1);
   };
 
   return (
@@ -81,8 +92,11 @@ export default function MateriaConsolidado() {
                     <ul className="space-y-3">
                       {actividades.map((act) => (
                         <li key={act.id} className="flex justify-between items-center text-sm border-b border-gray-100 pb-2">
-                          <span className="text-gray-600 font-medium truncate pr-2">{act.actividad}</span>
-                          <span className={`font-bold px-2 py-1 rounded ${act.nota < 3.0 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                          <div className="flex flex-col truncate pr-2">
+                            <span className="text-gray-600 font-bold">{act.actividad}</span>
+                            <span className="text-[10px] text-gray-400 font-medium uppercase">Valor: {act.porcentaje}%</span>
+                          </div>
+                          <span className={`font-extrabold px-3 py-1 rounded-md shadow-sm ${act.nota < 3.0 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                             {act.nota.toFixed(1)}
                           </span>
                         </li>

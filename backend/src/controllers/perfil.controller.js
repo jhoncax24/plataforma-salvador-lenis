@@ -153,3 +153,68 @@ export async function getEstudianteById(req, res, next) {
     next(err);
   }
 }
+
+
+// ==========================================
+// DOCENTE
+// ACTUALIZAR PERFIL DEL DOCENTE
+// ==========================================
+export const actualizarPerfilDocente = async (req, res, next) => {
+  const { idUsuario } = req.params;
+  const { correo, telefono, foto_perfil } = req.body;
+
+  // Solicitamos un cliente de la pool para usar Transacciones
+  const client = await pool.connect();
+
+  try {
+    // Iniciamos la transacción de seguridad
+    await client.query("BEGIN");
+
+    // 1. Actualizamos la foto y el email en la tabla central 'users'
+    await client.query(
+      "UPDATE users SET foto_perfil = $1, email = $2 WHERE id_usuario = $3",
+      [foto_perfil || null, correo || null, idUsuario]
+    );
+
+    // 2. Actualizamos el teléfono y el correo en la tabla de perfil 'docentes'
+    await client.query(
+      "UPDATE docentes SET telefono = $1, correo = $2 WHERE id_usuario = $3",
+      [telefono || null, correo || null, idUsuario]
+    );
+
+    // Si ambos updates funcionaron bien, confirmamos los cambios en la BD
+    await client.query("COMMIT");
+
+    // Buscamos los datos completamente actualizados para devolvérselos al frontend
+    const { rows } = await pool.query(
+      `SELECT u.id_usuario, u.username, u.role, u.foto_perfil, u.email, d.nombre_completo, d.telefono, d.correo
+       FROM users u
+       JOIN docentes d ON u.id_usuario = d.id_usuario
+       WHERE u.id_usuario = $1`,
+      [idUsuario]
+    );
+
+    // Devolvemos el usuario actualizado estructurado de forma amigable
+    res.json({
+      message: "Perfil actualizado con éxito",
+      user: {
+        id: rows[0].id_usuario,
+        username: rows[0].username,
+        full_name: rows[0].nombre_completo,
+        role: rows[0].role,
+        foto_perfil: rows[0].foto_perfil,
+        correo: rows[0].correo,
+        telefono: rows[0].telefono
+      }
+    });
+
+  } catch (error) {
+    // Si algo falló (ej: base de datos caída), deshacemos todo para no corromper datos
+    await client.query("ROLLBACK");
+    console.error("Error actualizando perfil docente:", error);
+    next(error);
+  } finally {
+    // Liberamos el cliente pase lo que pase
+    client.release();
+  }
+};

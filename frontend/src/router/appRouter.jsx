@@ -27,13 +27,22 @@ import EstudianteInicio from "../pages/estudiante/inicio";
 import NotasDetalle from "../pages/estudiante/NotasDetalle";
 import MateriaConsolidado from "../pages/estudiante/MateriaConsolidado";
 import HistorialAcademico from "../pages/estudiante/HistorialAcademico";
-import TareasCalendario from "../pages/estudiante/TareasCalendario";
+import TareasCalendarioEstudiante from "../pages/estudiante/TareasCalendario";
 // Agrega esta línea en la parte superior junto a tus otras importaciones
 import AsistenciasEstudiante from "../pages/estudiante/AsistenciasEstudiante"; 
 // 👆 Nota: Cambia "./pages/estudiante/..." por la ruta real si lo guardaste en otro lado.
-//Docente
 
+
+//Docente
 import DocenteInicio from "../pages/docente/inicio";
+import TareasCalendarioDocente from "../pages/docente/TareasCalendario";
+import NotasPlanilla from "../pages/docente/NotasDocente";
+import ObservadorDocente from "../pages/docente/ObservadorDocente";
+import AsistenciaDocente from "../pages/docente/AsistenciaDocente"; // Importa la nueva página de asistencia para docentes
+
+
+
+// Acudiente
 import AcudienteInicio from "../pages/acudiente/inicio";
 
 
@@ -76,7 +85,7 @@ export default function AppRouter() {
           <Route path="/estudiante/notas" element={<NotasDetalle />} />
           <Route path="/estudiante/historial" element={<HistorialAcademico />} />
           <Route path="/estudiante/notas/:materia" element={<MateriaConsolidado />} />
-          <Route path="/estudiante/calendario" element={<TareasCalendario />} />
+          <Route path="/estudiante/calendario" element={<TareasCalendarioEstudiante />} />
           <Route path="/estudiante/asistencia" element={<AsistenciasEstudiante />} />
 
         </Route>
@@ -91,6 +100,10 @@ export default function AppRouter() {
           }
         >
           <Route index element={<DocenteInicio />} />
+          <Route path="/docente/calendario" element={<TareasCalendarioDocente />} />
+          <Route path="/docente/notas" element={<NotasPlanilla />} />
+          <Route path="/docente/observador" element={<ObservadorDocente />} />
+          <Route path="/docente/asistencia" element={<AsistenciaDocente />} />
         </Route>
 
         {/* ACUDIENTE */}
