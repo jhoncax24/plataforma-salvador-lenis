@@ -25,8 +25,8 @@ api.interceptors.response.use(
       localStorage.removeItem("cesl_token");
       localStorage.removeItem("cesl_user");
       
-      // Forzamos la redirección a la pantalla de login
-      window.location.href = "/login"; 
+      // Forzamos la redirección al inicio (ruta raíz)
+      window.location.href = "/"; 
     }
     
     // Devolvemos el error para que el resto del código lo maneje si lo necesita

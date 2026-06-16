@@ -154,6 +154,11 @@ export default function NotasDocente() {
     return final.toFixed(1);
   };
 
+  // Filtramos los cursos basados en la materia seleccionada
+  const cursosFiltrados = seleccion.id_materia 
+    ? cursos.filter(c => c.id_materia === parseInt(seleccion.id_materia)) 
+    : [];
+
   return (
     <div className="w-full min-h-screen bg-gray-50 p-4 md:p-6 animate-fade-in-up font-sans">
       
@@ -178,7 +183,9 @@ export default function NotasDocente() {
             <label className="block text-sm font-bold text-gray-700 mb-2">Materia</label>
             <select 
               required className="w-full p-2.5 border rounded-lg focus:ring-1 focus:ring-[#0033a0] outline-none"
-              value={seleccion.id_materia} onChange={(e) => setSeleccion({...seleccion, id_materia: e.target.value})}
+              value={seleccion.id_materia} 
+              // 👇 AQUÍ AGREGAMOS id_curso: ""
+              onChange={(e) => setSeleccion({...seleccion, id_materia: e.target.value, id_curso: ""})} 
             >
               <option value="">Seleccione...</option>
               {materias.map(m => <option key={m.id_materia} value={m.id_materia}>{m.nombre}</option>)}
@@ -191,7 +198,8 @@ export default function NotasDocente() {
               value={seleccion.id_curso} onChange={(e) => setSeleccion({...seleccion, id_curso: e.target.value})}
             >
               <option value="">Seleccione...</option>
-              {cursos.map(c => <option key={c.id_curso} value={c.id_curso}>{c.nombre} {c.nivel ? `(${c.nivel})` : ''}</option>)}
+              {/* 👇 AQUÍ CAMBIAMOS 'cursos' POR 'cursosFiltrados' */}
+              {cursosFiltrados.map(c => <option key={c.id_curso} value={c.id_curso}>{c.nombre} {c.nivel ? `(${c.nivel})` : ''}</option>)}
             </select>
           </div>
           <div>

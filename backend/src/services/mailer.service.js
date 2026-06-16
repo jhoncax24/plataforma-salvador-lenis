@@ -56,8 +56,14 @@ export const enviarCorreoRecordatorio = async (tarea, diasFaltantes) => {
 
         const mailOptions = {
             from: `"Centro Educativo Salvador Lenis" <${process.env.EMAIL_USER}>`,
+            // 👇 CAMBIO TEMPORAL PARA PRUEBAS (Secuestramos el destinatario) 👇
+           // to: "tu_correo_personal@gmail.com", // Reemplaza por tu correo real
+            //cc: "otro_correo_tuyo@gmail.com",   // Reemplaza por otro correo tuyo (o bórralo si no tienes dos)
+            
+            // Cuando termines las pruebas, lo volverás a dejar así:
             to: tarea.email_estudiante,
-            cc: tarea.email_acudiente, // Envía una copia al acudiente
+            cc: tarea.email_acudiente || undefined, // Solo incluimos el CC si hay correo de acudiente
+            
             subject: `⏰ Recordatorio de Tarea: ${tarea.titulo}`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
@@ -73,9 +79,11 @@ export const enviarCorreoRecordatorio = async (tarea, diasFaltantes) => {
                         <p style="margin: 5px 0 0 0; color: #555;">Fecha límite: <strong>${fechaFormateada}</strong></p>
                     </div>
                     
+                    ${tarea.nombre_acudiente ? `
                     <p style="font-size: 14px; color: #666; background-color: #fff3cd; padding: 10px; border-radius: 5px;">
                         <strong>Nota para el acudiente (${tarea.nombre_acudiente}):</strong> Por favor asegúrese de que el estudiante complete la asignación a tiempo.
                     </p>
+                    ` : ''}
                 </div>
             `
         };

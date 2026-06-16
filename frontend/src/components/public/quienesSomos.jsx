@@ -4,6 +4,14 @@ export default function QuienesSomos() {
       <h2 className="text-2xl font-semibold text-center mb-8">
         Nosotros
       </h2>
+      <div className="bg-gray-100 p-5 rounded-lg text-center shadow">
+            <p>
+              En el Centro Educativo Salvador Lenis, nos enorgullece brindar una educación de muy alto nivel en los grados de Preescolar,
+               Primaria y Básica secundaria. Nuestro compromiso radica en ofrecer un ambiente de aprendizaje seguro, estimulante y enriquecedor
+                para nuestros estudiantes. Nos apasiona nutrir sus habilidades académicas, sociales y emocionales, fomentando su desarrollo
+                 integral y preparándolos para los desafíos del futuro.
+            </p>
+          </div>
       <br />
       <br />
 
@@ -15,13 +23,12 @@ export default function QuienesSomos() {
 
           <div className="bg-gray-100 p-5 rounded-lg text-center shadow">
             <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit.
-              Nulla laboriosam qui natus asperiores expedita beatae
-              perspiciatis reiciendis.
+              El Centro Educativo SALVADOR LENIS respondiendo a las necesidades de los estudiantes y del contexto, 
+              forma líderes en Tecnologías de la Información y la Comunicación (TIC) con alto grado de autonomía, 
+              creatividad, con sentido crítico; capaces de transformar sus realidades, atendiendo a los valores y
+               el respeto por sí mismo, por los demás y por el entorno.
             </p>
-            <p className="mt-2">
-              Optio odit illum sit, inventore tenetur facilis repellendus culpa.
-            </p>
+
           </div>
 
           <div className="w-32 h-32 bg-[#6366F1] rounded-lg flex items-center justify-center mt-6">
@@ -44,12 +51,9 @@ export default function QuienesSomos() {
 
           <div className="bg-gray-100 p-5 rounded-lg text-center shadow">
             <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit.
-              Nulla laboriosam qui natus asperiores expedita beatae
-              perspiciatis reiciendis.
-            </p>
-            <p className="mt-2">
-              Optio odit illum sit, inventore tenetur facilis repellendus culpa.
+              El centro educativo SALVADOR LENIS para el año 2028, será reconocido en el corregimiento de Rozo por su calidad educativa, 
+              su competitividad e innovación en TIC, basada en los principios y valores con alto impacto en el contexto social; educando 
+              integralmente líderes transformadores de la región vallecaucana.
             </p>
           </div>
 

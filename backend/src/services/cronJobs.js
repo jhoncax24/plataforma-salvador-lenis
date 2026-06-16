@@ -3,27 +3,73 @@ import { pool } from '../config/db.js';
 import { enviarCorreoRecordatorio } from './mailer.service.js';
 
 // Se ejecuta todos los días a las 7:00 AM
-cron.schedule('0 7 * * *', async () => {
+cron.schedule('0 5 * * *', async () => {
     console.log("⏰ Iniciando proceso diario de recordatorios...");
 
     try {
         const query = `
+            -- =========================================================
+            -- 1. RECORDATORIOS PRIVADOS (Creados por ESTUDIANTES)
+            -- =========================================================
             SELECT 
                 t.titulo, 
                 t.fecha_entrega, 
                 e.nombre_completo AS nombre_estudiante, 
-                e.correo AS email_estudiante, 
+                ue.email AS email_estudiante,
                 a.nombre_completo AS nombre_acudiente, 
-                a.correo AS email_acudiente,
+                ua.email AS email_acudiente,
                 (t.fecha_entrega - CURRENT_DATE) AS dias_restantes
             FROM tareas t
-            -- 👇 AQUÍ ESTÁ LA CORRECCIÓN CLAVE 👇
             JOIN estudiantes e ON t.id_usuario = e.id_usuario
-            JOIN acudientes a ON e.id_acudiente = a.id_acudiente
+            JOIN users ue ON e.id_usuario = ue.id_usuario
+            LEFT JOIN acudientes a ON e.id_acudiente = a.id_acudiente
+            LEFT JOIN users ua ON a.id_usuario = ua.id_usuario
             WHERE 
-                t.fecha_entrega = CURRENT_DATE + INTERVAL '3 days'
-                OR 
-                t.fecha_entrega = CURRENT_DATE + INTERVAL '1 day';
+                t.id_curso IS NULL -- Asegura que es privada
+                AND (t.fecha_entrega = CURRENT_DATE + INTERVAL '3 days' OR t.fecha_entrega = CURRENT_DATE + INTERVAL '1 day')
+
+            UNION
+
+            -- =========================================================
+            -- 2. RECORDATORIOS GLOBALES (Creados para un CURSO)
+            -- =========================================================
+            SELECT 
+                t.titulo, 
+                t.fecha_entrega, 
+                e.nombre_completo AS nombre_estudiante, 
+                ue.email AS email_estudiante,
+                a.nombre_completo AS nombre_acudiente, 
+                ua.email AS email_acudiente,
+                (t.fecha_entrega - CURRENT_DATE) AS dias_restantes
+            FROM tareas t
+            JOIN matriculas m ON t.id_curso = m.id_curso
+            JOIN estudiantes e ON m.id_estudiante = e.id_estudiante
+            JOIN users ue ON e.id_usuario = ue.id_usuario
+            LEFT JOIN acudientes a ON e.id_acudiente = a.id_acudiente
+            LEFT JOIN users ua ON a.id_usuario = ua.id_usuario
+            WHERE 
+                t.id_curso IS NOT NULL -- Asegura que es global del curso
+                AND (t.fecha_entrega = CURRENT_DATE + INTERVAL '3 days' OR t.fecha_entrega = CURRENT_DATE + INTERVAL '1 day')
+
+            UNION
+
+            -- =========================================================
+            -- 3. RECORDATORIOS PRIVADOS (Creados por DOCENTES)
+            -- =========================================================
+            SELECT 
+                t.titulo, 
+                t.fecha_entrega, 
+                d.nombre_completo AS nombre_estudiante, -- Reusamos la variable para la plantilla
+                ud.email AS email_estudiante,           -- Enviamos al correo del docente
+                NULL AS nombre_acudiente,               -- El docente no tiene acudiente
+                NULL AS email_acudiente,
+                (t.fecha_entrega - CURRENT_DATE) AS dias_restantes
+            FROM tareas t
+            JOIN docentes d ON t.id_usuario = d.id_usuario
+            JOIN users ud ON d.id_usuario = ud.id_usuario
+            WHERE 
+                t.id_curso IS NULL -- Asegura que es privada
+                AND (t.fecha_entrega = CURRENT_DATE + INTERVAL '3 days' OR t.fecha_entrega = CURRENT_DATE + INTERVAL '1 day');
         `;
 
         const { rows } = await pool.query(query);
@@ -37,6 +83,12 @@ cron.schedule('0 7 * * *', async () => {
 
         // Solo AQUÍ ADENTRO existe la variable "recordatorio"
         for (const recordatorio of rows) {
+            // 👇 ESCUDO PROTECTOR: Si el estudiante no tiene correo, lo saltamos y no crasheamos
+            if (!recordatorio.email_estudiante) {
+                console.log(`⚠️ Se omitió el envío a ${recordatorio.nombre_estudiante} porque no tiene correo registrado.`);
+                continue; // Pasa al siguiente estudiante de la lista
+            }
+
             console.log(`🔍 Intentando enviar correo a: ${recordatorio.email_estudiante}`);
             
             // Llamamos a tu servicio de mailer

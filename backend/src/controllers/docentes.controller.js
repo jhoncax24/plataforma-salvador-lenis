@@ -4,11 +4,10 @@ import { pool } from "../config/db.js";
 // 1. OBTENER MATERIAS Y CURSOS (Filtrados por Docente)
 // ==========================================
 export const getAsignacionesDocente = async (req, res, next) => {
-  const { idUsuario } = req.params; // Recibimos el ID del usuario que inició sesión
+  const { idUsuario } = req.params;
 
   try {
-    // 1. Traer SOLO las materias que dicta este docente específico
-    // Usamos DISTINCT por si dicta la misma materia en varios cursos, para que no salga repetida
+    // 1. Las materias quedan exactamente igual
     const materiasQuery = await pool.query(`
       SELECT DISTINCT m.id_materia, m.nombre 
       FROM materias m
@@ -18,9 +17,9 @@ export const getAsignacionesDocente = async (req, res, next) => {
       ORDER BY m.nombre ASC
     `, [idUsuario]);
     
-    // 2. Traer SOLO los cursos donde dicta clase este docente específico
+    // 2. 👇 AQUÍ ESTÁ LA MAGIA: Agregamos aa.id_materia a la selección
     const cursosQuery = await pool.query(`
-      SELECT DISTINCT c.id_curso, c.nombre, c.nivel 
+      SELECT DISTINCT c.id_curso, c.nombre, c.nivel, aa.id_materia 
       FROM cursos c
       JOIN asignacion_academica aa ON c.id_curso = aa.id_curso
       JOIN docentes d ON aa.id_docente = d.id_docente
@@ -28,7 +27,6 @@ export const getAsignacionesDocente = async (req, res, next) => {
       ORDER BY c.nombre ASC
     `, [idUsuario]);
     
-    // Enviamos los arreglos ya filtrados al frontend
     res.json({
       materias: materiasQuery.rows,
       cursos: cursosQuery.rows

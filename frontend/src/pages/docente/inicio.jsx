@@ -261,7 +261,8 @@ export default function DocenteInicio() {
                           className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#0033a0] file:text-white hover:file:bg-blue-800 transition-all cursor-pointer"
                         />
                         {isUploading && <p className="text-sm text-blue-600 font-bold mt-2 animate-pulse">Subiendo imagen, por favor espera...</p>}
-                        {editForm.foto_perfil && !isUploading && <p className="text-sm text-green-600 font-bold mt-2">¡Imagen lista para guardar!</p>}
+                        {/* 👇 Solo mostramos el mensaje de éxito si la foto en el formulario es diferente a la foto actual (es decir, subió una nueva) */}
+{editForm.foto_perfil && editForm.foto_perfil !== docenteData.foto_perfil && !isUploading && <p className="text-sm text-green-600 font-bold mt-2">¡Nueva imagen lista para guardar!</p>}
                       </div>
 
                       <div>

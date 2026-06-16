@@ -25,27 +25,46 @@ export async function login(req, res, next) {
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) return res.status(401).json({ error: 'Credenciales inválidas' });
 
-    // 3. Buscar el nombre completo según el rol
+ // 3. Buscar el nombre completo y datos extra según el rol
     let full_name = 'Usuario del Sistema';
+    let telefono = '';
+    let correo = user.email || ''; // Fallback al email de la tabla users
+
     if (user.role === 'admin') {
-        const { rows } = await pool.query('SELECT nombre_completo FROM admins WHERE id_usuario = $1', [user.id_usuario]);
-        if(rows.length > 0) full_name = rows[0].nombre_completo;
+        const { rows } = await pool.query('SELECT nombre_completo, correo FROM admins WHERE id_usuario = $1', [user.id_usuario]);
+        if(rows.length > 0) {
+            full_name = rows[0].nombre_completo;
+            correo = rows[0].correo || correo;
+        }
     } else if (user.role === 'docente') {
-        const { rows } = await pool.query('SELECT nombre_completo FROM docentes WHERE id_usuario = $1', [user.id_usuario]);
-        if(rows.length > 0) full_name = rows[0].nombre_completo;
+        // 👇 AQUI TRAEMOS EL TELEFONO Y CORREO DE LA TABLA DOCENTES
+        const { rows } = await pool.query('SELECT nombre_completo, telefono, correo FROM docentes WHERE id_usuario = $1', [user.id_usuario]);
+        if(rows.length > 0) {
+            full_name = rows[0].nombre_completo;
+            telefono = rows[0].telefono;
+            correo = rows[0].correo || correo;
+        }
     } else if (user.role === 'acudiente') {
-        const { rows } = await pool.query('SELECT nombre_completo FROM acudientes WHERE id_usuario = $1', [user.id_usuario]);
-        if(rows.length > 0) full_name = rows[0].nombre_completo;
+        const { rows } = await pool.query('SELECT nombre_completo, telefono, correo FROM acudientes WHERE id_usuario = $1', [user.id_usuario]);
+        if(rows.length > 0) {
+            full_name = rows[0].nombre_completo;
+            telefono = rows[0].telefono;
+            correo = rows[0].correo || correo;
+        }
     } else if (user.role === 'estudiante') {
-        const { rows } = await pool.query('SELECT nombre_completo FROM estudiantes WHERE id_usuario = $1', [user.id_usuario]);
-        if(rows.length > 0) full_name = rows[0].nombre_completo;
+        const { rows } = await pool.query('SELECT nombre_completo, telefono, correo FROM estudiantes WHERE id_usuario = $1', [user.id_usuario]);
+        if(rows.length > 0) {
+            full_name = rows[0].nombre_completo;
+            telefono = rows[0].telefono;
+            correo = rows[0].correo || correo;
+        }
     }
 
-    // 4. Generar Token
+    // 4. Generar Token (Esto se queda igual)
     const payload = { id: user.id_usuario, username: user.username, role: user.role };
     const token = jwt.sign(payload, process.env.JWT_SECRET || 'cesl_secret_key_2024', { expiresIn: process.env.JWT_EXPIRES_IN || '8h' });
 
-    // 5. Responder al frontend (¡Añadimos foto_perfil al objeto final!)
+    // 5. Responder al frontend (¡Añadimos teléfono y correo al objeto final!)
     res.json({ 
         token, 
         user: { 
@@ -53,7 +72,9 @@ export async function login(req, res, next) {
             username: user.username, 
             full_name: full_name, 
             role: user.role,
-            foto_perfil: user.foto_perfil // <-- ¡El dato mágico que faltaba!
+            foto_perfil: user.foto_perfil,
+            telefono: telefono, // <-- Nuevo dato
+            correo: correo      // <-- Nuevo dato
         } 
     });
   } catch (err) {
