@@ -3,22 +3,22 @@ import dotenv from 'dotenv';
 dotenv.config();
 const { Pool } = pg;
 
-// Detectamos si el código está corriendo en Render (producción) o en tu PC (local)
-const isProduction = process.env.NODE_ENV === 'production' || process.env.DB_HOST !== undefined;
+// Si en tu .env dice 'localhost' o no hay variable, sabemos que es tu PC.
+const isLocal = process.env.DB_HOST === 'localhost' || !process.env.DB_HOST;
 
 export const pool = new Pool({
-  host: isProduction ? process.env.DB_HOST : 'localhost',
-  port: isProduction ? (process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432) : 5432,
-  user: isProduction ? process.env.DB_USER : 'postgres', // Ajusta tu usuario local si es diferente
-  password: isProduction ? process.env.DB_PASSWORD : 'tu_contraseña_local', // Pónle aquí tu contraseña de tu Postgres local
-  database: isProduction ? process.env.DB_NAME : 'tu_nombre_bd_local', // Pon aquí el nombre de tu base de datos local
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432,
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   max: 10,
-  // El SSL SOLO se activa si está en producción (Neon), en tu PC local se desactiva
-  ssl: isProduction ? { rejectUnauthorized: false } : false
+  // La magia: Si es tu PC apagamos SSL. Si no dice 'localhost', es NeonDB y encendemos SSL.
+  ssl: isLocal ? false : { rejectUnauthorized: false }
 });
 
 pool.on('connect', () => {
-  console.log(`✅ Base de datos conectada en entorno: ${isProduction ? 'PRODUCCIÓN (Neon)' : 'LOCAL (Localhost)'}`);
+  console.log(`✅ BD conectada en entorno: ${isLocal ? 'LOCAL (Localhost)' : 'PRODUCCIÓN (Neon)'}`);
 });
 
 pool.on('error', (err) => {

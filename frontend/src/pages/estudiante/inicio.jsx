@@ -73,7 +73,7 @@ useEffect(() => {
         // Pega aquí tu link de Cloudinary cuando lo tengas:
         imagen: "https://res.cloudinary.com/dmzq2qw0t/image/upload/q_auto/f_auto/v1776980377/BuenD%C3%ADa_cmpcyy.png" 
       };
-    } else if (hora >= 12 && hora < 18) {
+    } else if (hora >= 12 && hora < 19) {
       return {
         texto: "Buena Tarde",
         imagen: "https://res.cloudinary.com/dmzq2qw0t/image/upload/q_auto/f_auto/v1776980379/BuenaTarde_oe3jrc.png"

@@ -53,7 +53,7 @@ export default function DocenteInicio() {
   const obtenerSaludo = () => {
     const hora = new Date().getHours();
     if (hora >= 5 && hora < 12) return { texto: "Buen Día", imagen: "https://res.cloudinary.com/dmzq2qw0t/image/upload/q_auto/f_auto/v1776980377/BuenD%C3%ADa_cmpcyy.png" };
-    if (hora >= 12 && hora < 18) return { texto: "Buena Tarde", imagen: "https://res.cloudinary.com/dmzq2qw0t/image/upload/q_auto/f_auto/v1776980379/BuenaTarde_oe3jrc.png" };
+    if (hora >= 12 && hora < 19) return { texto: "Buena Tarde", imagen: "https://res.cloudinary.com/dmzq2qw0t/image/upload/q_auto/f_auto/v1776980379/BuenaTarde_oe3jrc.png" };
     return { texto: "Buena Noche", imagen: "https://res.cloudinary.com/dmzq2qw0t/image/upload/q_auto/f_auto/v1776980382/BuenaNoche_cm8hyo.png" };
   };
 
