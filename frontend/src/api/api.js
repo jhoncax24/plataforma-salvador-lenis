@@ -8,13 +8,30 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
-// Interceptor para enviar token automáticamente
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("cesl_token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+// ... (tu interceptor actual de request se queda igual) ...
+
+// NUEVO: Interceptor para escuchar respuestas del backend
+api.interceptors.response.use(
+  (response) => {
+    // Si la petición fue exitosa, la dejamos pasar normal
+    return response;
+  },
+  (error) => {
+    // Si el backend nos responde con un error 401 (No autorizado / Token vencido)
+    if (error.response && error.response.status === 401) {
+      console.warn("Sesión caducada. Redirigiendo al login...");
+      
+      // Limpiamos la basura del localStorage
+      localStorage.removeItem("cesl_token");
+      localStorage.removeItem("cesl_user");
+      
+      // Forzamos la redirección a la pantalla de login
+      window.location.href = "/login"; 
+    }
+    
+    // Devolvemos el error para que el resto del código lo maneje si lo necesita
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
 export default api;
