@@ -44,6 +44,12 @@ import AsistenciaDocente from "../pages/docente/AsistenciaDocente"; // Importa l
 
 // Acudiente
 import AcudienteInicio from "../pages/acudiente/inicio";
+import NotasVista from "../pages/acudiente/NotasVista";
+import CertificadoVista from "../pages/acudiente/CertificadoVista";
+import CambiarPasswordVista from "../pages/acudiente/CambiarPasswordVista";
+import MatriculaVista from "../pages/acudiente/MatriculaVista";
+import CalendarioVista from "../pages/acudiente/CalendarioVista";
+import ObservadorAsistenciaVista from "../pages/acudiente/ObservadorAsistenciaVista";
 
 
 
@@ -107,15 +113,14 @@ export default function AppRouter() {
         </Route>
 
         {/* ACUDIENTE */}
-        <Route
-          path="/acudiente"
-          element={
-            <RoleRoute role="acudiente">
-              <AcudienteLayout />
-            </RoleRoute>
-          }
-        >
+        <Route path="/acudiente" element={<RoleRoute role="acudiente"><AcudienteLayout /></RoleRoute>}>
           <Route index element={<AcudienteInicio />} />
+          <Route path="/acudiente/notas" element={<NotasVista />} />
+          <Route path="/acudiente/comportamiento" element={<ObservadorAsistenciaVista />} />
+          <Route path="/acudiente/certificado" element={<CertificadoVista />} />
+          <Route path="/acudiente/password" element={<CambiarPasswordVista />} />
+          <Route path="/acudiente/matricula" element={<MatriculaVista />} />
+          <Route path="/acudiente/calendario" element={<CalendarioVista />} />
         </Route>
 
       </Route>

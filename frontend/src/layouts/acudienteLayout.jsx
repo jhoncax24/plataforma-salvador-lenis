@@ -1,41 +1,16 @@
-import React from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
-import Header from '../components/acudiente/HeaderInicio';
+import { Outlet } from "react-router-dom";
+import Header from "../components/acudiente/Header";
 
-const AcudienteLayout = () => {
-  const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user')); 
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/login');
-  };
-
-  // Definimos los estilos del contenedor principal para dar el espacio
-  const styles = {
-    contenedorGlobal: {
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight: '100vh', // Asegura que ocupe toda la altura de la pantalla
-      backgroundColor: '#f4f6f8' // Un fondo gris claro opcional para resaltar las tarjetas blancas
-    },
-    contenidoPrincipal: {
-      padding: '2.5rem', // ESTA ES LA MAGIA: 2.5rem de espacio arriba, abajo y a los lados
-      flex: 1 // Hace que este contenedor empuje todo hacia abajo si luego agregas un Footer
-    }
-  };
-
+export default function AcudienteLayout() {
   return (
-    <div style={styles.contenedorGlobal}>
-      <Header user={user} logout={handleLogout} />
-      
-      {/* Aplicamos el padding al contenedor main que envuelve tus vistas */}
-      <main style={styles.contenidoPrincipal}>
-        <Outlet /> 
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      {/* Cabecera general del Acudiente */}
+      <Header />
+
+      {/* Contenido dinámico (Aquí se renderizará pages/acudiente/inicio.jsx) */}
+      <main className="flex-grow w-full max-w-7xl mx-auto p-6">
+        <Outlet />
       </main>
     </div>
   );
-};
-
-export default AcudienteLayout;
+}

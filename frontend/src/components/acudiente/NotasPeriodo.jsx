@@ -1,8 +1,9 @@
-// src/components/NotasPeriodo.jsx
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function NotasPeriodo({ hijos = [], onVerNotas }) {
   const [hijoId, setHijoId] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (hijos.length > 0 && !hijoId) {
@@ -10,28 +11,28 @@ export default function NotasPeriodo({ hijos = [], onVerNotas }) {
     }
   }, [hijos, hijoId]);
 
-  const [periodo, setPeriodo] = useState("1"); // Por ahora informativo
+  const handleClickNotas = () => {
+    if (!hijoId) return alert("Seleccione un estudiante");
+    onVerNotas(Number(hijoId)); 
+  };
 
-  const handleClick = () => {
-    if (!hijoId) {
-      alert("Seleccione un estudiante");
-      return;
-    }
-    // Mandamos el id del estudiante al padre
-    onVerNotas(Number(hijoId), periodo);
+  const handleVerComportamiento = () => {
+    if (!hijoId) return alert("Seleccione un estudiante");
+    const estudianteSeleccionado = hijos.find(h => h.id === Number(hijoId));
+    // Navegamos a la nueva ruta pasándole los datos del hijo
+    navigate("/acudiente/comportamiento", { state: { estudiante: estudianteSeleccionado } });
   };
 
   return (
-    <div className="border-2 border-gray-700 p-6 bg-gray-100 h-full">
-      <h3 className="text-xl font-semibold mb-4">Notas del periodo</h3>
-
-      <div className="mb-4">
-        <label className="block text-sm mb-1">Seleccione estudiante</label>
+    <div className="flex flex-col h-full">
+      <div>
+        <label className="block text-sm font-bold text-gray-700 mb-2">Estudiante a consultar:</label>
         <select
           value={hijoId}
           onChange={(e) => setHijoId(e.target.value)}
-          className="w-full border rounded px-2 py-1"
+          className="w-full border-2 border-gray-200 rounded-lg p-3 focus:outline-none focus:border-[#0033a0] font-medium text-gray-700 transition-colors bg-white shadow-sm"
         >
+          {hijos.length === 0 && <option value="">Sin estudiantes asignados</option>}
           {hijos.map((h) => (
             <option key={h.id} value={h.id}>
               {h.nombre} - {h.grado}
@@ -40,26 +41,22 @@ export default function NotasPeriodo({ hijos = [], onVerNotas }) {
         </select>
       </div>
 
-      <div className="mb-4">
-        <label className="block text-sm mb-1">Periodo</label>
-        <select
-          value={periodo}
-          onChange={(e) => setPeriodo(e.target.value)}
-          className="w-full border rounded px-2 py-1"
-        >
-          <option value="1">Periodo 1</option>
-          <option value="2">Periodo 2</option>
-          <option value="3">Periodo 3</option>
-          <option value="4">Periodo 4</option>
-        </select>
-      </div>
+      <div className="flex-1"></div>
 
-      <button
-        onClick={handleClick}
-        className="mt-2 bg-blue-800 text-white px-4 py-2 rounded w-full hover:bg-blue-900"
-      >
-        Ver notas
-      </button>
+      <div className="mt-6 pt-4 border-t border-gray-100 flex flex-col gap-3">
+        <button
+          onClick={handleClickNotas}
+          className="w-full bg-[#0033a0] text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition-all shadow-md flex justify-center items-center gap-2"
+        >
+          📊 Ver Calificaciones
+        </button>
+        <button
+          onClick={handleVerComportamiento}
+          className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition-all shadow-md flex justify-center items-center gap-2"
+        >
+          👀 Observador y Asistencia
+        </button>
+      </div>
     </div>
   );
 }

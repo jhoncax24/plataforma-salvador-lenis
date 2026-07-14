@@ -8,9 +8,31 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
-// ... (tu interceptor actual de request se queda igual) ...
+// ==========================================
+// 1. INTERCEPTOR DE PETICIÓN (REQUEST) - ¡Faltaba esto!
+// ==========================================
+// Esto se ejecuta ANTES de que la petición salga hacia el backend
+api.interceptors.request.use(
+  (config) => {
+    // Buscamos el token en el almacenamiento local
+    const token = localStorage.getItem("cesl_token");
+    
+    // Si el usuario tiene un token guardado, lo inyectamos en las cabeceras
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
-// NUEVO: Interceptor para escuchar respuestas del backend
+// ==========================================
+// 2. INTERCEPTOR DE RESPUESTA (RESPONSE)
+// ==========================================
+// Esto se ejecuta cuando el backend nos responde
 api.interceptors.response.use(
   (response) => {
     // Si la petición fue exitosa, la dejamos pasar normal
@@ -21,7 +43,7 @@ api.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       console.warn("Sesión caducada. Redirigiendo al login...");
       
-      // Limpiamos la basura del localStorage
+      // Limpiamos los datos del usuario del localStorage
       localStorage.removeItem("cesl_token");
       localStorage.removeItem("cesl_user");
       

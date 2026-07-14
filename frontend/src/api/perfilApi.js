@@ -1,4 +1,4 @@
-import api from "./api"; // Usa tu instancia configurada
+import api from "./api"; 
 
 // ==========================================
 // FUNCIONES DEL ACUDIENTE 
@@ -14,7 +14,6 @@ export const obtenerEstudiantesDelAcudiente = async (idAcudiente) => {
 };
 
 export const obtenerHijos = async (idAcudiente) => {
-  // Alias para compatibilidad
   return obtenerEstudiantesDelAcudiente(idAcudiente);
 };
 
@@ -24,7 +23,6 @@ export const actualizarPerfilAcudiente = async (id, datos) => {
 };
 
 export const actualizarAcudiente = async (id, payload) => {
-  // Alias para compatibilidad
   return actualizarPerfilAcudiente(id, payload);
 };
 
@@ -34,8 +32,59 @@ export const cambiarContrasenaUsuario = async (datosPassword) => {
 };
 
 export const cambiarPasswordAcudiente = async (id, payload) => {
-  // Alias para compatibilidad
   return cambiarContrasenaUsuario(payload);
+};
+
+export const obtenerEventos = async (idAcudiente) => {
+  const response = await api.get(`/users/acudiente/${idAcudiente}/eventos`);
+  return response.data;
+};
+
+export const guardarEventoBD = async (datos) => {
+  const response = await api.post(`/users/acudiente/eventos`, datos);
+  return response.data;
+};
+
+export const eliminarEventoBD = async (idEvento) => {
+  const response = await api.delete(`/users/acudiente/eventos/${idEvento}`);
+  return response.data;
+};
+
+// ==========================================
+// MATRÍCULA (ACUDIENTE / ESTUDIANTE)
+// ==========================================
+export const obtenerEstadoMatricula = async (idEstudiante) => {
+  const response = await api.get(`/users/estudiante/${idEstudiante}/matricula`);
+  return response.data;
+};
+
+export const enviarMatriculaBD = async (datos) => {
+  const response = await api.post('/users/acudiente/matricula', datos);
+  return response.data;
+};
+
+// ==========================================
+// ENDPOINTS COMPARTIDOS Y GLOBALES
+// ==========================================
+export const obtenerTodasLasMaterias = async () => {
+  try {
+    const response = await api.get('/users/materias/todas'); 
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener las materias:", error);
+    return [];
+  }
+};
+
+export const obtenerPlanillaNotas = async (idCurso, idMateria, periodo) => {
+  try {
+    // 👇 Conectado a la ruta compartida y segura para la planilla
+    const response = await api.get(`/users/planilla/${idCurso}/${idMateria}/${periodo}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener planilla:", error);
+    return { actividades: [], planilla: [] };
+  }
 };
 
 // ==========================================
@@ -52,7 +101,6 @@ export const actualizarPerfilEstudiante = async (id, datos) => {
 };
 
 export const actualizarEstudiante = async (id, payload) => {
-    // Alias para compatibilidad
     return actualizarPerfilEstudiante(id, payload);
 };
 
@@ -60,10 +108,6 @@ export const cambiarPasswordEstudiante = async (id, payload) => {
     const data = await cambiarContrasenaUsuario(payload);
     return data;
 };
-
-// ==========================================
-// NOTAS, HORARIO, TAREAS Y MÁS
-// ==========================================
 
 // Obtiene las notas de un estudiante
 export const obtenerNotasEstudiante = async (idEstudiante) => {
@@ -86,7 +130,6 @@ export const obtenerHorarioEstudiante = async (idUsuario) => {
   }
 };
 
-// Obtener historial académico (boletines pasados)
 export const obtenerHistorialAcademico = async (idUsuario) => {
   try {
     const response = await api.get(`/estudiantes/historial/${idUsuario}`);
@@ -97,48 +140,41 @@ export const obtenerHistorialAcademico = async (idUsuario) => {
   }
 };
 
-// Obtener las tareas del calendario
 export const obtenerTareasEstudiante = async (idUsuario) => {
   const response = await api.get(`/estudiantes/tareas/${idUsuario}`);
   return response.data;
 };
 
-// Guardar un nuevo recordatorio en el calendario
 export const guardarRecordatorio = async (idUsuario, datosTarea) => {
   const response = await api.post(`/estudiantes/tareas/${idUsuario}`, datosTarea);
   return response.data;
 };
 
-// Actualizar un recordatorio existente
 export const actualizarRecordatorio = async (idTarea, datosTarea) => {
   const response = await api.put(`/estudiantes/tareas/editar/${idTarea}`, datosTarea);
   return response.data;
 };
 
-// Obtener el resumen de faltas del estudiante
 export const obtenerFaltasEstudiante = async (idUsuario) => {
   try {
     const response = await api.get(`/estudiantes/faltas/${idUsuario}`);
     return response.data.totalFaltas;
   } catch (error) {
     console.error("Error obteniendo faltas:", error);
-    return 0; // Si hay un error (ej. tabla vacía), retornamos 0 para no dañar la UI
+    return 0; 
   }
 };
 
-// Obtener el detalle de actividades de una materia
 export const obtenerDetalleMateria = async (idUsuario, nombreMateria) => {
   try {
     const response = await api.get(`/estudiantes/notas-detalle/${idUsuario}/${nombreMateria}`);
     return response.data;
   } catch (error) {
     console.error("Error al obtener detalle de materia:", error);
-    // Devolvemos la estructura vacía si falla para no romper la pantalla
     return { P1: [], P2: [], P3: [], P4: [] };
   }
 };
 
-// Obtener historial detallado de asistencias
 export const obtenerDetalleAsistencia = async (idUsuario) => {
   try {
     const response = await api.get(`/estudiantes/asistencia-detalle/${idUsuario}`);
@@ -149,37 +185,31 @@ export const obtenerDetalleAsistencia = async (idUsuario) => {
   }
 };
 
-// ==========================================
-// EVENTOS DEL ACUDIENTE
-// ==========================================
-
-// Obtener eventos del acudiente
-export const obtenerEventos = async (idAcudiente) => {
-  const response = await api.get(`/users/acudiente/${idAcudiente}/eventos`);
-  return response.data;
+export const obtenerObservacionesHijo = async (idEstudiante) => {
+  try {
+    const response = await api.get(`/users/estudiante/${idEstudiante}/observador`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener observador:", error);
+    return [];
+  }
 };
 
-// Guardar un evento en la BD
-export const guardarEventoBD = async (datos) => {
-  const response = await api.post(`/users/acudiente/eventos`, datos);
-  return response.data;
+export const obtenerAsistenciaHijo = async (idEstudiante) => {
+  try {
+    const response = await api.get(`/users/estudiante/${idEstudiante}/asistencia`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener asistencia:", error);
+    return [];
+  }
 };
-
-// Eliminar un evento de la BD
-export const eliminarEventoBD = async (idEvento) => {
-  const response = await api.delete(`/users/acudiente/eventos/${idEvento}`);
-  return response.data;
-};
-
 
 // ==========================================
 // ENDPOINTS PARA DOCENTES (Usando Axios)
 // ==========================================
-
-// 1. Obtener materias y grados asignados al docente
 export const obtenerAsignaciones = async (idUsuario) => {
   try {
-    // Axios ya sabe que la base es http://localhost:4000/api
     const response = await api.get(`/docentes/asignaciones/${idUsuario}`);
     return response.data;
   } catch (error) {
@@ -188,7 +218,6 @@ export const obtenerAsignaciones = async (idUsuario) => {
   }
 };
 
-// 2. Obtener tareas que el docente ha creado
 export const obtenerTareasDocente = async (idUsuario) => {
   try {
     const response = await api.get(`/docentes/tareas/${idUsuario}`);
@@ -199,7 +228,6 @@ export const obtenerTareasDocente = async (idUsuario) => {
   }
 };
 
-// 3. Crear una nueva tarea global
 export const crearTareaGlobal = async (idUsuario, tareaData) => {
   try {
     const response = await api.post(`/docentes/tareas/${idUsuario}`, tareaData);
@@ -210,7 +238,6 @@ export const crearTareaGlobal = async (idUsuario, tareaData) => {
   }
 };
 
-// 4. Obtener estudiantes de un curso con sus notas
 export const obtenerEstudiantesNotas = async (idCurso, idMateria, periodo) => {
   try {
     const response = await api.get(`/docentes/estudiantes-notas`, {
@@ -223,7 +250,6 @@ export const obtenerEstudiantesNotas = async (idCurso, idMateria, periodo) => {
   }
 };
 
-// 5. Guardar notas masivas
 export const guardarNotasDocente = async (idUsuario, datosNotas) => {
   try {
     const response = await api.post(`/docentes/notas/${idUsuario}`, datosNotas);
@@ -234,20 +260,6 @@ export const guardarNotasDocente = async (idUsuario, datosNotas) => {
   }
 };
 
-// OBTENER LA MATRIZ DE NOTAS
-export const obtenerPlanillaNotas = async (idCurso, idMateria, periodo) => {
-  try {
-    const response = await api.get(`/docentes/planilla`, {
-      params: { idCurso, idMateria, periodo }
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error al obtener planilla:", error);
-    return { actividades: [], planilla: [] };
-  }
-};
-
-// CREAR ACTIVIDAD
 export const crearActividadDocente = async (idUsuario, datos) => {
   try {
     const response = await api.post(`/docentes/actividades/${idUsuario}`, datos);
@@ -257,7 +269,6 @@ export const crearActividadDocente = async (idUsuario, datos) => {
   }
 };
 
-// GUARDAR NOTAS DE LA MATRIZ
 export const guardarNotasMasivas = async (notasArray) => {
   try {
     const response = await api.post(`/docentes/notas-masivas`, { notasArray });
@@ -267,7 +278,6 @@ export const guardarNotasMasivas = async (notasArray) => {
   }
 };
 
-// Obtener resumen de clases y alumnos para el Dashboard
 export const obtenerResumenCursos = async (idUsuario) => {
   try {
     const response = await api.get(`/docentes/resumen-cursos/${idUsuario}`);
@@ -281,8 +291,6 @@ export const obtenerResumenCursos = async (idUsuario) => {
 // ==========================================
 // MÓDULO OBSERVADOR
 // ==========================================
-
-// 1. Obtener lista de estudiantes de un curso
 export const obtenerEstudiantesCurso = async (idCurso) => {
   try {
     const response = await api.get(`/docentes/estudiantes-curso/${idCurso}`);
@@ -293,7 +301,6 @@ export const obtenerEstudiantesCurso = async (idCurso) => {
   }
 };
 
-// 2. Obtener historial de observaciones de un estudiante
 export const obtenerHistorialObservaciones = async (idEstudiante) => {
   try {
     const response = await api.get(`/docentes/observaciones/${idEstudiante}`);
@@ -304,7 +311,6 @@ export const obtenerHistorialObservaciones = async (idEstudiante) => {
   }
 };
 
-// 3. Crear una nueva anotación
 export const guardarObservacion = async (idUsuario, datos) => {
   try {
     const response = await api.post(`/docentes/observaciones/${idUsuario}`, datos);
@@ -325,7 +331,7 @@ export const guardarAsistencia = async (idUsuario, datosAsistencia) => {
     throw error;
   }
 };
-// Consultar si ya se tomó asistencia en un curso, materia y fecha específicos
+
 export const obtenerAsistenciaPorFecha = async (idCurso, idMateria, fecha) => {
   try {
     const response = await api.get(`/docentes/asistencia-fecha`, {
@@ -338,7 +344,6 @@ export const obtenerAsistenciaPorFecha = async (idCurso, idMateria, fecha) => {
   }
 };
 
-// Consultar el resumen acumulado de inasistencias de un curso Y MATERIA
 export const obtenerResumenAsistencia = async (idCurso, idMateria) => {
   try {
     const response = await api.get(`/docentes/asistencia-resumen/${idCurso}/${idMateria}`);
@@ -354,7 +359,6 @@ export const obtenerResumenAsistencia = async (idCurso, idMateria) => {
 // ==========================================
 export const actualizarTareaGlobal = async (idTarea, tareaData) => {
   try {
-    // Usamos el método PUT para indicar que es una actualización
     const response = await api.put(`/docentes/tareas/${idTarea}`, tareaData);
     return response.data;
   } catch (error) {
@@ -363,11 +367,10 @@ export const actualizarTareaGlobal = async (idTarea, tareaData) => {
   }
 };
 
-// Enviar los nuevos datos de perfil del docente al backend
 export const modificarPerfilDocente = async (idUsuario, datosNuevos) => {
   try {
     const response = await api.put(`/perfil/docente/${idUsuario}`, datosNuevos);
-    return response.data; // Aquí viene el mensaje de éxito y el nuevo objeto "user"
+    return response.data; 
   } catch (error) {
     console.error("Error en la petición de modificar perfil:", error);
     throw error;
