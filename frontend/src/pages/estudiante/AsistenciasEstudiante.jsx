@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-// IMPORTAMOS LA API
 import { obtenerDetalleAsistencia } from "../../api/perfilApi"; 
+import { MdWarning, MdCheckCircle, MdLightbulb, MdChevronRight } from "react-icons/md";
 
 export default function AsistenciasEstudiante() {
   const navigate = useNavigate();
@@ -9,7 +9,6 @@ export default function AsistenciasEstudiante() {
   const [loading, setLoading] = useState(true);
   const [materiaExpandida, setMateriaExpandida] = useState(null);
 
-  // Extraemos el ID del estudiante logueado
   const userStr = localStorage.getItem("cesl_user") || localStorage.getItem("usuario");
   const user = userStr ? JSON.parse(userStr) : null;
   const idUsuario = user?.id_usuario || user?.id;
@@ -41,13 +40,13 @@ export default function AsistenciasEstudiante() {
     if (porcentaje < 80) {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 md:px-4 md:py-1.5 rounded-full text-xs md:text-sm font-bold bg-red-100 text-red-700 border border-red-300 whitespace-nowrap shadow-sm">
-          🚨 EN RIESGO
+          <MdWarning className="text-lg" /> EN RIESGO
         </span>
       );
     } else {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 md:px-4 md:py-1.5 rounded-full text-xs md:text-sm font-bold bg-green-100 text-green-700 border border-green-300 whitespace-nowrap shadow-sm">
-          ✅ AL DÍA
+          <MdCheckCircle className="text-lg" /> AL DÍA
         </span>
       );
     }
@@ -66,7 +65,7 @@ export default function AsistenciasEstudiante() {
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 md:p-5 mb-8 bg-white rounded-xl shadow-sm border border-gray-200 border-l-[5px] border-l-[#0033a0] gap-4">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">💡</span>
+          <MdLightbulb className="text-2xl text-[#0033a0]" />
           <p className="text-gray-700 text-sm md:text-base m-0 font-medium">
             <span className="text-[#0033a0] font-bold">Ayuda</span> Haz clic en la fila principal para ver el historial exacto de tus faltas o retrasos en el curso.
           </p>
@@ -113,8 +112,8 @@ export default function AsistenciasEstudiante() {
                         hover:bg-blue-50`}
                     >
                       <td className="py-5 px-6 text-gray-800 font-bold text-[15px] flex items-center gap-2">
-                        <span className={`text-gray-400 transition-transform duration-200 ${materiaExpandida === asistencia.id_materia ? 'rotate-90' : ''}`}>
-                          ▶
+                        <span className={`text-gray-400 transition-transform duration-200 flex items-center justify-center ${materiaExpandida === asistencia.id_materia ? 'rotate-90' : ''}`}>
+                          <MdChevronRight className="text-xl" />
                         </span>
                         {asistencia.nombre_materia}
                       </td>
@@ -131,7 +130,6 @@ export default function AsistenciasEstudiante() {
                         <td colSpan="6" className="p-0">
                           <div className="py-6 px-10 border-l-[4px] border-[#0033a0] ml-6">
                             
-                            {/* EL BLOQUE MODIFICADO EMPIEZA AQUÍ */}
                             <h4 className="text-[#0033a0] font-bold mb-4">Historial Completo de Asistencia</h4>
                             
                             {asistencia.detalle_faltas.length === 0 ? (
@@ -143,7 +141,6 @@ export default function AsistenciasEstudiante() {
                                 {asistencia.detalle_faltas.map((falta) => (
                                   <div key={falta.id_falta} className="bg-white border border-gray-300 p-3 rounded-lg shadow-sm flex items-center gap-3">
                                     
-                                    {/* Lógica de colores según el estado que llegue de la Base de Datos */}
                                     <div className={`p-2 rounded-full ${
                                       falta.estado === 'Ausente' ? 'bg-red-100 text-red-600' : 
                                       falta.estado === 'Llegada Tarde' ? 'bg-yellow-100 text-yellow-600' : 
@@ -168,7 +165,6 @@ export default function AsistenciasEstudiante() {
                                 ))}
                               </div>
                             )}
-                            {/* EL BLOQUE MODIFICADO TERMINA AQUÍ */}
 
                           </div>
                         </td>

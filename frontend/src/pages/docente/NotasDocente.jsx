@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  obtenerAsignaciones, 
-  obtenerPlanillaNotas, 
-  crearActividadDocente, 
-  guardarNotasMasivas 
+import { MdSave } from 'react-icons/md';
+import {
+  obtenerAsignaciones,
+  obtenerPlanillaNotas,
+  crearActividadDocente,
+  guardarNotasMasivas
 } from "../../api/perfilApi";
 
 export default function NotasDocente() {
   const navigate = useNavigate();
-  
+
   // Usuario logueado
   const userStr = localStorage.getItem("cesl_user") || localStorage.getItem("usuario");
   const user = userStr ? JSON.parse(userStr) : null;
@@ -52,7 +53,7 @@ export default function NotasDocente() {
 
     setCargando(true);
     const data = await obtenerPlanillaNotas(seleccion.id_curso, seleccion.id_materia, seleccion.periodo);
-    
+
     setActividades(data.actividades || []);
     setEstudiantes(data.planilla || []);
     setPlanillaCargada(true);
@@ -63,7 +64,7 @@ export default function NotasDocente() {
   const handleCrearActividad = async (e) => {
     e.preventDefault();
     const porcentajeNuevo = parseFloat(nuevaAct.porcentaje);
-    
+
     // Validación matemática de porcentajes
     const porcentajeActual = actividades.reduce((sum, act) => sum + parseFloat(act.porcentaje), 0);
     if (porcentajeActual + porcentajeNuevo > 100) {
@@ -78,13 +79,13 @@ export default function NotasDocente() {
         titulo: nuevaAct.titulo,
         porcentaje: porcentajeNuevo
       };
-      
+
       await crearActividadDocente(idUsuario, payload);
       alert("Actividad creada. ¡La columna se ha añadido a la planilla!");
-      
+
       setModalAbierto(false);
       setNuevaAct({ titulo: "", porcentaje: "" });
-      
+
       // Recargamos la planilla para ver la nueva columna
       handleCargarPlanilla();
     } catch (error) {
@@ -96,9 +97,9 @@ export default function NotasDocente() {
   const handleChangeNota = (idEstudiante, idActividad, valorStr) => {
     // Aceptamos solo números y un punto decimal
     if (valorStr !== "" && !/^\d*\.?\d*$/.test(valorStr)) return;
-    
+
     // Evitamos notas mayores a 5
-    if (parseFloat(valorStr) > 5) return; 
+    if (parseFloat(valorStr) > 5) return;
 
     setEstudiantes(estudiantes.map(est => {
       if (est.id_estudiante === idEstudiante) {
@@ -155,20 +156,20 @@ export default function NotasDocente() {
   };
 
   // Filtramos los cursos basados en la materia seleccionada
-  const cursosFiltrados = seleccion.id_materia 
-    ? cursos.filter(c => c.id_materia === parseInt(seleccion.id_materia)) 
+  const cursosFiltrados = seleccion.id_materia
+    ? cursos.filter(c => c.id_materia === parseInt(seleccion.id_materia))
     : [];
 
   return (
     <div className="w-full min-h-screen bg-gray-50 p-4 md:p-6 animate-fade-in-up font-sans">
-      
+
       {/* HEADER */}
       <div className="w-full flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border-l-[6px] border-[#0033a0] mb-6">
         <div>
           <h2 className="text-3xl font-extrabold text-gray-800 m-0">Planilla de Calificaciones</h2>
           <p className="text-gray-500 mt-1 font-medium">Gestiona actividades y notas por periodo</p>
         </div>
-        <button 
+        <button
           onClick={() => navigate(-1)}
           className="px-6 py-2 bg-[#0033a0] hover:bg-blue-800 text-white font-bold rounded-lg transition-colors shadow"
         >
@@ -181,11 +182,11 @@ export default function NotasDocente() {
         <form onSubmit={handleCargarPlanilla} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Materia</label>
-            <select 
+            <select
               required className="w-full p-2.5 border rounded-lg focus:ring-1 focus:ring-[#0033a0] outline-none"
-              value={seleccion.id_materia} 
+              value={seleccion.id_materia}
               // 👇 AQUÍ AGREGAMOS id_curso: ""
-              onChange={(e) => setSeleccion({...seleccion, id_materia: e.target.value, id_curso: ""})} 
+              onChange={(e) => setSeleccion({ ...seleccion, id_materia: e.target.value, id_curso: "" })}
             >
               <option value="">Seleccione...</option>
               {materias.map(m => <option key={m.id_materia} value={m.id_materia}>{m.nombre}</option>)}
@@ -193,9 +194,9 @@ export default function NotasDocente() {
           </div>
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Curso</label>
-            <select 
+            <select
               required className="w-full p-2.5 border rounded-lg focus:ring-1 focus:ring-[#0033a0] outline-none"
-              value={seleccion.id_curso} onChange={(e) => setSeleccion({...seleccion, id_curso: e.target.value})}
+              value={seleccion.id_curso} onChange={(e) => setSeleccion({ ...seleccion, id_curso: e.target.value })}
             >
               <option value="">Seleccione...</option>
               {/* 👇 AQUÍ CAMBIAMOS 'cursos' POR 'cursosFiltrados' */}
@@ -204,9 +205,9 @@ export default function NotasDocente() {
           </div>
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Periodo</label>
-            <select 
+            <select
               className="w-full p-2.5 border rounded-lg focus:ring-1 focus:ring-[#0033a0] outline-none"
-              value={seleccion.periodo} onChange={(e) => setSeleccion({...seleccion, periodo: e.target.value})}
+              value={seleccion.periodo} onChange={(e) => setSeleccion({ ...seleccion, periodo: e.target.value })}
             >
               <option value="1">Primer Periodo</option>
               <option value="2">Segundo Periodo</option>
@@ -223,7 +224,7 @@ export default function NotasDocente() {
       {/* ZONA DE LA PLANILLA */}
       {planillaCargada && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden animate-fade-in-up">
-          
+
           {/* BARRA DE HERRAMIENTAS DE LA PLANILLA */}
           <div className="p-4 bg-gray-50 border-b flex justify-between items-center">
             <div>
@@ -232,8 +233,8 @@ export default function NotasDocente() {
                 {porcentajeTotal}% / 100%
               </span>
             </div>
-            
-            <button 
+
+            <button
               onClick={() => setModalAbierto(true)}
               disabled={porcentajeTotal >= 100}
               className={`px-4 py-2 rounded-lg font-bold transition-all shadow-sm flex items-center gap-2
@@ -252,7 +253,7 @@ export default function NotasDocente() {
                   <th className="p-3 font-bold border-b border-r sticky left-0 bg-gray-100 z-10 w-64 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                     Estudiante
                   </th>
-                  
+
                   {/* COLUMNAS DINÁMICAS POR ACTIVIDAD */}
                   {actividades.map(act => (
                     <th key={act.id_actividad} className="p-2 font-bold border-b border-r text-center w-28 bg-blue-50/50">
@@ -260,7 +261,7 @@ export default function NotasDocente() {
                       <div className="text-blue-700">{parseFloat(act.porcentaje)}%</div>
                     </th>
                   ))}
-                  
+
                   <th className="p-3 font-bold border-b text-center bg-gray-200 w-24">Definitiva</th>
                 </tr>
               </thead>
@@ -282,8 +283,8 @@ export default function NotasDocente() {
                         {/* CELDAS DINÁMICAS (INPUTS) */}
                         {actividades.map(act => (
                           <td key={act.id_actividad} className="p-1 border-r bg-white text-center">
-                            <input 
-                              type="text" 
+                            <input
+                              type="text"
                               maxLength="3"
                               className="w-16 text-center p-1.5 border border-transparent rounded bg-transparent font-bold focus:border-[#0033a0] focus:bg-white focus:ring-1 focus:ring-[#0033a0] outline-none transition-all hover:bg-gray-100"
                               value={est.notas[act.id_actividad] || ""}
@@ -302,13 +303,14 @@ export default function NotasDocente() {
               </tbody>
             </table>
           </div>
-          
+
           <div className="p-4 bg-gray-50 border-t flex justify-end">
-            <button 
+            <button
               onClick={handleGuardarNotas}
               className="bg-[#0033a0] hover:bg-blue-800 text-white font-bold py-3 px-8 rounded-lg transition-all shadow-md flex items-center gap-2"
             >
-              <span>💾</span> Guardar Planilla
+              <MdSave className="text-xl" />
+              <span>Guardar Planilla</span>
             </button>
           </div>
         </div>
@@ -321,7 +323,7 @@ export default function NotasDocente() {
             <div className="bg-[#0033a0] p-4 text-center">
               <h2 className="text-xl font-bold text-white">Nueva Actividad Evaluativa</h2>
             </div>
-            
+
             <form onSubmit={handleCrearActividad} className="p-6 space-y-4">
               <div className="bg-blue-50 text-blue-800 p-3 rounded text-sm font-bold text-center border border-blue-200">
                 Porcentaje disponible: {porcentajeRestante.toFixed(1)}%
@@ -329,19 +331,19 @@ export default function NotasDocente() {
 
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Nombre de la Actividad</label>
-                <input 
+                <input
                   type="text" required placeholder="Ej: Examen Final"
                   className="w-full p-2.5 border rounded-lg focus:border-[#0033a0] outline-none"
-                  value={nuevaAct.titulo} onChange={(e) => setNuevaAct({...nuevaAct, titulo: e.target.value})}
+                  value={nuevaAct.titulo} onChange={(e) => setNuevaAct({ ...nuevaAct, titulo: e.target.value })}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Valor Porcentual (%)</label>
-                <input 
+                <input
                   type="number" required placeholder="Ej: 20" min="1" max={porcentajeRestante} step="0.1"
                   className="w-full p-2.5 border rounded-lg focus:border-[#0033a0] outline-none"
-                  value={nuevaAct.porcentaje} onChange={(e) => setNuevaAct({...nuevaAct, porcentaje: e.target.value})}
+                  value={nuevaAct.porcentaje} onChange={(e) => setNuevaAct({ ...nuevaAct, porcentaje: e.target.value })}
                 />
               </div>
 

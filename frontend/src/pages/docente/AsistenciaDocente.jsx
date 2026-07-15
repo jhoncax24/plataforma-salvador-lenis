@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  obtenerAsignaciones, 
-  obtenerEstudiantesCurso, 
+import { MdPlaylistAddCheck } from "react-icons/md";
+import {
+  obtenerAsignaciones,
+  obtenerEstudiantesCurso,
   guardarAsistencia,
   obtenerAsistenciaPorFecha,
   obtenerResumenAsistencia
@@ -10,7 +11,7 @@ import {
 
 export default function AsistenciaDocente() {
   const navigate = useNavigate();
-  
+
   const userStr = localStorage.getItem("cesl_user") || localStorage.getItem("usuario");
   const user = userStr ? JSON.parse(userStr) : null;
   const idUsuario = user?.id_usuario || user?.id;
@@ -19,10 +20,10 @@ export default function AsistenciaDocente() {
 
   const [cursos, setCursos] = useState([]);
   const [materias, setMaterias] = useState([]); // 👈 NUEVO: Guardamos las materias
-  
+
   // 👈 NUEVO: Añadimos id_materia al estado inicial
   const [seleccion, setSeleccion] = useState({ id_curso: "", id_materia: "", fecha: hoy });
-  
+
   const [alumnos, setAlumnos] = useState([]);
   const [cargandoDia, setCargandoDia] = useState(false);
   const [listaCargada, setListaCargada] = useState(false);
@@ -48,7 +49,7 @@ export default function AsistenciaDocente() {
 
     setCargandoDia(true);
     setCargandoResumen(true);
-    
+
     // 👈 NUEVO: Le pasamos también el id_materia a la búsqueda
     const [listaEstudiantes, asistenciaGuardada] = await Promise.all([
       obtenerEstudiantesCurso(seleccion.id_curso),
@@ -74,7 +75,7 @@ export default function AsistenciaDocente() {
   };
 
   const cambiarEstado = (idEstudiante, nuevoEstado) => {
-    setAlumnos(alumnos.map(est => 
+    setAlumnos(alumnos.map(est =>
       est.id_estudiante === idEstudiante ? { ...est, estado: nuevoEstado } : est
     ));
   };
@@ -95,9 +96,9 @@ export default function AsistenciaDocente() {
 
       await guardarAsistencia(idUsuario, payload);
       alert("¡Asistencia guardada exitosamente!");
-      
+
       cargarResumenHistorico(seleccion.id_curso, seleccion.id_materia);
-      
+
     } catch (error) {
       alert("Hubo un error al guardar la asistencia.");
     }
@@ -105,11 +106,12 @@ export default function AsistenciaDocente() {
 
   return (
     <div className="w-full min-h-screen bg-gray-50 p-4 md:p-6 animate-fade-in-up font-sans flex flex-col gap-6">
-      
+
       <div className="w-full flex flex-col sm:flex-row justify-between items-center bg-white p-6 rounded-xl shadow-sm border-l-[6px] border-orange-500 shrink-0">
         <div>
           <h2 className="text-3xl font-extrabold text-gray-800 m-0 flex items-center gap-2">
-            <span>✅</span> Control de Asistencia
+            <MdPlaylistAddCheck className="text-green-600" />
+            Control de Asistencia
           </h2>
           <p className="text-gray-500 m-0 mt-1 font-medium">Llamado a lista por materia</p>
         </div>
@@ -123,16 +125,16 @@ export default function AsistenciaDocente() {
         <form onSubmit={handleCargarListas} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Curso a evaluar</label>
-            <select required className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-orange-500 outline-none" value={seleccion.id_curso} onChange={(e) => setSeleccion({...seleccion, id_curso: e.target.value})}>
+            <select required className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-orange-500 outline-none" value={seleccion.id_curso} onChange={(e) => setSeleccion({ ...seleccion, id_curso: e.target.value })}>
               <option value="">-- Seleccionar --</option>
               {cursos.map(c => <option key={c.id_curso} value={c.id_curso}>{c.nombre} {c.nivel ? `(${c.nivel})` : ''}</option>)}
             </select>
           </div>
-          
+
           {/* 👈 NUEVO DESPLEGABLE: Materia */}
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Materia dictada</label>
-            <select required className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-orange-500 outline-none" value={seleccion.id_materia} onChange={(e) => setSeleccion({...seleccion, id_materia: e.target.value})}>
+            <select required className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-orange-500 outline-none" value={seleccion.id_materia} onChange={(e) => setSeleccion({ ...seleccion, id_materia: e.target.value })}>
               <option value="">-- Seleccionar --</option>
               {materias.map(m => <option key={m.id_materia} value={m.id_materia}>{m.nombre}</option>)}
             </select>
@@ -140,7 +142,7 @@ export default function AsistenciaDocente() {
 
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Fecha de Clase</label>
-            <input type="date" required className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-orange-500 outline-none cursor-pointer" value={seleccion.fecha} onChange={(e) => setSeleccion({...seleccion, fecha: e.target.value})} />
+            <input type="date" required className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-orange-500 outline-none cursor-pointer" value={seleccion.fecha} onChange={(e) => setSeleccion({ ...seleccion, fecha: e.target.value })} />
           </div>
           <button type="submit" className="w-full bg-orange-500 text-white font-bold py-2.5 rounded-lg hover:bg-orange-600 transition-colors h-11">
             Cargar Datos
@@ -150,12 +152,12 @@ export default function AsistenciaDocente() {
 
       {listaCargada && (
         <div className="flex flex-col lg:flex-row gap-6 items-start">
-          
+
           <div className="w-full lg:w-2/3 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden animate-fade-in-up">
             <div className="p-4 bg-orange-50 border-b border-orange-100 flex justify-between items-center">
               <h3 className="font-extrabold text-orange-800">Registro de la Fecha: {seleccion.fecha}</h3>
             </div>
-            
+
             {cargandoDia ? (
               <p className="text-center font-bold text-gray-500 p-10">Cargando lista...</p>
             ) : alumnos.length === 0 ? (
@@ -199,10 +201,10 @@ export default function AsistenciaDocente() {
           </div>
 
           <div className="w-full lg:w-1/3 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden animate-fade-in-up">
-             <div className="p-4 bg-gray-100 border-b border-gray-200">
+            <div className="p-4 bg-gray-100 border-b border-gray-200">
               <h3 className="font-extrabold text-gray-800 text-sm">Resumen Acumulado en esta Materia</h3>
             </div>
-            
+
             {cargandoResumen ? (
               <p className="text-center font-bold text-gray-500 p-10 text-sm">Calculando...</p>
             ) : (

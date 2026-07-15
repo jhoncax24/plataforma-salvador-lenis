@@ -7,6 +7,14 @@ import {
   guardarObservacion 
 } from "../../api/perfilApi";
 
+// 1. Importamos los iconos de Material Design
+import { 
+  MdMenuBook, 
+  MdPersonSearch, 
+  MdAutoAwesome, 
+  MdSave 
+} from "react-icons/md";
+
 export default function ObservadorDocente() {
   const navigate = useNavigate();
   
@@ -100,7 +108,9 @@ export default function ObservadorDocente() {
       <div className="w-full flex flex-col sm:flex-row justify-between items-center bg-white p-6 rounded-xl shadow-sm border-l-[6px] border-green-600 mb-6 shrink-0">
         <div>
           <h2 className="text-3xl font-extrabold text-gray-800 m-0 flex items-center gap-2">
-            <span>📖</span> Observador del Estudiante
+            {/* Reemplazo del emoji 📖 por MdMenuBook */}
+            <MdMenuBook className="text-green-600" /> 
+            <span>Observador del Estudiante</span>
           </h2>
           <p className="text-gray-500 m-0 mt-1 font-medium">Gestión de convivencia y comportamiento</p>
         </div>
@@ -164,7 +174,8 @@ export default function ObservadorDocente() {
           
           {!estudianteActivo ? (
             <div className="flex-1 flex flex-col items-center justify-center text-gray-400 p-8 text-center opacity-70">
-              <span className="text-6xl mb-4">👈</span>
+              {/* Reemplazo del emoji 👈 por MdPersonSearch */}
+              <MdPersonSearch className="text-6xl mb-4 text-gray-400" />
               <h3 className="text-xl font-bold text-gray-600">Selecciona un estudiante</h3>
               <p className="max-w-xs mt-2">Haz clic en un estudiante de la lista izquierda para ver su historial y agregar nuevas observaciones.</p>
             </div>
@@ -183,8 +194,10 @@ export default function ObservadorDocente() {
                 {cargandoHistorial ? (
                   <p className="text-gray-500 font-medium">Cargando historial...</p>
                 ) : historial.length === 0 ? (
-                  <div className="bg-white p-4 rounded-lg border border-dashed border-gray-300 text-center text-gray-500">
-                    Este estudiante tiene un expediente limpio. ✨
+                  <div className="bg-white p-6 rounded-lg border border-dashed border-gray-300 text-center text-gray-500 flex flex-col items-center">
+                    {/* Reemplazo del emoji ✨ por MdAutoAwesome */}
+                    <MdAutoAwesome className="text-3xl text-yellow-500 mb-2" />
+                    <span>Este estudiante tiene un expediente limpio.</span>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -248,7 +261,9 @@ export default function ObservadorDocente() {
                       type="submit" 
                       className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg shadow transition-colors flex items-center gap-2"
                     >
-                      <span>💾</span> Guardar Observación
+                      
+                      <MdSave className="text-xl" />
+                      <span>Guardar Observación</span>
                     </button>
                   </div>
                 </form>

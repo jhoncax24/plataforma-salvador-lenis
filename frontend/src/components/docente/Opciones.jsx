@@ -2,6 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { obtenerResumenCursos } from '../../api/perfilApi';
 
+// 1. Importamos los iconos que reemplazan a los emojis
+import { 
+  MdDashboard, 
+  MdOutlineSentimentDissatisfied, 
+  MdAssessment, 
+  MdMenuBook, 
+  MdCheckCircle 
+} from 'react-icons/md';
+
 export default function Opciones() {
   const navigate = useNavigate();
   const [resumen, setResumen] = useState([]);
@@ -29,7 +38,9 @@ export default function Opciones() {
       {/* TÍTULO PRINCIPAL */}
       <div className="mb-4">
         <h3 className="text-xl font-extrabold text-[#0033a0] border-b-2 border-gray-100 pb-3 flex items-center gap-2">
-          <span>🏫</span> Panel de Gestión Académica
+          {/* Se cambió 🏫 por MdDashboard */}
+          <MdDashboard className="text-2xl" /> 
+          <span>Panel de Gestión Académica</span>
         </h3>
       </div>
 
@@ -43,7 +54,8 @@ export default function Opciones() {
           <div className="h-full flex items-center justify-center text-gray-400 font-medium">Cargando clases...</div>
         ) : resumen.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
-            <span className="text-2xl mb-1">🤷‍♂️</span>
+            {/* Se cambió 🤷‍♂️ por MdOutlineSentimentDissatisfied */}
+            <MdOutlineSentimentDissatisfied className="text-4xl text-gray-400 mb-1" />
             <p className="text-sm font-medium">Aún no tienes asignación académica.</p>
           </div>
         ) : (
@@ -70,13 +82,13 @@ export default function Opciones() {
       <div className="mt-auto border-t-2 border-gray-100 pt-4">
         <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Módulos de Gestión</h4>
         
-        {/* Cambiamos a sm:grid-cols-3 para que quepan los 3 botones */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           
           {/* BOTÓN: NOTAS */}
           <button onClick={() => navigate('/docente/notas')} className="group flex flex-col items-start text-left p-4 rounded-xl border border-gray-200 bg-white hover:border-[#0033a0] hover:bg-blue-50 transition-all shadow-sm">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl group-hover:scale-110 transition-transform">📊</span>
+              {/* Se cambió 📊 por MdAssessment */}
+              <MdAssessment className="text-2xl text-gray-400 group-hover:text-[#0033a0] group-hover:scale-110 transition-transform" />
               <span className="font-extrabold text-gray-800 group-hover:text-[#0033a0]">Notas</span>
             </div>
             <p className="text-xs text-gray-500 font-medium line-clamp-2">Califica actividades y promedios.</p>
@@ -85,16 +97,18 @@ export default function Opciones() {
           {/* BOTÓN: OBSERVADOR */}
           <button onClick={() => navigate('/docente/observador')} className="group flex flex-col items-start text-left p-4 rounded-xl border border-gray-200 bg-white hover:border-green-600 hover:bg-green-50 transition-all shadow-sm">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl group-hover:scale-110 transition-transform">📖</span>
+              {/* Se cambió 📖 por MdMenuBook */}
+              <MdMenuBook className="text-2xl text-gray-400 group-hover:text-green-600 group-hover:scale-110 transition-transform" />
               <span className="font-extrabold text-gray-800 group-hover:text-green-700">Observador</span>
             </div>
             <p className="text-xs text-gray-500 font-medium line-clamp-2">Anotaciones disciplinarias.</p>
           </button>
 
-          {/* BOTÓN: ASISTENCIA (¡EL NUEVO!) */}
+          {/* BOTÓN: ASISTENCIA */}
           <button onClick={() => navigate('/docente/asistencia')} className="group flex flex-col items-start text-left p-4 rounded-xl border border-gray-200 bg-white hover:border-orange-500 hover:bg-orange-50 transition-all shadow-sm">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl group-hover:scale-110 transition-transform">✅</span>
+              {/* Se cambió ✅ por MdCheckCircle */}
+              <MdCheckCircle className="text-2xl text-gray-400 group-hover:text-orange-500 group-hover:scale-110 transition-transform" />
               <span className="font-extrabold text-gray-800 group-hover:text-orange-600">Asistencia</span>
             </div>
             <p className="text-xs text-gray-500 font-medium line-clamp-2">Llamado a lista diario.</p>

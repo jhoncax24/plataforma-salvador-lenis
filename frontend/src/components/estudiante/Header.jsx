@@ -1,34 +1,55 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaUserCircle, FaSignOutAlt, FaQuestionCircle } from 'react-icons/fa';
 
 const Header = ({ user }) => {
-  // const navigate = useNavigate();
 
-  const styles = {
-    header: {
-      backgroundColor: '#191970', color: 'white', padding: '0.8rem 2rem',
-      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      boxShadow: '0 4px 6px rgba(0,0,0,0.1)', borderBottom: '4px solid #D32F2F', fontFamily: 'Arial, sans-serif'
-    },
-    logo: { fontSize: '1.2rem', fontWeight: 'bold', color: 'white', textDecoration: 'none' },
-    nav: { display: 'flex', gap: '20px', alignItems: 'center' },
-    link: { color: 'white', textDecoration: 'none', fontSize: '0.95rem', fontWeight: '500' },
-    userSection: { display: 'flex', alignItems: 'center', gap: '15px', borderLeft: '1px solid rgba(255,255,255,0.3)', paddingLeft: '15px' }
+  const headerStyle = {
+    backgroundColor: '#3b4799', 
+    backgroundImage: `
+      linear-gradient(135deg, 
+        #3b4799 0px, #3b4799 35px,   
+        #ffffff 35px, #ffffff 70px,  
+        #d32f2f 70px, #d32f2f 105px, 
+        transparent 105px            
+      ),
+      linear-gradient(-135deg, 
+        #3b4799 0px, #3b4799 35px,   
+        #ffffff 35px, #ffffff 70px,  
+        #d32f2f 70px, #d32f2f 105px, 
+        transparent 105px            
+      )
+    `,
+    backgroundPosition: 'top left, top right',
+    backgroundRepeat: 'no-repeat',
   };
 
   return (
-    <header style={styles.header}>
-      <Link to="/estudiante/" style={styles.logo}><span style={{ color: '#D32F2F' }}>Portal</span> Estudiante</Link>
-      <nav style={styles.nav}>
-        <Link to="/estudiante/calendario" style={styles.link}>Mi Tareas</Link>
-        <Link to="/estudiante/notas" style={styles.link}>Mis Notas</Link>
-        <div style={styles.userSection}>
-          <div style={{ textAlign: 'right', fontSize: '0.9rem', fontWeight: 'bold' }}>{user?.nombre || 'Estudiante'}</div>
-          <FaUserCircle size={25} />
-          {/* <button onClick={logout} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}><FaSignOutAlt size={20} /></button> */}
-        </div>
-      </nav>
+    <header 
+      style={headerStyle} 
+      className="w-full relative flex items-center justify-between px-32 md:px-40 py-4 shadow-lg"
+    >
+      {/* SECCIÓN IZQUIERDA: Texto Portal */}
+      <div className="flex-1 flex justify-start items-center">
+        <Link to="/estudiante/" className="text-white text-xl md:text-3xl font-extrabold tracking-wide hover:opacity-90 transition-opacity">
+          Portal Estudiante
+        </Link>
+      </div>
+
+      {/* SECCIÓN CENTRAL: Escudo Institucional */}
+      <div className="flex-1 flex justify-center items-center z-10">
+        <img 
+          src="https://res.cloudinary.com/dmzq2qw0t/image/upload/v1776445496/logo_g99cn4.svg" 
+          alt="Escudo Institucional" 
+          className="h-16 md:h-24 object-contain drop-shadow-md hover:scale-105 transition-transform"
+        />
+      </div>
+
+      {/* SECCIÓN DERECHA: Texto CESL */}
+      <div className="flex-1 flex justify-end items-center gap-6">
+        <h1 className="text-white text-xl md:text-3xl font-extrabold tracking-wide hidden sm:block">
+          CESL Académico
+        </h1>
+      </div>
     </header>
   );
 };
