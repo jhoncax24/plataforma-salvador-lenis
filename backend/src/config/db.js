@@ -14,7 +14,7 @@ export const pool = new Pool({
 
 // Eventos de conexión
 pool.on('connect', () => {
-  console.log('Conectado a la base de datos de producción (Neon)');
+  //console.log('Conectado a la base de datos de producción (Neon)');
 });
 
 pool.on('error', (err) => {

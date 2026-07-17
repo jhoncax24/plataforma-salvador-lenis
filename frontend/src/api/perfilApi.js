@@ -76,10 +76,14 @@ export const obtenerTodasLasMaterias = async () => {
   }
 };
 
+// 👇 FUNCIÓN ACTUALIZADA 👇
 export const obtenerPlanillaNotas = async (idCurso, idMateria, periodo) => {
   try {
-    // 👇 Conectado a la ruta compartida y segura para la planilla
-    const response = await api.get(`/users/planilla/${idCurso}/${idMateria}/${periodo}`);
+    // Conectamos a la ruta del docente y enviamos las variables como 'params'
+    // Esto arma una URL tipo: /docentes/planilla?idCurso=1&idMateria=2&periodo=1
+    const response = await api.get(`/docentes/planilla`, {
+      params: { idCurso, idMateria, periodo }
+    });
     return response.data;
   } catch (error) {
     console.error("Error al obtener planilla:", error);
@@ -202,6 +206,35 @@ export const obtenerAsistenciaHijo = async (idEstudiante) => {
   } catch (error) {
     console.error("Error al obtener asistencia:", error);
     return [];
+  }
+};
+
+// ==========================================
+// ENTREGAR TAREA (SUBIR PDF)
+// ==========================================
+export const entregarTareaEstudiante = async (idUsuario, idActividad, archivoPdf) => {
+  // 1. Instanciamos FormData para empaquetar el archivo y los datos
+  const formData = new FormData();
+  
+  // 2. Agregamos los datos que espera el backend
+  formData.append('idActividad', idActividad);
+  
+  // 3. Agregamos el archivo PDF. El nombre 'archivoPdf' debe coincidir 
+  // con lo configurado en upload.single('archivoPdf') en el backend.
+  formData.append('archivoPdf', archivoPdf); 
+
+  try {
+    // Usamos tu instancia 'api' y enviamos el formData
+    const response = await api.post(`/estudiantes/tareas/${idUsuario}/entregar`, formData, {
+      headers: {
+        // Le indicamos al servidor que enviamos un archivo binario
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error al enviar la tarea:", error);
+    throw error;
   }
 };
 

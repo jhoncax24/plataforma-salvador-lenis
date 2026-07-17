@@ -18,31 +18,52 @@ import {
 
 const router = Router();
 
+// ==========================================
+// ASIGNACIONES Y CURSOS
+// ==========================================
 // Obtener las materias y grados que dicta un profesor
 router.get("/asignaciones/:idUsuario", getAsignacionesDocente);
-
-// Obtener las tareas que el profesor ha creado
-router.get("/tareas/:idUsuario", getTareasDocente);
-
-// Crear una nueva tarea para un grado específico
-router.post("/tareas/:idUsuario", crearTareaDocente);
-
-// Rutas de Notas Planilla
-router.get("/planilla", getPlanillaNotas);
-router.post("/actividades/:idUsuario", crearActividad);
-router.post("/notas-masivas", guardarNotasActividades);
+// Obtener resumen acumulado de cursos para el dashboard
 router.get("/resumen-cursos/:idUsuario", getResumenCursosDocente);
 
-// Observador
-router.get("/estudiantes-curso/:idCurso", getEstudiantesPorCurso);
-router.get("/observaciones/:idEstudiante", getObservacionesEstudiante);
-router.post("/observaciones/:idUsuario", crearObservacion);
-// Asistencia
-router.post("/asistencia/:idUsuario", guardarAsistenciaMasiva);
-router.get("/asistencia-fecha", getAsistenciaGuardada); // <-- LA NUEVA
-// Cámbiate esta ruta:
-router.get("/asistencia-resumen/:idCurso/:idMateria", getResumenAsistenciaCurso);
+// ==========================================
+// TAREAS Y RECORDATORIOS
+// ==========================================
+// Obtener las tareas que el profesor ha creado
+router.get("/tareas/:idUsuario", getTareasDocente);
+// Crear una nueva tarea para un grado específico
+router.post("/tareas/:idUsuario", crearTareaDocente);
 // Actualizar una tarea o recordatorio del docente
 router.put("/tareas/:idTarea", actualizarTareaDocente);
+
+// ==========================================
+// PLANILLA Y CALIFICACIONES (Actualizado para PDFs)
+// ==========================================
+// Obtener listado de estudiantes, actividades y notas (incluye archivos PDF)
+router.get("/planilla", getPlanillaNotas);
+// Crear una nueva actividad (ahora soporta requiere_pdf)
+router.post("/actividades/:idUsuario", crearActividad);
+// Guardar notas y retroalimentaciones masivamente
+router.post("/notas-masivas", guardarNotasActividades);
+
+// ==========================================
+// OBSERVADOR DEL ALUMNO
+// ==========================================
+// Obtener estudiantes de un curso específico
+router.get("/estudiantes-curso/:idCurso", getEstudiantesPorCurso);
+// Obtener el historial de observaciones de un estudiante
+router.get("/observaciones/:idEstudiante", getObservacionesEstudiante);
+// Crear una nueva observación disciplinaria/académica
+router.post("/observaciones/:idUsuario", crearObservacion);
+
+// ==========================================
+// CONTROL DE ASISTENCIA
+// ==========================================
+// Guardar lista de asistencia masiva
+router.post("/asistencia/:idUsuario", guardarAsistenciaMasiva);
+// Obtener la asistencia guardada en una fecha específica
+router.get("/asistencia-fecha", getAsistenciaGuardada); 
+// Obtener el consolidado/resumen de asistencia por materia
+router.get("/asistencia-resumen/:idCurso/:idMateria", getResumenAsistenciaCurso);
 
 export default router;

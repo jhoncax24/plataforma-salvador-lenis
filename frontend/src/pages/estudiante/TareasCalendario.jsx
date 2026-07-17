@@ -1,7 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { obtenerTareasEstudiante, guardarRecordatorio, actualizarRecordatorio } from "../../api/perfilApi";
-import { MdVisibility, MdEdit, MdLightbulb, MdLock } from "react-icons/md";
+import { 
+  obtenerTareasEstudiante, 
+  guardarRecordatorio, 
+  actualizarRecordatorio, 
+  entregarTareaEstudiante 
+} from "../../api/perfilApi";
+import { MdVisibility, MdEdit, MdLightbulb, MdLock, MdFileUpload } from "react-icons/md";
 
 export default function TareasCalendario() {
   const navigate = useNavigate();
@@ -19,7 +24,11 @@ export default function TareasCalendario() {
   const [color, setColor] = useState("blue");
   const [tareaSeleccionada, setTareaSeleccionada] = useState(null);
 
-  const userStr = localStorage.getItem("cesl_user");
+  // Estados para la subida de PDF
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const userStr = localStorage.getItem("cesl_user") || localStorage.getItem("usuario");
   const user = userStr ? JSON.parse(userStr) : null;
   const idUsuario = user?.id_usuario || user?.id;
 
@@ -72,8 +81,6 @@ export default function TareasCalendario() {
   // ==========================================
   // FUNCIONES DE SELECCIÓN Y GUARDADO
   // ==========================================
-
-  // Cuando hace clic en un día vacío
   const seleccionarFechaVacia = (dia) => {
     const mesFormateado = String(mesActual + 1).padStart(2, '0');
     const diaFormateado = String(dia).padStart(2, '0');
@@ -81,9 +88,8 @@ export default function TareasCalendario() {
     limpiarFormulario();
   };
 
-  // Cuando hace clic en una tarea ya creada
   const seleccionarTareaExistente = (tarea, e) => {
-    e.stopPropagation(); // Evita que se seleccione el día vacío que está de fondo
+    e.stopPropagation();
     setTareaSeleccionada(tarea);
     setTitulo(tarea.titulo);
     setDescripcion(tarea.descripcion || "");
@@ -96,7 +102,6 @@ export default function TareasCalendario() {
     setTitulo("");
     setDescripcion("");
     setColor("blue");
-    // No limpiamos la fecha para que pueda seguir agregando en el mismo día seleccionado
   };
 
   const handleGuardarTarea = async (e) => {
@@ -108,12 +113,10 @@ export default function TareasCalendario() {
 
     try {
       if (tareaSeleccionada) {
-        // MODO EDICIÓN
         await actualizarRecordatorio(tareaSeleccionada.id_tarea, {
           titulo, descripcion, fecha_entrega: fechaSeleccionada, color
         });
       } else {
-        // MODO CREACIÓN
         await guardarRecordatorio(idUsuario, {
           titulo, descripcion, fecha_entrega: fechaSeleccionada, color
         });
@@ -127,14 +130,65 @@ export default function TareasCalendario() {
     }
   };
 
+  // ==========================================
+  // LÓGICA DE SUBIDA DE ARCHIVOS Y VALIDACIÓN
+  // ==========================================
+  const handleClickSubir = () => {
+    // 1. Validación estricta de la fecha
+    // Agregamos 'T23:59:59' para permitir subir hasta el último minuto de ese día
+    const fechaLimite = new Date(`${tareaSeleccionada.fecha_entrega}T23:59:59`);
+    const ahora = new Date();
+
+    if (ahora > fechaLimite) {
+      alert("El plazo para entregar esta tarea ha finalizado. La plataforma ha bloqueado la entrega.");
+      return;
+    }
+
+    // Si está en tiempo, abrimos el selector de archivos
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      alert("Formato no válido. Solo se permiten archivos PDF.");
+      e.target.value = null; 
+      return;
+    }
+
+    try {
+      setUploading(true);
+      // Enviamos el ID de la tarea seleccionada al backend
+      await entregarTareaEstudiante(idUsuario, tareaSeleccionada.id_tarea, file);
+      alert("¡Tarea entregada exitosamente!");
+      cargarTareas();
+    } catch (error) {
+      console.error("Error al subir el archivo:", error);
+      alert("Hubo un error al subir el archivo. Intenta de nuevo.");
+    } finally {
+      setUploading(false);
+      e.target.value = null; // Limpiamos el input para futuras subidas
+    }
+  };
+
   const irMesAnterior = () => setCurrentDate(new Date(anioActual, mesActual - 1, 1));
   const irMesSiguiente = () => setCurrentDate(new Date(anioActual, mesActual + 1, 1));
 
-  // Variable de seguridad
   const esSoloLectura = tareaSeleccionada?.tipo === 'Tarea Docente';
 
   return (
     <div className="w-full min-h-screen bg-gray-50 p-4 md:p-6 animate-fade-in-up font-sans">
+      
+      {/* INPUT OCULTO PARA SUBIR EL PDF */}
+      <input 
+        type="file" 
+        accept=".pdf" 
+        ref={fileInputRef} 
+        onChange={handleFileChange} 
+        className="hidden" 
+      />
 
       {/* HEADER PRINCIPAL */}
       <div className="w-full flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-xl shadow-sm border-l-[6px] border-[#0033a0] mb-6">
@@ -165,17 +219,14 @@ export default function TareasCalendario() {
 
         {/* CALENDARIO GIGANTE */}
         <div className="flex-1 w-full bg-white rounded-xl shadow-md border border-gray-300 overflow-hidden flex flex-col h-full">
-
           <div className="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
             <button onClick={irMesAnterior} className="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-100 rounded-lg font-bold text-gray-600 transition-colors shadow-sm flex items-center gap-2">
               <span className="text-lg">&lt;</span>
               <span className="capitalize hidden sm:inline">{mesAnteriorNombre.toLowerCase()}</span>
             </button>
-
             <h3 className="text-2xl sm:text-3xl font-bold text-[#0033a0]">
               {nombresMeses[mesActual]} {anioActual}
             </h3>
-
             <button onClick={irMesSiguiente} className="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-100 rounded-lg font-bold text-gray-600 transition-colors shadow-sm flex items-center gap-2">
               <span className="capitalize hidden sm:inline">{mesSiguienteNombre.toLowerCase()}</span>
               <span className="text-lg">&gt;</span>
@@ -220,7 +271,6 @@ export default function TareasCalendario() {
                       </span>
                     )}
 
-                    {/* RENDERIZADO DE TAREAS */}
                     <div className="flex flex-col gap-1 mt-1">
                       {tareasDelDia.map(tarea => {
                         const tailwindColors = {
@@ -270,10 +320,24 @@ export default function TareasCalendario() {
 
           <form onSubmit={handleGuardarTarea} className="flex flex-col gap-5">
 
+            {/* SECCIÓN ESPECIAL PARA TAREAS DEL DOCENTE */}
             {esSoloLectura && (
-              <div className="bg-yellow-50 text-yellow-800 p-3 rounded-lg border border-yellow-300 text-sm font-bold text-center shadow-sm animate-fade-in-up flex items-center justify-center gap-2">
-                <MdLock className="text-lg" />
-                Esta tarea fue asignada por un docente. Solo puedes verla.
+              <div className="flex flex-col gap-3">
+                <div className="bg-yellow-50 text-yellow-800 p-3 rounded-lg border border-yellow-300 text-sm font-bold text-center shadow-sm animate-fade-in-up flex items-center justify-center gap-2">
+                  <MdLock className="text-lg shrink-0" />
+                  <span className="text-left">Esta tarea fue asignada por el docente.</span>
+                </div>
+                
+                {/* BOTÓN DE SUBIDA INTEGRADO */}
+                <button
+                  type="button"
+                  onClick={handleClickSubir}
+                  disabled={uploading}
+                  className="w-full bg-[#0033a0] text-white py-2.5 rounded-lg font-bold hover:bg-blue-800 transition-all shadow flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <MdFileUpload className="text-xl" />
+                  {uploading ? "Subiendo PDF..." : "Subir Tarea (PDF)"}
+                </button>
               </div>
             )}
 
@@ -300,7 +364,7 @@ export default function TareasCalendario() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-700 font-bold mb-1.5">Fecha</label>
+              <label className="block text-sm text-gray-700 font-bold mb-1.5">Fecha de Entrega</label>
               <input
                 type="date" required
                 className={`w-full p-2.5 border border-gray-300 rounded-lg outline-none text-sm transition-colors ${esSoloLectura ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'focus:border-[#0033a0] focus:ring-1 focus:ring-[#0033a0] bg-white cursor-pointer'}`}
@@ -310,7 +374,6 @@ export default function TareasCalendario() {
               />
             </div>
 
-            {/* Selector de color: LO OCULTAMOS si es tarea del docente */}
             {!esSoloLectura && (
               <div>
                 <label className="block text-sm text-gray-700 font-bold mb-2">Color Etiqueta</label>
@@ -334,7 +397,6 @@ export default function TareasCalendario() {
                 </button>
               )}
 
-              {/* Botón para volver a modo creación si está viendo una tarea */}
               {tareaSeleccionada && (
                 <button
                   type="button"

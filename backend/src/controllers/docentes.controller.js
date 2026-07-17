@@ -38,37 +38,34 @@ export const getAsignacionesDocente = async (req, res, next) => {
 };
 
 // ==========================================
-// 2. CREAR TAREA O RECORDATORIO DEL DOCENTE
+// 2. CREAR RECORDATORIO PERSONAL DEL DOCENTE
 // ==========================================
 export const crearTareaDocente = async (req, res, next) => {
   const { idUsuario } = req.params;
-  const { titulo, descripcion, fecha_entrega, color, id_materia, id_curso } = req.body;
+  // Solo extraemos los datos básicos del recordatorio
+  const { titulo, descripcion, fecha_entrega, color } = req.body;
   
   try {
-    // Si no hay id_curso, significa que el profesor eligió "Solo para mí"
-    const tipoTarea = id_curso ? 'Tarea Docente' : 'Recordatorio';
-    
-    // Convertimos los strings vacíos a NULL para la base de datos
-    const cursoDB = id_curso ? id_curso : null;
-    const materiaDB = id_materia ? id_materia : null;
-
     const query = `
       INSERT INTO tareas (
         id_usuario, titulo, descripcion, fecha_entrega, color, tipo, id_materia, id_curso
       ) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+      VALUES ($1, $2, $3, $4, $5, 'Recordatorio', NULL, NULL) 
       RETURNING *
     `;
     
     const valores = [
-      idUsuario, titulo, descripcion || null, fecha_entrega, color || 'blue', 
-      tipoTarea, materiaDB, cursoDB
+      idUsuario, 
+      titulo, 
+      descripcion || null, 
+      fecha_entrega, 
+      color || 'blue'
     ];
 
     const { rows } = await pool.query(query, valores);
     res.json(rows[0]);
   } catch (error) {
-    console.error("Error guardando tarea de docente:", error);
+    console.error("Error guardando recordatorio del docente:", error);
     next(error);
   }
 };
@@ -111,21 +108,23 @@ export const getTareasDocente = async (req, res, next) => {
 };
 
 // ==========================================
-// 4. OBTENER PLANILLA (Actividades y Estudiantes)
+// 4. OBTENER PLANILLA (Actividades y Estudiantes - Actualizado para PDFs)
 // ==========================================
 export const getPlanillaNotas = async (req, res, next) => {
   const { idCurso, idMateria, periodo } = req.query;
 
   try {
-    // 1. Traer las actividades creadas para este curso, materia y periodo
+    // 1. Traer las actividades incluyendo el nuevo campo "requiere_pdf"
     const actQuery = await pool.query(
-      `SELECT id_actividad, titulo, porcentaje FROM actividades 
-       WHERE id_curso = $1 AND id_materia = $2 AND periodo = $3 ORDER BY fecha_creacion ASC`,
+      `SELECT id_actividad, titulo, porcentaje, requiere_pdf 
+       FROM actividades 
+       WHERE id_curso = $1 AND id_materia = $2 AND periodo = $3 
+       ORDER BY fecha_creacion ASC`,
       [idCurso, idMateria, periodo]
     );
     const actividades = actQuery.rows;
 
-    // 2. Traer los estudiantes matriculados en ese curso (CON DISTINCT PARA EVITAR DUPLICADOS)
+    // 2. Traer los estudiantes matriculados
     const estQuery = await pool.query(
       `SELECT DISTINCT e.id_estudiante, e.nombre_completo 
        FROM estudiantes e 
@@ -136,20 +135,26 @@ export const getPlanillaNotas = async (req, res, next) => {
     );
     const estudiantes = estQuery.rows;
 
-    // 3. Traer todas las notas ya ingresadas para estas actividades
+    // 3. Traer las notas, los PDFs y la retroalimentación
     const notasQuery = await pool.query(
-      `SELECT na.id_estudiante, na.id_actividad, na.nota 
-       FROM notas_actividades na JOIN actividades a ON na.id_actividad = a.id_actividad 
+      `SELECT na.id_estudiante, na.id_actividad, na.nota, na.archivo_pdf, na.fecha_entrega, na.retroalimentacion 
+       FROM notas_actividades na 
+       JOIN actividades a ON na.id_actividad = a.id_actividad 
        WHERE a.id_curso = $1 AND a.id_materia = $2 AND a.periodo = $3`,
       [idCurso, idMateria, periodo]
     );
     
-    // 4. Armar un objeto fácil de leer para React (El estudiante y sus notas en un mapa)
+    // 4. Armar el objeto para React. Ahora guardamos un objeto con todos los datos, no solo el número.
     const planilla = estudiantes.map(est => {
       const notasDelEstudiante = {};
       notasQuery.rows.forEach(n => {
         if (n.id_estudiante === est.id_estudiante) {
-          notasDelEstudiante[n.id_actividad] = parseFloat(n.nota);
+          notasDelEstudiante[n.id_actividad] = {
+            nota: n.nota !== null ? parseFloat(n.nota) : null,
+            archivoPdf: n.archivo_pdf,
+            fechaEntrega: n.fecha_entrega,
+            retroalimentacion: n.retroalimentacion
+          };
         }
       });
       return { ...est, notas: notasDelEstudiante };
@@ -162,52 +167,102 @@ export const getPlanillaNotas = async (req, res, next) => {
 };
 
 // ==========================================
-// 5. CREAR UNA NUEVA ACTIVIDAD (% de Nota)
+// 5. CREAR ACTIVIDAD Y SINCRONIZAR CON TAREAS
 // ==========================================
 export const crearActividad = async (req, res, next) => {
   const { idUsuario } = req.params;
-  const { id_curso, id_materia, periodo, titulo, porcentaje } = req.body;
+  const { id_curso, id_materia, periodo, titulo, porcentaje, requiere_pdf, fecha_entrega } = req.body;
 
   try {
-    const query = `
-      INSERT INTO actividades (id_curso, id_materia, id_docente, periodo, titulo, porcentaje) 
-      VALUES ($1, $2, $3, $4, $5, $6) RETURNING *
+    // Iniciamos la transacción para asegurar que ambos inserts ocurran al mismo tiempo
+    await pool.query('BEGIN');
+
+    // 1. Insertamos en la tabla actividades
+    const queryActividad = `
+      INSERT INTO actividades (id_curso, id_materia, id_docente, periodo, titulo, porcentaje, requiere_pdf, fecha_entrega) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+      RETURNING *
     `;
-    const { rows } = await pool.query(query, [id_curso, id_materia, idUsuario, periodo, titulo, porcentaje]);
-    res.json(rows[0]);
+    const requierePdfValidado = requiere_pdf === true;
+    const { rows: rowsActividad } = await pool.query(queryActividad, [
+      id_curso, id_materia, idUsuario, periodo, titulo, porcentaje, requierePdfValidado, fecha_entrega
+    ]);
+
+    // Capturamos el ID de la actividad recién creada
+    const idActividadCreada = rowsActividad[0].id_actividad;
+
+    // 2. Insertamos en la tabla tareas para el calendario del estudiante
+    const queryTarea = `
+      INSERT INTO tareas (id_usuario, titulo, descripcion, fecha_entrega, color, tipo, id_materia, id_curso, id_actividad) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `;
+    
+    const descripcionAutomatica = requierePdfValidado 
+      ? "Esta actividad requiere que subas un archivo (PDF) a través de la plataforma." 
+      : "Actividad evaluativa registrada por el docente en la planilla.";
+
+    await pool.query(queryTarea, [
+      idUsuario, // El autor es el docente
+      titulo, 
+      descripcionAutomatica, 
+      fecha_entrega, 
+      'blue', // Color por defecto
+      'Tarea Docente', // Tipo que lee el estudiante
+      id_materia, 
+      id_curso,
+      idActividadCreada // Relación directa con la actividad
+    ]);
+
+    // Confirmamos la transacción
+    await pool.query('COMMIT');
+    res.json(rowsActividad[0]);
+
   } catch (error) {
+    // Si algo falla, deshacemos ambos inserts
+    await pool.query('ROLLBACK');
+    console.error("Error al crear actividad y sincronizar tarea:", error);
     next(error);
   }
 };
 
 // ==========================================
-// 6. GUARDAR NOTAS (Masivo en las celdas)
+// 6. GUARDAR NOTAS Y RETROALIMENTACIÓN (Masivo o Individual)
 // ==========================================
 export const guardarNotasActividades = async (req, res, next) => {
   const { notasArray } = req.body; 
-  // Recibe: [{ id_actividad: 1, id_estudiante: 10, nota: 4.5 }, ...]
+  // Ahora espera: [{ id_actividad: 1, id_estudiante: 10, nota: 4.5, retroalimentacion: "Buen análisis" }, ...]
 
   try {
     await pool.query('BEGIN');
+    
     const query = `
-      INSERT INTO notas_actividades (id_actividad, id_estudiante, nota)
-      VALUES ($1, $2, $3)
+      INSERT INTO notas_actividades (id_actividad, id_estudiante, nota, retroalimentacion)
+      VALUES ($1, $2, $3, $4)
       ON CONFLICT (id_actividad, id_estudiante) 
-      DO UPDATE SET nota = EXCLUDED.nota;
+      DO UPDATE SET 
+        nota = EXCLUDED.nota,
+        retroalimentacion = COALESCE(EXCLUDED.retroalimentacion, notas_actividades.retroalimentacion);
     `;
     
     for (let item of notasArray) {
-      if (item.nota !== null && item.nota !== "") {
-        await pool.query(query, [item.id_actividad, item.id_estudiante, parseFloat(item.nota)]);
+      // Convertimos los strings vacíos a null para limpiar la base de datos
+      const notaValida = (item.nota !== null && item.nota !== "") ? parseFloat(item.nota) : null;
+      const retroValida = (item.retroalimentacion && item.retroalimentacion.trim() !== "") ? item.retroalimentacion : null;
+
+      // Solo insertamos si al menos hay una nota o una retroalimentación que guardar
+      if (notaValida !== null || retroValida !== null) {
+        await pool.query(query, [item.id_actividad, item.id_estudiante, notaValida, retroValida]);
       }
     }
+    
     await pool.query('COMMIT');
-    res.json({ message: "Notas guardadas con éxito" });
+    res.json({ message: "Notas y comentarios guardados con éxito" });
   } catch (error) {
     await pool.query('ROLLBACK');
     next(error);
   }
 };
+
 // ==========================================
 // 7. OBTENER RESUMEN DE CURSOS DEL DOCENTE (VERSIÓN CORREGIDA)
 // ==========================================

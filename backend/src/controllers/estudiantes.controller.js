@@ -1,4 +1,8 @@
 import { pool } from "../config/db.js";
+// Importamos la configuración de Cloudinary
+import cloudinary from '../config/cloudinary.js';
+// Ajusta la ruta y el nombre exacto de tu función de envío de correos
+// import { enviarCorreoDocente } from '../services/mailer.service.js';
 
 export const getPerfilEstudiante = async (req, res, next) => {
   const { idUsuario } = req.params;
@@ -296,7 +300,9 @@ export const getFaltasEstudiante = async (req, res, next) => {
 };
 
 
-// Obtener el detalle de notas de una materia específica (CON PORCENTAJES)
+// ==========================================
+// OBTENER EL DETALLE DE NOTAS DE UNA MATERIA (Actualizado para tareas)
+// ==========================================
 export const getDetalleMateria = async (req, res, next) => {
   const { idUsuario, nombreMateria } = req.params;
   
@@ -307,7 +313,11 @@ export const getDetalleMateria = async (req, res, next) => {
         a.id_actividad AS id,
         a.titulo AS actividad,
         a.porcentaje, 
-        na.nota
+        a.requiere_pdf,            -- 👇 Nuevos campos añadidos
+        na.nota,
+        na.archivo_pdf,
+        na.fecha_entrega,
+        na.retroalimentacion
       FROM estudiantes e
       JOIN notas_actividades na ON e.id_estudiante = na.id_estudiante
       JOIN actividades a ON na.id_actividad = a.id_actividad
@@ -323,16 +333,20 @@ export const getDetalleMateria = async (req, res, next) => {
     rows.forEach(fila => {
       const notaNum = parseFloat(fila.nota);
       const porcentajeNum = parseFloat(fila.porcentaje); 
-      const periodoNum = parseInt(fila.periodo, 10); // 👈 MAGIA AQUÍ: Forzamos a que sea un número
+      const periodoNum = parseInt(fila.periodo, 10); 
       
       const actividad = { 
         id: fila.id, 
         actividad: fila.actividad, 
         nota: notaNum,
-        porcentaje: porcentajeNum 
+        porcentaje: porcentajeNum,
+        // 👇 Mapeamos los nuevos datos al JSON
+        requierePdf: fila.requiere_pdf,
+        archivoPdf: fila.archivo_pdf,
+        fechaEntrega: fila.fecha_entrega,
+        retroalimentacion: fila.retroalimentacion
       };
       
-      // Ahora la validación no fallará
       if (periodoNum === 1) periodos.P1.push(actividad);
       if (periodoNum === 2) periodos.P2.push(actividad);
       if (periodoNum === 3) periodos.P3.push(actividad);
@@ -413,6 +427,89 @@ export const getDetalleAsistencia = async (req, res, next) => {
     res.json(resultados);
   } catch (error) {
     console.error("Error obteniendo asistencias:", error);
+    next(error);
+  }
+};
+
+// ==========================================
+// ESTUDIANTE: ENTREGAR TAREA (VALIDADA Y CORREGIDA)
+// ==========================================
+export const entregarTareaEstudiante = async (req, res, next) => {
+  const { idUsuario } = req.params;
+  // OJO: Aunque la variable se llame idActividad, el frontend nos está enviando el id_tarea del calendario
+  const { idActividad } = req.body; 
+  const file = req.file;
+
+  if (!file) return res.status(400).json({ message: "No se proporcionó archivo." });
+
+  try {
+    // 1. Buscamos la actividad real conectada a esta tarea
+    const actividadQuery = `
+      SELECT a.id_actividad, a.fecha_entrega 
+      FROM tareas t
+      JOIN actividades a ON t.id_actividad = a.id_actividad
+      WHERE t.id_tarea = $1
+    `;
+    const { rows: actividadRows } = await pool.query(actividadQuery, [idActividad]);
+
+    if (actividadRows.length === 0) {
+      return res.status(404).json({ message: "No se encontró la actividad vinculada a esta tarea." });
+    }
+
+    const idActividadReal = actividadRows[0].id_actividad;
+
+    // 2. Ajustamos el reloj: Le damos al estudiante hasta las 23:59:59 de ese día
+    const fechaLimite = new Date(actividadRows[0].fecha_entrega);
+    fechaLimite.setHours(23, 59, 59, 999); // Llevamos la hora al final del día
+    const ahora = new Date();
+
+    if (ahora > fechaLimite) {
+      return res.status(403).json({ message: "El plazo de entrega ha vencido." });
+    }
+
+// 3. Subimos el archivo a Cloudinary
+    const subirACloudinary = () => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { 
+            // Cambiamos 'auto' por 'image' (Cloudinary renderiza los PDF en el navegador bajo esta categoría)
+            resource_type: "image", 
+            folder: "cesl_tareas",
+            // 👇 FORZAMOS EL FORMATO PDF AQUÍ 👇
+            format: "pdf" 
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result.secure_url);
+          }
+        );
+        stream.end(file.buffer);
+      });
+    };
+
+    const urlPdf = await subirACloudinary();
+
+    // 4. Guardamos en la base de datos (Usamos ON CONFLICT por si la fila aún no existe)
+    const updateQuery = `
+      INSERT INTO notas_actividades (id_actividad, id_estudiante, archivo_pdf, fecha_entrega)
+      VALUES (
+        $1, 
+        (SELECT id_estudiante FROM estudiantes WHERE id_usuario = $2),
+        $3,
+        CURRENT_TIMESTAMP
+      )
+      ON CONFLICT (id_actividad, id_estudiante)
+      DO UPDATE SET 
+        archivo_pdf = EXCLUDED.archivo_pdf, 
+        fecha_entrega = EXCLUDED.fecha_entrega;
+    `;
+
+    await pool.query(updateQuery, [idActividadReal, idUsuario, urlPdf]);
+
+    res.json({ message: "Tarea entregada exitosamente." });
+
+  } catch (error) {
+    console.error("Error al procesar la entrega:", error);
     next(error);
   }
 };
