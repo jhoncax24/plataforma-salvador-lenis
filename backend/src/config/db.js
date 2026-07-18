@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 const { Pool } = pg;
 
-
+/*
 // Configuración del pool
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -22,7 +22,7 @@ pool.on('error', (err) => {
   process.exit(-1);
 });
 /*
-
+*/
 //Conexión a bd local
 // Si en tu .env dice 'localhost' o no hay variable, sabemos que es tu PC.
 const isLocal = process.env.DB_HOST === 'localhost' || !process.env.DB_HOST;
@@ -46,4 +46,3 @@ pool.on('error', (err) => {
   console.error('❌ Error inesperado en la base de datos', err);
   process.exit(-1);
 });
-*/
