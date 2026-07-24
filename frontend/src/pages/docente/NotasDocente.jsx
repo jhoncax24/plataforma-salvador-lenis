@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MdSave } from 'react-icons/md';
+import { MdSave, MdEdit, MdDelete } from 'react-icons/md'; // 👈 Importamos los nuevos íconos
 import {
   obtenerAsignaciones,
   obtenerPlanillaNotas,
   crearActividadDocente,
+  actualizarActividadDocente, // 👈 Importamos la función de editar
+  eliminarActividadDocente,   // 👈 Importamos la función de eliminar
   guardarNotasMasivas
 } from "../../api/perfilApi";
 
@@ -24,9 +26,13 @@ export default function NotasDocente() {
   const [cargando, setCargando] = useState(false);
   const [planillaCargada, setPlanillaCargada] = useState(false);
 
+  // Estados para el Modal de Crear
   const [modalAbierto, setModalAbierto] = useState(false);
-  // 👇 Se añade requiere_pdf al estado inicial
-const [nuevaAct, setNuevaAct] = useState({ titulo: "", porcentaje: "", requiere_pdf: false, fecha_entrega: "" });
+  const [nuevaAct, setNuevaAct] = useState({ titulo: "", porcentaje: "", requiere_pdf: false, fecha_entrega: "" });
+
+  // 👇 Estados para el Modal de Editar 👇
+  const [modalEditarAbierto, setModalEditarAbierto] = useState(false);
+  const [actEditada, setActEditada] = useState({ id_actividad: "", titulo: "", porcentaje: "", requiere_pdf: false, fecha_entrega: "" });
 
   useEffect(() => {
     if (idUsuario) cargarFiltros();
@@ -52,12 +58,19 @@ const [nuevaAct, setNuevaAct] = useState({ titulo: "", porcentaje: "", requiere_
     setCargando(false);
   };
 
-const handleCrearActividad = async (e) => {
+  // ==========================================
+  // LÓGICA DE CREAR ACTIVIDAD
+  // ==========================================
+  const handleCrearActividad = async (e) => {
     e.preventDefault();
     if (!nuevaAct.fecha_entrega) return alert("Por favor selecciona una fecha de entrega.");
     
     const porcentajeNuevo = parseFloat(nuevaAct.porcentaje);
-    // ... (el resto del cálculo del porcentaje se mantiene igual)
+    const porcentajeActual = actividades.reduce((sum, act) => sum + parseFloat(act.porcentaje), 0);
+    
+    if (porcentajeActual + porcentajeNuevo > 100) {
+      return alert(`¡Error! El porcentaje supera el 100%. Solo queda un ${(100 - porcentajeActual).toFixed(1)}% disponible.`);
+    }
 
     try {
       const payload = {
@@ -67,21 +80,84 @@ const handleCrearActividad = async (e) => {
         titulo: nuevaAct.titulo,
         porcentaje: porcentajeNuevo,
         requiere_pdf: nuevaAct.requiere_pdf,
-        fecha_entrega: nuevaAct.fecha_entrega // 👇 Enviamos la fecha
+        fecha_entrega: nuevaAct.fecha_entrega 
       };
 
       await crearActividadDocente(idUsuario, payload);
-      alert("Actividad creada y publicada en el calendario de los estudiantes.");
+      alert("Actividad creada exitosamente.");
       
       setModalAbierto(false);
-      setNuevaAct({ titulo: "", porcentaje: "", requiere_pdf: false, fecha_entrega: "" }); // Reiniciar form
+      setNuevaAct({ titulo: "", porcentaje: "", requiere_pdf: false, fecha_entrega: "" }); 
       handleCargarPlanilla();
     } catch (error) {
       alert("Hubo un error al crear la actividad.");
     }
   };
 
-  // 👇 FUNCIÓN ACTUALIZADA: Maneja tanto la nota como la retroalimentación
+  // ==========================================
+  // LÓGICA DE EDITAR ACTIVIDAD
+  // ==========================================
+  const handleAbrirEditar = (act) => {
+    // Formateamos la fecha para que el input type="date" la pueda leer (YYYY-MM-DD)
+    const fechaFormateada = act.fecha_entrega ? new Date(act.fecha_entrega).toISOString().split('T')[0] : "";
+    
+    setActEditada({
+      id_actividad: act.id_actividad,
+      titulo: act.titulo,
+      porcentaje: parseFloat(act.porcentaje),
+      requiere_pdf: act.requiere_pdf || false,
+      fecha_entrega: fechaFormateada
+    });
+    setModalEditarAbierto(true);
+  };
+
+  const handleEditarActividad = async (e) => {
+    e.preventDefault();
+    if (!actEditada.fecha_entrega) return alert("Por favor selecciona una fecha de entrega.");
+
+    const porcentajeNuevo = parseFloat(actEditada.porcentaje);
+    
+    // Calculamos el porcentaje ocupado ignorando la actividad actual que estamos editando
+    const porcentajeOtros = actividades
+      .filter(a => a.id_actividad !== actEditada.id_actividad)
+      .reduce((sum, a) => sum + parseFloat(a.porcentaje), 0);
+
+    if (porcentajeOtros + porcentajeNuevo > 100) {
+      return alert(`¡Error! El porcentaje supera el 100%. Solo queda un ${(100 - porcentajeOtros).toFixed(1)}% disponible.`);
+    }
+
+    try {
+      const payload = {
+        titulo: actEditada.titulo,
+        porcentaje: porcentajeNuevo,
+        requiere_pdf: actEditada.requiere_pdf,
+        fecha_entrega: actEditada.fecha_entrega
+      };
+
+      await actualizarActividadDocente(actEditada.id_actividad, payload);
+      alert("Actividad actualizada correctamente.");
+      setModalEditarAbierto(false);
+      handleCargarPlanilla();
+    } catch (error) {
+      alert("Hubo un error al actualizar la actividad.");
+    }
+  };
+
+  // ==========================================
+  // LÓGICA DE ELIMINAR ACTIVIDAD
+  // ==========================================
+  const handleEliminarActividad = async (idActividad) => {
+    if (window.confirm("¿Estás seguro de eliminar esta actividad? Se borrarán TODAS las notas y PDFs entregados de esta columna. Esta acción no se puede deshacer.")) {
+      try {
+        await eliminarActividadDocente(idActividad);
+        alert("Actividad eliminada correctamente.");
+        handleCargarPlanilla();
+      } catch (error) {
+        alert("Hubo un error al eliminar la actividad.");
+      }
+    }
+  };
+
   const handleChangeData = (idEstudiante, idActividad, campo, valor) => {
     if (campo === 'nota') {
       if (valor !== "" && !/^\d*\.?\d*$/.test(valor)) return;
@@ -90,7 +166,6 @@ const handleCrearActividad = async (e) => {
 
     setEstudiantes(estudiantes.map(est => {
       if (est.id_estudiante === idEstudiante) {
-        // Aseguramos que exista el objeto de esa actividad
         const dataActual = est.notas[idActividad] || { nota: "", retroalimentacion: "" };
         return {
           ...est,
@@ -104,14 +179,12 @@ const handleCrearActividad = async (e) => {
     }));
   };
 
-  // 👇 FUNCIÓN ACTUALIZADA: Empaqueta los datos compuestos para enviar al backend
   const handleGuardarNotas = async () => {
     const notasParaGuardar = [];
     
     estudiantes.forEach(est => {
       Object.keys(est.notas).forEach(idAct => {
         const celda = est.notas[idAct];
-        // Validamos si hay una nota ingresada o una retroalimentación escrita
         if (celda && ((celda.nota !== "" && celda.nota !== null) || (celda.retroalimentacion && celda.retroalimentacion.trim() !== ""))) {
           notasParaGuardar.push({
             id_actividad: parseInt(idAct),
@@ -136,7 +209,6 @@ const handleCrearActividad = async (e) => {
   const porcentajeTotal = actividades.reduce((sum, act) => sum + parseFloat(act.porcentaje), 0);
   const porcentajeRestante = 100 - porcentajeTotal;
 
-  // 👇 ACTUALIZADO: Ahora extrae la nota dentro del objeto anidado
   const calcularDefinitiva = (notasDelAlumno) => {
     let final = 0;
     actividades.forEach(act => {
@@ -222,11 +294,33 @@ const handleCrearActividad = async (e) => {
                   <th className="p-3 font-bold border-b border-r sticky left-0 bg-gray-100 z-10 w-64 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Estudiante</th>
                   
                   {actividades.map(act => (
-                    <th key={act.id_actividad} className="p-2 font-bold border-b border-r text-center w-36 bg-blue-50/50">
-                      <div className="text-xs text-gray-800 truncate" title={act.titulo}>{act.titulo}</div>
-                      <div className="text-[10px] text-blue-700">{parseFloat(act.porcentaje)}%</div>
-                      {/* Indicador visual si la actividad requiere archivo */}
-                      {act.requiere_pdf && <div className="text-[9px] text-orange-600 uppercase mt-1">Con Entregable</div>}
+                    <th key={act.id_actividad} className="p-2 font-bold border-b border-r text-center w-40 bg-blue-50/50 align-top">
+                      {/* 👇 CONTENEDOR FLEX PARA EL TEXTO Y LOS BOTONES 👇 */}
+                      <div className="flex justify-between items-start h-full">
+                        <div className="flex-1 overflow-hidden flex flex-col justify-center">
+                          <div className="text-xs text-gray-800 truncate" title={act.titulo}>{act.titulo}</div>
+                          <div className="text-[10px] text-blue-700">{parseFloat(act.porcentaje)}%</div>
+                          {act.requiere_pdf && <div className="text-[9px] text-orange-600 uppercase mt-1">Con Entregable</div>}
+                        </div>
+                        
+                        {/* 👇 BOTONES DE EDICIÓN Y ELIMINACIÓN 👇 */}
+                        <div className="flex flex-col gap-1 ml-2">
+                          <button 
+                            onClick={() => handleAbrirEditar(act)} 
+                            className="text-blue-500 hover:text-blue-700 bg-white p-1 rounded shadow-sm border border-blue-100 transition-colors" 
+                            title="Editar Actividad"
+                          >
+                            <MdEdit size={14} />
+                          </button>
+                          <button 
+                            onClick={() => handleEliminarActividad(act.id_actividad)} 
+                            className="text-red-500 hover:text-red-700 bg-white p-1 rounded shadow-sm border border-red-100 transition-colors" 
+                            title="Eliminar Actividad"
+                          >
+                            <MdDelete size={14} />
+                          </button>
+                        </div>
+                      </div>
                     </th>
                   ))}
 
@@ -248,7 +342,7 @@ const handleCrearActividad = async (e) => {
                           {est.nombre_completo}
                         </td>
 
-                        {/* 👇 CELDAS DINÁMICAS REDISEÑADAS 👇 */}
+                        {/* 👇 AQUÍ RESTAURAMOS LAS CELDAS DE LAS NOTAS 👇 */}
                         {actividades.map(act => {
                           const celdaData = est.notas[act.id_actividad] || {};
                           return (
@@ -269,7 +363,7 @@ const handleCrearActividad = async (e) => {
                                   <div className="text-[11px] border-t border-gray-100 pt-1 text-center">
                                     {celdaData.archivoPdf ? (
                                       <a href={celdaData.archivoPdf} target="_blank" rel="noreferrer" className="text-blue-600 font-bold hover:underline flex items-center justify-center" title={`Entregado: ${new Date(celdaData.fechaEntrega).toLocaleDateString()}`}>
-                                        📄 Ver Entrega
+                                         Ver Entrega
                                       </a>
                                     ) : (
                                       <span className="text-red-400 font-medium">Sin entregar</span>
@@ -281,7 +375,7 @@ const handleCrearActividad = async (e) => {
                                 <input
                                   type="text"
                                   className="text-[10px] p-1.5 border border-gray-200 rounded bg-gray-50 focus:bg-white focus:border-[#0033a0] focus:ring-1 focus:ring-[#0033a0] outline-none w-full transition-all"
-                                  placeholder="Escribir feedback..."
+                                  placeholder="Escribir retroalimentación..."
                                   value={celdaData.retroalimentacion || ""}
                                   onChange={(e) => handleChangeData(est.id_estudiante, act.id_actividad, 'retroalimentacion', e.target.value)}
                                 />
@@ -310,7 +404,9 @@ const handleCrearActividad = async (e) => {
         </div>
       )}
 
-      {/* MODAL PARA CREAR ACTIVIDAD */}
+      {/* ==========================================
+          MODAL PARA CREAR ACTIVIDAD 
+      ========================================== */}
       {modalAbierto && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-up">
@@ -343,7 +439,6 @@ const handleCrearActividad = async (e) => {
                 />
               </div>
 
-              {/* 👇 NUEVO CHECKBOX PARA SOLICITAR PDF 👇 */}
               <div className="flex items-center mt-4">
                 <input 
                   type="checkbox" 
@@ -369,6 +464,64 @@ const handleCrearActividad = async (e) => {
           </div>
         </div>
       )}
+
+      {/* ==========================================
+          MODAL PARA EDITAR ACTIVIDAD 
+      ========================================== */}
+      {modalEditarAbierto && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-up">
+            <div className="bg-blue-600 p-4 text-center">
+              <h2 className="text-xl font-bold text-white">Editar Actividad</h2>
+            </div>
+            <form onSubmit={handleEditarActividad} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Nombre de la Actividad</label>
+                <input type="text" required className="w-full p-2.5 border rounded-lg focus:border-[#0033a0] outline-none" value={actEditada.titulo} onChange={(e) => setActEditada({ ...actEditada, titulo: e.target.value })} />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Valor Porcentual (%)</label>
+                <input type="number" required min="1" max="100" step="0.1" className="w-full p-2.5 border rounded-lg focus:border-[#0033a0] outline-none" value={actEditada.porcentaje} onChange={(e) => setActEditada({ ...actEditada, porcentaje: e.target.value })} />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Fecha de Entrega / Evaluación</label>
+                <input 
+                  type="date" 
+                  required 
+                  className="w-full p-2.5 border rounded-lg focus:border-[#0033a0] outline-none" 
+                  value={actEditada.fecha_entrega} 
+                  onChange={(e) => setActEditada({ ...actEditada, fecha_entrega: e.target.value })} 
+                />
+              </div>
+
+              <div className="flex items-center mt-4">
+                <input 
+                  type="checkbox" 
+                  id="requierePdfEdit" 
+                  className="w-4 h-4 text-[#0033a0] bg-gray-100 border-gray-300 rounded focus:ring-[#0033a0]" 
+                  checked={actEditada.requiere_pdf} 
+                  onChange={(e) => setActEditada({ ...actEditada, requiere_pdf: e.target.checked })} 
+                />
+                <label htmlFor="requierePdfEdit" className="ml-2 text-sm font-bold text-gray-700">
+                  Esta actividad requiere que el estudiante suba un archivo (PDF)
+                </label>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setModalEditarAbierto(false)} className="flex-1 bg-gray-200 text-gray-800 font-bold py-2.5 rounded-lg hover:bg-gray-300">
+                  Cancelar
+                </button>
+                <button type="submit" className="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 shadow">
+                  Guardar Cambios
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

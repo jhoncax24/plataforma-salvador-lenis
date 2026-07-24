@@ -143,13 +143,17 @@ export const getNotasEstudiante = async (req, res, next) => {
 // ==========================================
 export const getHorarioEstudiante = async (req, res, next) => {
   const { idUsuario } = req.params;
+  
   try {
     const query = `
-      SELECT h.dia_semana, h.bloque_hora, h.materia
+      SELECT 
+        h.dia_semana, 
+        h.bloque_hora, 
+        mat.nombre AS materia
       FROM estudiantes e
       JOIN matriculas m ON e.id_estudiante = m.id_estudiante AND m.estado = 'Activa'
-      JOIN cursos c ON m.id_curso = c.id_curso
-      JOIN horarios h ON c.nombre = h.grado
+      JOIN horarios h ON m.id_curso = h.id_curso
+      JOIN materias mat ON h.id_materia = mat.id_materia
       WHERE e.id_usuario = $1
       ORDER BY 
         CASE h.dia_semana
@@ -162,8 +166,10 @@ export const getHorarioEstudiante = async (req, res, next) => {
         END,
         h.bloque_hora ASC
     `;
+    
     const { rows } = await pool.query(query, [idUsuario]);
     res.json(rows);
+    
   } catch (error) {
     console.error("Error obteniendo el horario del estudiante:", error);
     next(error);

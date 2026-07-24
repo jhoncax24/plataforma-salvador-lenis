@@ -5,6 +5,8 @@ import {
     getTareasDocente,
     getPlanillaNotas,
     crearActividad,
+    actualizarActividad,
+    eliminarActividad,
     guardarNotasActividades,
     getResumenCursosDocente,
     getEstudiantesPorCurso,
@@ -37,12 +39,16 @@ router.post("/tareas/:idUsuario", crearTareaDocente);
 router.put("/tareas/:idTarea", actualizarTareaDocente);
 
 // ==========================================
-// PLANILLA Y CALIFICACIONES (Actualizado para PDFs)
+// PLANILLA Y CALIFICACIONES
 // ==========================================
 // Obtener listado de estudiantes, actividades y notas (incluye archivos PDF)
 router.get("/planilla", getPlanillaNotas);
-// Crear una nueva actividad (ahora soporta requiere_pdf)
+// Crear una nueva actividad (soporta requiere_pdf y fecha_entrega)
 router.post("/actividades/:idUsuario", crearActividad);
+// Actualizar datos de una actividad existente
+router.put("/actividades/:idActividad", actualizarActividad);
+// Eliminar una actividad y sus dependencias (notas y tarea del calendario)
+router.delete("/actividades/:idActividad", eliminarActividad); 
 // Guardar notas y retroalimentaciones masivamente
 router.post("/notas-masivas", guardarNotasActividades);
 
