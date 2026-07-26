@@ -38,7 +38,7 @@ export default function Opciones() {
       {/* TÍTULO PRINCIPAL */}
       <div className="mb-4">
         <h3 className="text-xl font-extrabold text-[#0033a0] border-b-2 border-gray-100 pb-3 flex items-center gap-2">
-          {/* Se cambió 🏫 por MdDashboard */}
+          
           <MdDashboard className="text-2xl" /> 
           <span>Panel de Gestión Académica</span>
         </h3>
@@ -54,7 +54,7 @@ export default function Opciones() {
           <div className="h-full flex items-center justify-center text-gray-400 font-medium">Cargando clases...</div>
         ) : resumen.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
-            {/* Se cambió 🤷‍♂️ por MdOutlineSentimentDissatisfied */}
+            
             <MdOutlineSentimentDissatisfied className="text-4xl text-gray-400 mb-1" />
             <p className="text-sm font-medium">Aún no tienes asignación académica.</p>
           </div>

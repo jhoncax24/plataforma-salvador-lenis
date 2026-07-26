@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MdPlaylistAddCheck } from "react-icons/md";
+import { MdPlaylistAddCheck, MdSave } from "react-icons/md";
 import {
   obtenerAsignaciones,
   obtenerEstudiantesCurso,
@@ -19,9 +19,8 @@ export default function AsistenciaDocente() {
   const hoy = new Date().toISOString().split('T')[0];
 
   const [cursos, setCursos] = useState([]);
-  const [materias, setMaterias] = useState([]); // 👈 NUEVO: Guardamos las materias
+  const [materias, setMaterias] = useState([]);
 
-  // 👈 NUEVO: Añadimos id_materia al estado inicial
   const [seleccion, setSeleccion] = useState({ id_curso: "", id_materia: "", fecha: hoy });
 
   const [alumnos, setAlumnos] = useState([]);
@@ -38,19 +37,18 @@ export default function AsistenciaDocente() {
   const cargarAsignaciones = async () => {
     const data = await obtenerAsignaciones(idUsuario);
     setCursos(data.cursos || []);
-    setMaterias(data.materias || []); // 👈 NUEVO: Cargamos las materias del profe
+    setMaterias(data.materias || []);
   };
 
   const handleCargarListas = async (e) => {
     e?.preventDefault();
     if (!seleccion.id_curso || !seleccion.id_materia || !seleccion.fecha) {
-      return alert("Por favor selecciona un curso, una materia y una fecha.");
+      return alert("Por favor selecciona una materia, un curso y una fecha.");
     }
 
     setCargandoDia(true);
     setCargandoResumen(true);
 
-    // 👈 NUEVO: Le pasamos también el id_materia a la búsqueda
     const [listaEstudiantes, asistenciaGuardada] = await Promise.all([
       obtenerEstudiantesCurso(seleccion.id_curso),
       obtenerAsistenciaPorFecha(seleccion.id_curso, seleccion.id_materia, seleccion.fecha)
@@ -89,7 +87,7 @@ export default function AsistenciaDocente() {
     try {
       const payload = {
         id_curso: seleccion.id_curso,
-        id_materia: seleccion.id_materia, // 👈 NUEVO: Enviamos la materia a guardar
+        id_materia: seleccion.id_materia,
         fecha: seleccion.fecha,
         asistenciasArray: alumnos.map(a => ({ id_estudiante: a.id_estudiante, estado: a.estado }))
       };
@@ -103,6 +101,11 @@ export default function AsistenciaDocente() {
       alert("Hubo un error al guardar la asistencia.");
     }
   };
+
+  // 👇 LÓGICA DE FILTRADO PARA EL SELECT DE CURSOS 👇
+  const cursosFiltrados = seleccion.id_materia
+    ? cursos.filter(c => c.id_materia === parseInt(seleccion.id_materia))
+    : [];
 
   return (
     <div className="w-full min-h-screen bg-gray-50 p-4 md:p-6 animate-fade-in-up font-sans flex flex-col gap-6">
@@ -121,29 +124,43 @@ export default function AsistenciaDocente() {
       </div>
 
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-        {/* Cambiamos a md:grid-cols-4 para que quepan los 4 elementos */}
         <form onSubmit={handleCargarListas} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Curso a evaluar</label>
-            <select required className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-orange-500 outline-none" value={seleccion.id_curso} onChange={(e) => setSeleccion({ ...seleccion, id_curso: e.target.value })}>
-              <option value="">-- Seleccionar --</option>
-              {cursos.map(c => <option key={c.id_curso} value={c.id_curso}>{c.nombre} {c.nivel ? `(${c.nivel})` : ''}</option>)}
-            </select>
-          </div>
 
-          {/* 👈 NUEVO DESPLEGABLE: Materia */}
+          {/* 👇 REORDENADO: Primero seleccionamos la Materia 👇 */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Materia dictada</label>
-            <select required className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-orange-500 outline-none" value={seleccion.id_materia} onChange={(e) => setSeleccion({ ...seleccion, id_materia: e.target.value })}>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Materia</label>
+            <select
+              required
+              className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-orange-500 outline-none"
+              value={seleccion.id_materia}
+              // Al cambiar materia, reseteamos el id_curso a "" para que no quede basura seleccionada
+              onChange={(e) => setSeleccion({ ...seleccion, id_materia: e.target.value, id_curso: "" })}
+            >
               <option value="">-- Seleccionar --</option>
               {materias.map(m => <option key={m.id_materia} value={m.id_materia}>{m.nombre}</option>)}
             </select>
           </div>
 
+          {/* 👇 REORDENADO: Luego seleccionamos el Curso (usando cursosFiltrados) 👇 */}
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Curso</label>
+            <select
+              required
+              className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-orange-500 outline-none"
+              value={seleccion.id_curso}
+              onChange={(e) => setSeleccion({ ...seleccion, id_curso: e.target.value })}
+            >
+              <option value="">-- Seleccionar --</option>
+              {cursosFiltrados.map(c => <option key={c.id_curso} value={c.id_curso}>{c.nombre} {c.nivel ? `(${c.nivel})` : ''}</option>)}
+            </select>
+          </div>
+
+          {/* Fecha */}
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Fecha de Clase</label>
             <input type="date" required className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-orange-500 outline-none cursor-pointer" value={seleccion.fecha} onChange={(e) => setSeleccion({ ...seleccion, fecha: e.target.value })} />
           </div>
+
           <button type="submit" className="w-full bg-orange-500 text-white font-bold py-2.5 rounded-lg hover:bg-orange-600 transition-colors h-11">
             Cargar Datos
           </button>
@@ -193,7 +210,8 @@ export default function AsistenciaDocente() {
                 </div>
                 <div className="p-4 bg-gray-50 border-t flex justify-end">
                   <button onClick={handleGuardarAsistencia} className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-6 rounded-lg transition-all shadow-md flex items-center gap-2 text-sm">
-                    <span>💾</span> Guardar Lista
+                    <MdSave className="text-xl" />
+                    <span>Guardar Lista</span>
                   </button>
                 </div>
               </>

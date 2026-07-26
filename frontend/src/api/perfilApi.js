@@ -302,6 +302,26 @@ export const crearActividadDocente = async (idUsuario, datos) => {
   }
 };
 
+export const actualizarActividadDocente = async (idActividad, datos) => {
+  try {
+    const response = await api.put(`/docentes/actividades/${idActividad}`, datos);
+    return response.data;
+  } catch (error) {
+    console.error("Error al actualizar la actividad:", error);
+    throw error;
+  }
+};
+
+export const eliminarActividadDocente = async (idActividad) => {
+  try {
+    const response = await api.delete(`/docentes/actividades/${idActividad}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al eliminar la actividad:", error);
+    throw error;
+  }
+};
+
 export const guardarNotasMasivas = async (notasArray) => {
   try {
     const response = await api.post(`/docentes/notas-masivas`, { notasArray });

@@ -1,4 +1,5 @@
 import { pool } from "../config/db.js";
+import { enviarCorreoNuevaActividad } from '../services/mailer.service.js';
 
 // ==========================================
 // 1. OBTENER MATERIAS Y CURSOS (Filtrados por Docente)
@@ -116,7 +117,7 @@ export const getPlanillaNotas = async (req, res, next) => {
   try {
     // 1. Traer las actividades incluyendo el nuevo campo "requiere_pdf"
     const actQuery = await pool.query(
-      `SELECT id_actividad, titulo, porcentaje, requiere_pdf 
+      `SELECT id_actividad, titulo, porcentaje, requiere_pdf, fecha_entrega
        FROM actividades 
        WHERE id_curso = $1 AND id_materia = $2 AND periodo = $3 
        ORDER BY fecha_creacion ASC`,
@@ -174,7 +175,7 @@ export const crearActividad = async (req, res, next) => {
   const { id_curso, id_materia, periodo, titulo, porcentaje, requiere_pdf, fecha_entrega } = req.body;
 
   try {
-    // Iniciamos la transacción para asegurar que ambos inserts ocurran al mismo tiempo
+    // Iniciamos la transacción principal
     await pool.query('BEGIN');
 
     // 1. Insertamos en la tabla actividades
@@ -188,7 +189,6 @@ export const crearActividad = async (req, res, next) => {
       id_curso, id_materia, idUsuario, periodo, titulo, porcentaje, requierePdfValidado, fecha_entrega
     ]);
 
-    // Capturamos el ID de la actividad recién creada
     const idActividadCreada = rowsActividad[0].id_actividad;
 
     // 2. Insertamos en la tabla tareas para el calendario del estudiante
@@ -202,23 +202,70 @@ export const crearActividad = async (req, res, next) => {
       : "Actividad evaluativa registrada por el docente en la planilla.";
 
     await pool.query(queryTarea, [
-      idUsuario, // El autor es el docente
-      titulo, 
-      descripcionAutomatica, 
-      fecha_entrega, 
-      'blue', // Color por defecto
-      'Tarea Docente', // Tipo que lee el estudiante
-      id_materia, 
-      id_curso,
-      idActividadCreada // Relación directa con la actividad
+      idUsuario, titulo, descripcionAutomatica, fecha_entrega, 'blue', 'Tarea Docente', id_materia, id_curso, idActividadCreada
     ]);
 
-    // Confirmamos la transacción
+    // Confirmamos la transacción y respondemos rápidamente al frontend
     await pool.query('COMMIT');
     res.json(rowsActividad[0]);
 
+    // ==========================================
+    // 3. ENVÍO DE CORREOS EN SEGUNDO PLANO
+    // ==========================================
+    try {
+        // A. Obtenemos los correos de estudiantes activos y sus acudientes
+        const queryCorreos = `
+            SELECT 
+                ue.email AS email_estudiante,
+                ua.email AS email_acudiente
+            FROM estudiantes e
+            JOIN matriculas m ON e.id_estudiante = m.id_estudiante AND m.estado = 'Activa'
+            LEFT JOIN users ue ON e.id_usuario = ue.id_usuario
+            LEFT JOIN acudientes a ON e.id_acudiente = a.id_acudiente
+            LEFT JOIN users ua ON a.id_usuario = ua.id_usuario
+            WHERE m.id_curso = $1
+        `;
+        const { rows: rowsCorreos } = await pool.query(queryCorreos, [id_curso]);
+
+        // B. Obtenemos nombre de materia y docente para la tarjeta del correo
+        const queryContexto = `
+            SELECT m.nombre AS nombre_materia, d.nombre_completo AS nombre_docente
+            FROM materias m, docentes d
+            WHERE m.id_materia = $1 AND d.id_usuario = $2
+        `;
+        const { rows: rowsContexto } = await pool.query(queryContexto, [id_materia, idUsuario]);
+
+        // C. Preparamos y enviamos los correos si hay datos válidos
+        if (rowsContexto.length > 0 && rowsCorreos.length > 0) {
+            // Usamos Set para evitar enviar correos duplicados
+            const listaCorreos = new Set();
+            
+            rowsCorreos.forEach(row => {
+                if (row.email_estudiante) listaCorreos.add(row.email_estudiante);
+                if (row.email_acudiente) listaCorreos.add(row.email_acudiente);
+            });
+
+            const correosDestino = Array.from(listaCorreos);
+
+            if (correosDestino.length > 0) {
+                const datosActividad = {
+                    docente: rowsContexto[0].nombre_docente,
+                    materia: rowsContexto[0].nombre_materia,
+                    titulo: titulo,
+                    fecha_entrega: fecha_entrega,
+                    requiere_pdf: requierePdfValidado
+                };
+
+                // Llamamos a la función de enviar correo (se ejecuta sin pausar el código)
+                enviarCorreoNuevaActividad(correosDestino, datosActividad);
+            }
+        }
+    } catch (mailError) {
+        // Capturamos cualquier error del correo de forma aislada para que no afecte la creación de la actividad
+        console.error("Error al recopilar y enviar correos masivos:", mailError);
+    }
+
   } catch (error) {
-    // Si algo falla, deshacemos ambos inserts
     await pool.query('ROLLBACK');
     console.error("Error al crear actividad y sincronizar tarea:", error);
     next(error);
@@ -498,6 +545,77 @@ export const actualizarTareaDocente = async (req, res, next) => {
     res.json(rows[0]);
   } catch (error) {
     console.error("Error actualizando tarea de docente:", error);
+    next(error);
+  }
+};
+
+// ==========================================
+// 13. ACTUALIZAR ACTIVIDAD (Y SU TAREA VINCULADA)
+// ==========================================
+export const actualizarActividad = async (req, res, next) => {
+  const { idActividad } = req.params;
+  const { titulo, porcentaje, requiere_pdf, fecha_entrega } = req.body;
+
+  try {
+    await pool.query('BEGIN');
+
+    // 1. Actualizar la actividad en la planilla
+    const requierePdfValidado = requiere_pdf === true;
+    const queryActividad = `
+      UPDATE actividades 
+      SET titulo = $1, porcentaje = $2, requiere_pdf = $3, fecha_entrega = $4
+      WHERE id_actividad = $5
+      RETURNING *
+    `;
+    const { rows: actRows } = await pool.query(queryActividad, [
+      titulo, porcentaje, requierePdfValidado, fecha_entrega, idActividad
+    ]);
+
+    if (actRows.length === 0) {
+      await pool.query('ROLLBACK');
+      return res.status(404).json({ message: "Actividad no encontrada." });
+    }
+
+    // 2. Actualizar la tarea asociada en el calendario del estudiante
+    const descripcionAutomatica = requierePdfValidado 
+      ? "Esta actividad requiere que subas un archivo (PDF) a través de la plataforma." 
+      : "Actividad evaluativa registrada por el docente en la planilla.";
+
+    const queryTarea = `
+      UPDATE tareas
+      SET titulo = $1, descripcion = $2, fecha_entrega = $3
+      WHERE id_actividad = $4
+    `;
+    await pool.query(queryTarea, [titulo, descripcionAutomatica, fecha_entrega, idActividad]);
+
+    await pool.query('COMMIT');
+    res.json({ message: "Actividad actualizada correctamente", actividad: actRows[0] });
+  } catch (error) {
+    await pool.query('ROLLBACK');
+    console.error("Error al actualizar actividad:", error);
+    next(error);
+  }
+};
+
+// ==========================================
+// 14. ELIMINAR ACTIVIDAD
+// ==========================================
+export const eliminarActividad = async (req, res, next) => {
+  const { idActividad } = req.params;
+
+  try {
+    // Gracias al ON DELETE CASCADE de la base de datos, eliminar la actividad 
+    // borrará automáticamente las notas y la tarea del calendario.
+    const query = `DELETE FROM actividades WHERE id_actividad = $1 RETURNING *`;
+    const { rows } = await pool.query(query, [idActividad]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Actividad no encontrada." });
+    }
+
+    res.json({ message: "Actividad y dependencias eliminadas correctamente." });
+  } catch (error) {
+    console.error("Error al eliminar actividad:", error);
     next(error);
   }
 };

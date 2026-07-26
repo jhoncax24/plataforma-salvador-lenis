@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+// Importamos un ícono que haga juego con el diseño del otro panel
+import { MdEventAvailable } from "react-icons/md";
 // IMPORTANTE: Asegúrate de que la ruta de importación coincida con tu estructura
 import { obtenerTareasDocente } from "../../api/perfilApi"; 
 
@@ -7,15 +9,12 @@ export default function CalendarioCard() {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   
-  // NUEVO: Estados para manejar las tareas internamente
   const [tasks, setTasks] = useState([]);
   
-  // NUEVO: Obtenemos el usuario logueado
   const userStr = localStorage.getItem("cesl_user") || localStorage.getItem("usuario");
   const user = userStr ? JSON.parse(userStr) : null;
   const idUsuario = user?.id_usuario || user?.id;
 
-  // NUEVO: Disparamos la búsqueda de tareas al cargar el componente
   useEffect(() => {
     if (idUsuario) {
       cargarTareas();
@@ -56,38 +55,50 @@ export default function CalendarioCard() {
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
 
-  // Filtramos las tareas que ya pasaron
   const hoyReal = new Date();
   const hoyStr = `${hoyReal.getFullYear()}-${String(hoyReal.getMonth() + 1).padStart(2, '0')}-${String(hoyReal.getDate()).padStart(2, '0')}`;
   const tareasProximas = tasks.filter((task) => task.fecha_entrega >= hoyStr);
 
   return (
-    <div className="bg-[#e9ecef] border-2 border-gray-400 rounded flex flex-col h-full shadow-sm">
-      <h3 className="text-xl text-center text-gray-800 py-4 border-b-2 border-gray-400 m-0 font-bold">
-        Tareas/Pendientes
-      </h3>
+    // 1. Contenedor principal idéntico a Opciones.jsx
+    <div className="bg-white border-2 border-gray-200 rounded-xl p-6 shadow-sm flex flex-col h-full transition-all hover:shadow-md">
+      
+      {/* 2. Título principal unificado */}
+      <div className="mb-4">
+        <h3 className="text-xl font-extrabold text-[#0033a0] border-b-2 border-gray-100 pb-3 flex items-center gap-2">
+          <MdEventAvailable className="text-2xl" /> 
+          <span>Tareas / Pendientes</span>
+        </h3>
+      </div>
 
-      <div className="bg-white p-6 flex flex-col gap-4 flex-1">
-        <p className="text-center text-gray-700 font-medium mb-2">Tareas más cercanas a la fecha</p>
+      <div className="flex flex-col gap-4 flex-1">
+        
+        {/* 3. Subtítulo con el mismo estilo que "Mis Clases Actuales" */}
+        <div>
+          <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+            Tareas más cercanas
+          </h4>
+        </div>
 
-        {/* LISTA DE TAREAS FILTRADA */}
-        {tareasProximas.length === 0 ? (
-          <p className="text-center text-sm text-gray-500 italic">No hay tareas pendientes asignadas.</p>
-        ) : (
-          tareasProximas.map((task) => (
-            <div key={task.id_tarea} className={`${colorStyles[task.color] || colorStyles["blue"]} p-2 font-medium border border-gray-800 shadow-sm text-sm rounded`}>
-              {formatDateText(task.fecha_entrega)}, {task.titulo}
-            </div>
-          ))
-        )}
+        <div className="flex flex-col gap-2">
+          {tareasProximas.length === 0 ? (
+            <p className="text-center text-sm font-medium text-gray-400 opacity-80 my-4">No hay tareas pendientes.</p>
+          ) : (
+            tareasProximas.map((task) => (
+              <div key={task.id_tarea} className={`${colorStyles[task.color] || colorStyles["blue"]} p-3 font-medium shadow-sm text-sm rounded-lg border border-transparent`}>
+                {formatDateText(task.fecha_entrega)} - {task.titulo}
+              </div>
+            ))
+          )}
+        </div>
 
         {/* MINI CALENDARIO FIJO ABAJO */}
-        <div className="border border-gray-300 rounded mt-auto p-4">
+        <div className="border border-gray-200 rounded-lg mt-auto p-4 bg-gray-50/50">
           <div className="flex justify-between items-center mb-4">
             <h4 className="font-bold text-gray-800 capitalize">{monthName}</h4>
             <div className="text-gray-500 font-bold tracking-widest cursor-pointer select-none">
-              <span onClick={prevMonth} className="hover:text-blue-600 px-2 text-lg">&lt;</span>
-              <span onClick={nextMonth} className="hover:text-blue-600 px-2 text-lg">&gt;</span>
+              <span onClick={prevMonth} className="hover:text-[#0033a0] px-2 text-lg transition-colors">&lt;</span>
+              <span onClick={nextMonth} className="hover:text-[#0033a0] px-2 text-lg transition-colors">&gt;</span>
             </div>
           </div>
 
@@ -101,17 +112,17 @@ export default function CalendarioCard() {
               const checkDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
               const taskForDay = tasks.find((t) => t.fecha_entrega === checkDate);
 
-              let styleClass = "bg-transparent hover:bg-gray-100 text-gray-700 font-medium";
+              let styleClass = "bg-transparent hover:bg-gray-200 text-gray-700 font-medium";
               if (taskForDay) {
                 const bg = colorStyles[taskForDay.color || 'blue'].split(' ')[0];
-                styleClass = `${bg} text-white font-bold`;
+                styleClass = `${bg} text-white font-bold shadow-sm`;
               } else if (day === hoyReal.getDate() && month === hoyReal.getMonth() && year === hoyReal.getFullYear()) {
-                styleClass = "bg-blue-50 border border-[#0033a0] text-[#0033a0] font-extrabold";
+                styleClass = "bg-blue-100 border border-[#0033a0] text-[#0033a0] font-extrabold";
               }
 
               return (
                 <div key={index} className="flex justify-center items-center p-0.5">
-                  <span className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${styleClass}`}>
+                  <span className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors cursor-default ${styleClass}`}>
                     {day}
                   </span>
                 </div>
@@ -121,7 +132,8 @@ export default function CalendarioCard() {
         </div>
       </div>
 
-      <div className="bg-[#e9ecef] border-t-2 border-gray-400 p-5 shrink-0 flex justify-center">
+      {/* 4. Pie de tarjeta integrado con el mismo borde de Opciones.jsx */}
+      <div className="mt-auto border-t-2 border-gray-100 pt-4 flex justify-center">
         <button 
           onClick={() => navigate("/docente/calendario")}
           className="w-full bg-[#0033a0] text-white px-4 py-2.5 rounded-lg font-bold hover:bg-blue-800 transition-all shadow-md hover:shadow-lg"

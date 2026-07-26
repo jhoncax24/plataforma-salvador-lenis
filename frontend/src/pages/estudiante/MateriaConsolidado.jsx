@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+// Importamos el ícono para la retroalimentación
+import { MdOutlineChat } from "react-icons/md";
 // IMPORTANTE: Ajusta la ruta de importación si es necesario
 import { obtenerDetalleMateria } from "../../api/perfilApi"; 
 
@@ -29,7 +31,7 @@ export default function MateriaConsolidado() {
     setLoading(false);
   };
 
- // Función para calcular el promedio PONDERADO de un periodo específico
+  // Función para calcular el promedio PONDERADO de un periodo específico
   const calcularPromedio = (notasArray) => {
     if (notasArray.length === 0) return "-";
     
@@ -40,7 +42,6 @@ export default function MateriaConsolidado() {
     const sumaPonderada = notasArray.reduce((acc, curr) => acc + (curr.nota * curr.porcentaje), 0);
     
     // Dividimos la nota ponderada entre el porcentaje evaluado hasta el momento
-    // Esto evita que el estudiante vea un 1.5 de definitiva si el profesor solo ha subido una tarea del 30%
     const definitivaReal = sumaPonderada / totalPorcentajeCalificado;
     
     return definitivaReal.toFixed(1);
@@ -89,16 +90,37 @@ export default function MateriaConsolidado() {
                       El docente no ha registrado<br/>actividades aún.
                     </div>
                   ) : (
-                    <ul className="space-y-3">
+                    <ul className="space-y-4">
                       {actividades.map((act) => (
-                        <li key={act.id} className="flex justify-between items-center text-sm border-b border-gray-100 pb-2">
-                          <div className="flex flex-col truncate pr-2">
-                            <span className="text-gray-600 font-bold">{act.actividad}</span>
-                            <span className="text-[10px] text-gray-400 font-medium uppercase">Valor: {act.porcentaje}%</span>
+                        // 👇 Cambiamos a flex-col para poner la retroalimentación debajo 👇
+                        <li key={act.id} className="flex flex-col text-sm border-b border-gray-100 pb-3 gap-2">
+                          
+                          {/* Fila superior: Título y Nota */}
+                          <div className="flex justify-between items-start">
+                            <div className="flex flex-col truncate pr-2">
+                              <span className="text-gray-700 font-bold whitespace-normal leading-tight">{act.actividad}</span>
+                              <span className="text-[10px] text-gray-400 font-bold uppercase mt-1">Valor: {act.porcentaje}%</span>
+                            </div>
+                            <span className={`font-extrabold px-3 py-1 rounded-md shadow-sm border ${act.nota < 3.0 ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200'}`}>
+                              {act.nota.toFixed(1)}
+                            </span>
                           </div>
-                          <span className={`font-extrabold px-3 py-1 rounded-md shadow-sm ${act.nota < 3.0 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                            {act.nota.toFixed(1)}
-                          </span>
+
+                          {/* 👇 Fila inferior: Caja de Retroalimentación 👇 */}
+                          <div className="mt-1 bg-gray-50 rounded-lg p-2.5 border border-gray-100">
+                            {act.retroalimentacion ? (
+                              <div className="flex items-start gap-2 text-gray-700 text-xs">
+                                <MdOutlineChat className="text-[#0033a0] shrink-0 mt-0.5" size={15} />
+                                <span className="italic font-medium">"{act.retroalimentacion}"</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2 text-gray-400 text-xs">
+                                <MdOutlineChat className="text-gray-300 shrink-0" size={15} />
+                                <span className="italic">Sin retroalimentación registrada</span>
+                              </div>
+                            )}
+                          </div>
+
                         </li>
                       ))}
                     </ul>

@@ -51,19 +51,12 @@ export const enviarCorreoCodigo = async (destinatario, codigo) => {
 export const enviarCorreoRecordatorio = async (tarea, diasFaltantes) => {
     try {
         const mensajeDias = diasFaltantes > 1 ? '3 días' : '1 día';
-        // Formateamos la fecha para que se vea bonita (Ej: "12/5/2026")
         const fechaFormateada = new Date(tarea.fecha_entrega).toLocaleDateString('es-ES');
 
         const mailOptions = {
             from: `"Centro Educativo Salvador Lenis" <${process.env.EMAIL_USER}>`,
-            // 👇 CAMBIO TEMPORAL PARA PRUEBAS (Secuestramos el destinatario) 👇
-           // to: "tu_correo_personal@gmail.com", // Reemplaza por tu correo real
-            //cc: "otro_correo_tuyo@gmail.com",   // Reemplaza por otro correo tuyo (o bórralo si no tienes dos)
-            
-            // Cuando termines las pruebas, lo volverás a dejar así:
             to: tarea.email_estudiante,
-            cc: tarea.email_acudiente || undefined, // Solo incluimos el CC si hay correo de acudiente
-            
+            cc: tarea.email_acudiente || undefined, 
             subject: `⏰ Recordatorio de Tarea: ${tarea.titulo}`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
@@ -92,5 +85,69 @@ export const enviarCorreoRecordatorio = async (tarea, diasFaltantes) => {
         console.log(`📧 Recordatorio enviado a: ${tarea.email_estudiante} y ${tarea.email_acudiente}`);
     } catch (error) {
         console.error("❌ Error al enviar el correo de recordatorio:", error);
+    }
+};
+
+// ==========================================
+// FUNCIÓN 3: ALERTA DE NUEVA ACTIVIDAD CREADA
+// ==========================================
+export const enviarCorreoNuevaActividad = async (correosDestino, datosActividad) => {
+    try {
+        // Formateamos la fecha (agregamos hora a cero para evitar desajustes de zona horaria)
+        const fechaFormateada = new Date(`${datosActividad.fecha_entrega}T00:00:00`).toLocaleDateString('es-ES', {
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric'
+        });
+
+        const mailOptions = {
+            from: `"Centro Educativo Salvador Lenis" <${process.env.EMAIL_USER}>`,
+            bcc: correosDestino, // Copia oculta masiva
+            subject: `📚 Nueva actividad asignada en ${datosActividad.materia}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                    <h2 style="color: #0033a0; text-align: center;">Centro Educativo Salvador Lenis</h2>
+                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+                    
+                    <h3 style="color: #333;">¡Hola!</h3>
+                    <p style="font-size: 16px; color: #333; line-height: 1.5;">
+                        El docente <strong>${datosActividad.docente}</strong> acaba de asignar una nueva actividad evaluativa en la materia de <strong>${datosActividad.materia}</strong>.
+                    </p>
+                    
+                    <!-- Tarjeta de la actividad -->
+                    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; margin: 25px 0;">
+                        <h3 style="margin: 0 0 10px 0; color: #0033a0; border-bottom: 2px solid #0033a0; padding-bottom: 5px; display: inline-block;">
+                            📝 ${datosActividad.titulo}
+                        </h3>
+                        <p style="margin: 10px 0 5px 0; color: #475569; font-size: 15px;">
+                            📅 <strong>Fecha de entrega:</strong> ${fechaFormateada}
+                        </p>
+                        
+                        ${datosActividad.requiere_pdf 
+                            ? `<div style="margin-top: 15px; background-color: #ffedd5; padding: 12px; border-radius: 5px; border-left: 4px solid #f97316;">
+                                <p style="margin: 0; color: #c2410c; font-size: 14px;">
+                                    ⚠️ <strong>Atención:</strong> Esta actividad requiere que el estudiante suba un archivo (PDF) a través de la plataforma virtual.
+                                </p>
+                               </div>` 
+                            : `<div style="margin-top: 15px; background-color: #dcfce7; padding: 12px; border-radius: 5px; border-left: 4px solid #22c55e;">
+                                <p style="margin: 0; color: #15803d; font-size: 14px;">
+                                    ✅ <strong>Nota:</strong> Esta actividad no requiere entregable virtual. Su evaluación se realizará de forma presencial o directa.
+                                </p>
+                               </div>`
+                        }
+                    </div>
+                    
+                    <p style="font-size: 14px; color: #666; text-align: center; margin-top: 30px;">
+                        Por favor, ingresa a la plataforma del colegio para revisar más detalles.
+                    </p>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`📧 Notificación de nueva actividad enviada a ${correosDestino.length} destinatarios.`);
+    } catch (error) {
+        console.error("❌ Error al enviar el correo de nueva actividad:", error);
     }
 };
