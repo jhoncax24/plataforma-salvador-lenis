@@ -1,26 +1,24 @@
-import { Resend } from 'resend';
+import sgMail from '@sendgrid/mail';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Inicializamos el cliente de Resend con la clave de entorno
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Inicializamos el cliente de SendGrid con tu clave de entorno
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// IMPORTANTE: Mientras estés en el modo de prueba de Resend,
-// el remitente DEBE ser 'onboarding@resend.dev'
-const emailRemitente = 'Soporte CESL <onboarding@resend.dev>';
+// Este DEBE ser exactamente el correo de Gmail que verificaste en la plataforma de SendGrid
+const emailRemitente = 'salvadorlenisce@gmail.com';
 
 // ==========================================
 // FUNCIÓN 1: CÓDIGO DE RECUPERACIÓN DE CONTRASEÑA
 // ==========================================
 export const enviarCorreoCodigo = async (destinatario, codigo) => {
     try {
-        console.log(`🔑 [RECUPERACIÓN] Intentando enviar código (${codigo}) a: ${destinatario} vía API`);
+        console.log(`🔑 [RECUPERACIÓN] Intentando enviar código (${codigo}) a: ${destinatario}`);
 
-        const { data, error } = await resend.emails.send({
+        const mensaje = {
+            to: destinatario,
             from: emailRemitente,
-            // En modo prueba de Resend, solo puedes enviar correos a la dirección con la que creaste tu cuenta
-            to: [destinatario], 
             subject: 'Código de Recuperación de Contraseña - CESL',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
@@ -28,27 +26,21 @@ export const enviarCorreoCodigo = async (destinatario, codigo) => {
                     <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
                     <p style="font-size: 16px; color: #333;">Hola,</p>
                     <p style="font-size: 16px; color: #333;">Hemos recibido una solicitud para restablecer tu contraseña. Ingresa el siguiente código en la plataforma:</p>
-                    
                     <div style="text-align: center; margin: 30px 0;">
                         <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #0033a0; background-color: #f4f6f9; padding: 15px 30px; border-radius: 8px; border: 2px dashed #0033a0; display: inline-block;">
                             ${codigo}
                         </span>
                     </div>
-                    
                     <p style="font-size: 14px; color: #666; text-align: center;">Este código <strong>expirará en 15 minutos</strong>.</p>
                 </div>
             `
-        });
+        };
 
-        if (error) {
-            throw error;
-        }
-
-        console.log(`✉️ [RECUPERACIÓN] Correo enviado exitosamente. ID: ${data?.id}`);
-        return data;
-
+        await sgMail.send(mensaje);
+        console.log(`✉️ [RECUPERACIÓN] Correo enviado exitosamente.`);
+        return true;
     } catch (error) {
-        console.error("❌ [RECUPERACIÓN] Error al enviar el correo:", error);
+        console.error("❌ [RECUPERACIÓN] Error de la API:", error.response ? error.response.body : error);
         throw new Error("No se pudo enviar el correo de recuperación");
     }
 };
@@ -61,13 +53,12 @@ export const enviarCorreoRecordatorio = async (tarea, diasFaltantes) => {
         const mensajeDias = diasFaltantes > 1 ? '3 días' : '1 día';
         const fechaFormateada = new Date(tarea.fecha_entrega).toLocaleDateString('es-ES');
         
-        // Armamos el arreglo de destinatarios
         const destinatarios = [tarea.email_estudiante];
         if (tarea.email_acudiente) destinatarios.push(tarea.email_acudiente);
 
-        const { data, error } = await resend.emails.send({
-            from: emailRemitente,
+        const mensaje = {
             to: destinatarios,
+            from: emailRemitente,
             subject: `⏰ Recordatorio de Tarea: ${tarea.titulo}`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
@@ -80,12 +71,12 @@ export const enviarCorreoRecordatorio = async (tarea, diasFaltantes) => {
                     </div>
                 </div>
             `
-        });
+        };
 
-        if (error) throw error;
+        await sgMail.send(mensaje);
         console.log(`📧 Recordatorio enviado con éxito.`);
     } catch (error) {
-        console.error("❌ Error al enviar recordatorio:", error);
+        console.error("❌ Error al enviar recordatorio:", error.response ? error.response.body : error);
     }
 };
 
@@ -96,9 +87,10 @@ export const enviarCorreoNuevaActividad = async (correosDestino, datosActividad)
     try {
         const fechaFormateada = new Date(`${datosActividad.fecha_entrega}T00:00:00`).toLocaleDateString('es-ES');
 
-        const { data, error } = await resend.emails.send({
+        const mensaje = {
+            to: 'soporte@cesl.edu.co', // SendGrid requiere un destinatario principal
+            bcc: correosDestino, // Copia oculta masiva
             from: emailRemitente,
-            to: correosDestino, // En Resend enviamos directamente en el 'to' para arreglos masivos
             subject: `📚 Nueva actividad asignada en ${datosActividad.materia}`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
@@ -112,12 +104,12 @@ export const enviarCorreoNuevaActividad = async (correosDestino, datosActividad)
                     </div>
                 </div>
             `
-        });
+        };
 
-        if (error) throw error;
+        await sgMail.send(mensaje);
         console.log(`📧 Notificación de nueva actividad enviada.`);
     } catch (error) {
-        console.error("❌ Error al enviar correo de nueva actividad:", error);
+        console.error("❌ Error al enviar correo de nueva actividad:", error.response ? error.response.body : error);
     }
 };
 
@@ -129,9 +121,9 @@ export const enviarCorreoCierreMatricula = async (acudiente, fechaLimite) => {
         if (!acudiente.correo && !acudiente.email) return;
         const destino = acudiente.correo || acudiente.email;
 
-        const { data, error } = await resend.emails.send({
+        const mensaje = {
+            to: destino,
             from: emailRemitente,
-            to: [destino],
             subject: '⚠️ Importante: Cierre de Matrículas en Línea - CESL',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
@@ -139,12 +131,12 @@ export const enviarCorreoCierreMatricula = async (acudiente, fechaLimite) => {
                     <p style="font-size: 16px; color: #333;">El plazo para la matrícula en línea ha finalizado (${fechaLimite}).</p>
                 </div>
             `
-        });
+        };
 
-        if (error) throw error;
+        await sgMail.send(mensaje);
         console.log(`📧 Aviso de cierre enviado a: ${destino}`);
     } catch (error) {
-        console.error("❌ Error al enviar cierre de matrícula:", error);
+        console.error("❌ Error al enviar cierre de matrícula:", error.response ? error.response.body : error);
     }
 };
 
@@ -153,9 +145,10 @@ export const enviarCorreoCierreMatricula = async (acudiente, fechaLimite) => {
 // ==========================================
 export const enviarCorreoCalificacion = async (correosDestino, datosCalificacion) => {
     try {
-        const { data, error } = await resend.emails.send({
+        const mensaje = {
+            to: 'soporte@cesl.edu.co', // SendGrid requiere un destinatario principal
+            bcc: correosDestino, 
             from: emailRemitente,
-            to: correosDestino, 
             subject: `✅ Actividad Calificada en ${datosCalificacion.materia}`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
@@ -165,11 +158,11 @@ export const enviarCorreoCalificacion = async (correosDestino, datosCalificacion
                     </p>
                 </div>
             `
-        });
+        };
 
-        if (error) throw error;
+        await sgMail.send(mensaje);
         console.log(`📧 Notificación de calificación enviada.`);
     } catch (error) {
-        console.error("❌ Error al enviar correo de calificación:", error);
+        console.error("❌ Error al enviar correo de calificación:", error.response ? error.response.body : error);
     }
 };
