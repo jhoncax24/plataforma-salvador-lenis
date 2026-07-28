@@ -6,14 +6,16 @@ dotenv.config();
 // Configuramos el "cartero" que se conectará a tu cuenta de Gmail
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: process.env.EMAIL_PORT || 465,
-    secure: true, // true para el puerto 465 (SSL)
+    port: 587,          // 👈 Cambiamos el puerto 465 por 587 (puerto abierto en Render)
+    secure: false,       // 👈 Debe ser 'false' para el puerto 587 (utiliza STARTTLS)
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
-    // 👇 ESTA ES LA LÍNEA QUE SOLUCIONA EL ERROR EN RENDER 👇
-    family: 4 // Fuerza a Node.js a usar IPv4 en lugar de IPv6
+    family: 4,          // Forzamos el uso de IPv4
+    tls: {
+        rejectUnauthorized: false // Evita bloqueos de certificados en entornos en la nube
+    }
 });
 
 export const enviarCorreoCodigo = async (destinatario, codigo) => {
@@ -58,7 +60,7 @@ export const enviarCorreoRecordatorio = async (tarea, diasFaltantes) => {
         const mailOptions = {
             from: `"Centro Educativo Salvador Lenis" <${process.env.EMAIL_USER}>`,
             to: tarea.email_estudiante,
-            cc: tarea.email_acudiente || undefined, 
+            cc: tarea.email_acudiente || undefined,
             subject: `⏰ Recordatorio de Tarea: ${tarea.titulo}`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
@@ -97,9 +99,9 @@ export const enviarCorreoNuevaActividad = async (correosDestino, datosActividad)
     try {
         // Formateamos la fecha (agregamos hora a cero para evitar desajustes de zona horaria)
         const fechaFormateada = new Date(`${datosActividad.fecha_entrega}T00:00:00`).toLocaleDateString('es-ES', {
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
             day: 'numeric'
         });
 
@@ -126,18 +128,18 @@ export const enviarCorreoNuevaActividad = async (correosDestino, datosActividad)
                             📅 <strong>Fecha de entrega:</strong> ${fechaFormateada}
                         </p>
                         
-                        ${datosActividad.requiere_pdf 
-                            ? `<div style="margin-top: 15px; background-color: #ffedd5; padding: 12px; border-radius: 5px; border-left: 4px solid #f97316;">
+                        ${datosActividad.requiere_pdf
+                    ? `<div style="margin-top: 15px; background-color: #ffedd5; padding: 12px; border-radius: 5px; border-left: 4px solid #f97316;">
                                 <p style="margin: 0; color: #c2410c; font-size: 14px;">
                                     ⚠️ <strong>Atención:</strong> Esta actividad requiere que el estudiante suba un archivo (PDF) a través de la plataforma virtual.
                                 </p>
-                               </div>` 
-                            : `<div style="margin-top: 15px; background-color: #dcfce7; padding: 12px; border-radius: 5px; border-left: 4px solid #22c55e;">
+                               </div>`
+                    : `<div style="margin-top: 15px; background-color: #dcfce7; padding: 12px; border-radius: 5px; border-left: 4px solid #22c55e;">
                                 <p style="margin: 0; color: #15803d; font-size: 14px;">
                                     ✅ <strong>Nota:</strong> Esta actividad no requiere entregable virtual. Su evaluación se realizará de forma presencial o directa.
                                 </p>
                                </div>`
-                        }
+                }
                     </div>
                     
                     <p style="font-size: 14px; color: #666; text-align: center; margin-top: 30px;">
