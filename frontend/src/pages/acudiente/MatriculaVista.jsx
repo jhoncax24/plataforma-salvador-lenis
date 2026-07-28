@@ -1,7 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-// 👇 AHORA SÍ importamos las funciones que creamos en perfilApi.js
-import { obtenerEstadoMatricula, enviarMatriculaBD } from "../../api/perfilApi";
+import { obtenerEstadoMatricula, enviarMatriculaBD, obtenerFechaLimiteMatricula } from "../../api/perfilApi"; // 👇 AÑADIDA IMPORTACIÓN
+
+const TODOS_LOS_CURSOS = [
+  { id: 1, nombre: "1-1" }, { id: 2, nombre: "1-2" },
+  { id: 3, nombre: "2-1" }, { id: 4, nombre: "2-2" },
+  { id: 5, nombre: "3-1" }, { id: 6, nombre: "3-2" },
+  { id: 7, nombre: "4-1" }, { id: 8, nombre: "4-2" },
+  { id: 9, nombre: "5-1" }, { id: 10, nombre: "5-2" },
+  { id: 11, nombre: "6-1" }, { id: 12, nombre: "6-2" },
+  { id: 13, nombre: "7-1" }, { id: 14, nombre: "7-2" },
+  { id: 15, nombre: "8-1" }, { id: 16, nombre: "8-2" },
+  { id: 17, nombre: "9-1" }, { id: 18, nombre: "9-2" },
+  { id: 19, nombre: "10-1" }, { id: 20, nombre: "10-2" },
+  { id: 21, nombre: "11-1" }, { id: 22, nombre: "11-2" }
+];
 
 export default function MatriculaVista() {
   const location = useLocation();
@@ -12,29 +25,40 @@ export default function MatriculaVista() {
   const [loadingEstado, setLoadingEstado] = useState(false);
   const [estadoActual, setEstadoActual] = useState(null);
 
-  const [documentosUrl, setDocumentosUrl] = useState("");
-  const [firmaHash, setFirmaHash] = useState("");
+  const [cursoSeleccionado, setCursoSeleccionado] = useState("");
   const [anioLectivo, setAnioLectivo] = useState("2026");
   const [enviando, setEnviando] = useState(false);
+  const [mostrarQR, setMostrarQR] = useState(false);
+
+  // 👇 EVALUACIÓN DE CIERRE BASADA EN LA BD
+  const [fechaLimiteString, setFechaLimiteString] = useState("");
+  const [isMatriculaAbierta, setIsMatriculaAbierta] = useState(true); // Abierto por defecto hasta verificar
 
   const estudianteSeleccionado = hijos.find(h => h.id === Number(estudianteId));
 
-  // 👇 Efecto REAL: Ahora sí va al backend a preguntar cómo está la matrícula
+  useEffect(() => {
+    // Al cargar la vista, primero consultamos la base de datos
+    const verificarFecha = async () => {
+      const limiteBD = await obtenerFechaLimiteMatricula();
+      const fechaLimite = new Date(limiteBD);
+      setFechaLimiteString(fechaLimite.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" }));
+      setIsMatriculaAbierta(new Date() <= fechaLimite);
+    };
+    verificarFecha();
+  }, []);
+
   useEffect(() => {
     if (estudianteId) {
       const cargarEstado = async () => {
         setLoadingEstado(true);
+        setMostrarQR(false);
         try {
           const res = await obtenerEstadoMatricula(estudianteId);
           setEstadoActual(res);
-          
-          // Si ya hay un proceso, precargamos los datos para que el usuario los vea
-          if (res && res.id_matricula) {
-            setDocumentosUrl(res.documentos_url || "");
-            setFirmaHash(res.firma_digital_hash || "");
+          if (res && res.id_curso && !res.promovido) {
+            setCursoSeleccionado(res.id_curso);
           } else {
-            setDocumentosUrl("");
-            setFirmaHash("");
+            setCursoSeleccionado("");
           }
         } catch (error) {
           console.error("Error al cargar estado de matrícula:", error);
@@ -45,148 +69,167 @@ export default function MatriculaVista() {
       cargarEstado();
     } else {
       setEstadoActual(null);
-      setDocumentosUrl("");
-      setFirmaHash("");
+      setCursoSeleccionado("");
+      setMostrarQR(false);
     }
   }, [estudianteId]);
 
-  const handleProcesarMatricula = async () => {
+  const handleProcesarMatricula = async (e) => {
+    e.preventDefault();
     if (!estudianteId) return alert("Selecciona un estudiante");
-    if (!documentosUrl.trim()) return alert("Por favor ingresa la URL con los documentos adjuntos (Cédula, Registro Civil, etc.)");
-    if (!firmaHash.trim()) return alert("Por favor escribe tu identificación en el campo de firma como aceptación legal.");
+    if (!cursoSeleccionado) return alert("Por favor selecciona el curso al que deseas matricularlo.");
 
     setEnviando(true);
     try {
-      // 👇 ENVÍO REAL: Ahora sí manda la orden a la base de datos PostgreSQL
       await enviarMatriculaBD({
         id_estudiante: Number(estudianteId),
-        documentos_url: documentosUrl,
-        firma_digital_hash: firmaHash,
         anio_lectivo: anioLectivo,
-        id_curso: estudianteSeleccionado?.degreeId || estudianteSeleccionado?.id_curso || 1
+        id_curso: Number(cursoSeleccionado),
+        documentos_url: "",
+        firma_digital_hash: ""
       });
-      
-      alert("¡El formulario de matrícula ha sido enviado a revisión exitosamente!");
-      navigate("/acudiente");
+      setMostrarQR(true);
     } catch (error) {
-      alert("Ocurrió un error al procesar el trámite.");
-      console.error(error);
+      console.error("Error al enviar matrícula:", error);
+      alert("Ocurrió un error al intentar enviar la matrícula.");
     } finally {
       setEnviando(false);
     }
   };
 
+  const cursosFiltrados = TODOS_LOS_CURSOS.filter(curso => {
+    if (!estadoActual || !estadoActual.grado_habilitado) return true;
+    const gradoDelCurso = curso.nombre.split('-')[0];
+    return gradoDelCurso === String(estadoActual.grado_habilitado);
+  });
+
   return (
-    <div className="w-full min-h-screen bg-gray-50 sm:p-4 lg:p-6 flex flex-col items-center">
-      <div className="bg-white border-0 sm:border-2 sm:border-gray-200 rounded-none sm:rounded-xl shadow-none sm:shadow-md p-4 sm:p-6 md:p-8 w-full max-w-[1800px] flex-1 sm:flex-none">
-        
-        {/* Banner Informativo */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 sm:mb-8 bg-blue-50 p-4 rounded-lg border-l-4 border-[#0033a0] shadow-sm gap-4">
-          <div className="flex-1 text-left px-2">
-            <p className="text-[#0033a0] text-sm md:text-base leading-relaxed">
-              <span className="font-extrabold text-lg mr-2 block sm:inline mb-1 sm:mb-0">💡 Proceso Legal:</span>
-              Adjunta las carpetas de requisitos en formato digital. Al rellenar la firma digital, das consentimiento del proceso de matrícula institucional.
-            </p>
-          </div>
-          <button onClick={() => navigate(-1)} className="w-full md:w-auto bg-[#0033a0] text-white px-6 py-3 md:py-2 rounded-lg font-bold hover:bg-blue-800 transition-all shadow text-center">
+    <div className="max-w-4xl mx-auto p-6 mt-8">
+      {/* BLOQUE DE CIERRE TOTAL */}
+      {!isMatriculaAbierta ? (
+        <div className="text-center p-8 bg-red-50 rounded-xl border border-red-200 shadow-md">
+          <h2 className="text-3xl font-bold text-red-700 mb-4">Matrículas Cerradas</h2>
+          <p className="text-gray-700 text-lg mb-6">El plazo para realizar la matrícula en línea finalizó el {fechaLimiteString}. Por favor, acérquese a la secretaría institucional.</p>
+          <button onClick={() => navigate("/acudiente")} className="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition">
             Volver al Menú
           </button>
         </div>
+      ) : (
+        <>
+          {mostrarQR ? (
+            <div className="text-center p-8 bg-green-50 rounded-xl border border-green-200 shadow-md">
+              <h2 className="text-3xl font-bold text-green-700 mb-4">¡Matrícula Radicada!</h2>
+              <p className="text-gray-700 text-lg mb-4">
+                La matrícula de <strong>{estudianteSeleccionado?.nombre}</strong> ha quedado en estado <span className="font-bold text-yellow-600">Pendiente</span>.
+              </p>
+              <p className="text-gray-700 mb-6">
+                Para finalizar el proceso y cambiar el estado a <strong>Matriculado</strong>, realice el pago escaneando este código QR:
+              </p>
+              
+              <div className="flex justify-center mb-6">
+                <img 
+                  src="/qr.pago.png" 
+                  alt="Código QR de Pago" 
+                  className="w-64 h-64 object-cover border-4 border-white shadow-lg rounded-xl"
+                />
+              </div>
 
-        <div className="mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#0033a0]">Matrícula en Línea</h2>
-          <p className="text-sm sm:text-base text-gray-500 font-medium mt-1">Realiza la vinculación oficial para el siguiente ciclo escolar</p>
-        </div>
+              <p className="text-sm text-gray-500 mb-8">
+                Una vez se verifique el pago, el estado se actualizará en el sistema.
+              </p>
 
-        {/* Formulario Principal */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 items-start">
-          
-          {/* Columna Izquierda: Selección */}
-          <div className="space-y-4 bg-gray-50 p-4 sm:p-6 rounded-xl border border-gray-200 w-full">
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Seleccionar Estudiante a Matricular:</label>
-              <select 
-                value={estudianteId} 
-                onChange={e => setEstudianteId(e.target.value)}
-                className="w-full border sm:border-2 border-gray-300 sm:border-gray-200 rounded-lg p-3 bg-white font-medium text-gray-700 focus:outline-none focus:border-[#0033a0]"
+              <button 
+                onClick={() => navigate("/acudiente")}
+                className="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition"
               >
-                <option value="">-- Selecciona un estudiante --</option>
-                {hijos.map(h => <option key={h.id} value={h.id}>{h.nombre} - {h.grado}</option>)}
-              </select>
+                Volver al Menú
+              </button>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Año Lectivo:</label>
-                <input type="text" value={anioLectivo} disabled className="w-full border sm:border-2 border-gray-300 sm:border-gray-200 bg-gray-100 rounded-lg p-3 font-bold text-[#0033a0]" />
+          ) : (
+            <div className="bg-white rounded-lg shadow p-6">
+              
+              {/* AVISO INFORMATIVO DE PLAZO MÁXIMO VINCULADO A LA BD */}
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 p-4 mb-6 rounded-lg shadow-sm">
+                  <p className="font-bold">⚠️ Atención: Plazo de Matrículas</p>
+                  <p className="text-sm">El proceso de matrícula en línea estará habilitado únicamente hasta el <strong>{fechaLimiteString}</strong>.</p>
               </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Estado del Trámite:</label>
-                <div className="pt-2">
-                  {loadingEstado ? (
-                    <span className="text-gray-400 text-sm font-medium">Consultando...</span>
-                  ) : !estudianteId ? (
-                    <span className="text-gray-400 font-bold text-sm">—</span>
-                  ) : (
-                    <span className={`px-4 py-1.5 rounded-full font-black text-xs uppercase border inline-block ${
-                      !estadoActual?.id_matricula ? 'bg-gray-100 text-gray-600 border-gray-300' :
-                      estadoActual.estado === 'Pendiente' ? 'bg-yellow-100 text-yellow-700 border-yellow-300' :
-                      estadoActual.estado === 'Aprobado' ? 'bg-green-100 text-green-700 border-green-300' : 'bg-red-100 text-red-700 border-red-300'
-                    }`}>
-                      {estadoActual?.estado || "No Iniciado"}
-                    </span>
-                  )}
+
+              <h2 className="text-2xl font-bold mb-6 text-gray-800">Renovación de Matrícula</h2>
+              
+              <form onSubmit={handleProcesarMatricula}>
+                <div className="mb-6">
+                  <label className="block font-semibold mb-2">Seleccione el Estudiante</label>
+                  <select 
+                    value={estudianteId} 
+                    onChange={(e) => setEstudianteId(e.target.value)}
+                    className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">-- Seleccionar Hijo --</option>
+                    {hijos.map(h => (
+                      <option key={h.id} value={h.id}>{h.nombre}</option>
+                    ))}
+                  </select>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Columna Derecha: Carga de Requisitos */}
-          {estudianteId && (
-            <div className="space-y-4 bg-white border border-gray-200 p-4 sm:p-6 rounded-xl shadow-sm w-full">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Enlace de Documentación (Drive/Cloud):</label>
-                <input 
-                  type="text" 
-                  value={documentosUrl}
-                  onChange={e => setDocumentosUrl(e.target.value)}
-                  disabled={estadoActual?.estado === "Aprobado"}
-                  placeholder="https://drive.google.com/drive/folders/..."
-                  className="w-full border sm:border-2 border-gray-300 sm:border-gray-200 rounded-lg p-3 focus:outline-none focus:border-[#0033a0] text-gray-700 font-medium"
-                />
-                <p className="text-gray-400 text-xs mt-2 leading-relaxed">Sube en una sola carpeta PDF: Registro civil, foto del alumno, carnet de vacunas y documento del acudiente.</p>
-              </div>
+                {loadingEstado && <p className="text-blue-500 mb-4 font-medium">Cargando estado...</p>}
 
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Firma Digital (Documento de Identidad):</label>
-                <input 
-                  type="text" 
-                  value={firmaHash}
-                  onChange={e => setFirmaHash(e.target.value)}
-                  disabled={estadoActual?.estado === "Aprobado"}
-                  placeholder="Tu ID equivale a tu firma"
-                  className="w-full border sm:border-2 border-gray-300 sm:border-gray-200 rounded-lg p-3 focus:outline-none focus:border-[#0033a0] text-gray-700 font-medium"
-                />
-              </div>
+                {estadoActual && !loadingEstado && (
+                  <>
+                    <div className="mb-6 bg-gray-50 p-4 border border-gray-200 rounded-lg">
+                      <h3 className="font-bold text-gray-700 mb-2">Estado Actual de la Matrícula</h3>
+                      <p>
+                        <span className="font-semibold text-gray-600">Estado: </span>
+                        <span className={`px-2 py-1 rounded text-white text-sm ${
+                          estadoActual.estado === 'Matriculado' ? 'bg-green-500' : 
+                          estadoActual.estado === 'Pendiente' ? 'bg-yellow-500' : 'bg-red-500'
+                        }`}>
+                          {estadoActual.estado || "No Iniciado"}
+                        </span>
+                      </p>
+                    </div>
 
-              {estadoActual?.estado !== "Aprobado" ? (
-                <button
-                  onClick={handleProcesarMatricula}
-                  disabled={enviando}
-                  className="w-full bg-[#0033a0] text-white py-3.5 sm:py-3 rounded-lg font-bold hover:bg-blue-800 transition-all shadow-md mt-4 text-sm sm:text-base"
+                    <div className="mb-6 p-5 rounded-lg border border-gray-200 shadow-sm">
+                      <h4 className="font-bold text-lg mb-3">Evaluación Académica</h4>
+                      
+                      {estadoActual.promovido ? (
+                        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded">
+                          <p className="font-semibold">¡Aprobado! El estudiante avanzará al grado {estadoActual.grado_habilitado}.</p>
+                        </div>
+                      ) : (
+                        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded">
+                          <p className="font-semibold">Reprobado. El estudiante perdió {estadoActual.materias_perdidas} materia(s).</p>
+                          <p className="text-sm">Debe repetir el grado {estadoActual.grado_habilitado}.</p>
+                        </div>
+                      )}
+
+                      <label className="block font-semibold mb-2 mt-4">Asignar al Curso:</label>
+                      <select 
+                        value={cursoSeleccionado}
+                        onChange={(e) => setCursoSeleccionado(e.target.value)}
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      >
+                        <option value="">-- Seleccione un curso disponible --</option>
+                        {cursosFiltrados.map(curso => (
+                          <option key={curso.id} value={curso.id}>Curso {curso.nombre}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                )}
+
+                <button 
+                  type="submit" 
+                  disabled={!estudianteId || enviando}
+                  className="w-full md:w-auto bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
                 >
-                  {enviando ? "Guardando Trámite..." : "Radicar Formulario de Matrícula"}
+                  {enviando ? "Procesando..." : "Enviar Matrícula"}
                 </button>
-              ) : (
-                <div className="bg-green-50 text-green-800 p-4 rounded-lg border border-green-300 font-bold text-center text-sm leading-relaxed mt-4">
-                  🔒 Este proceso de matrícula escolar ya fue aprobado y cerrado para el año lectivo actual.
-                </div>
-              )}
+              </form>
             </div>
           )}
-
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }

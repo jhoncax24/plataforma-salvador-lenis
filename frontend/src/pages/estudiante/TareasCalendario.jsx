@@ -6,7 +6,8 @@ import {
   actualizarRecordatorio, 
   entregarTareaEstudiante 
 } from "../../api/perfilApi";
-import { MdVisibility, MdEdit, MdLightbulb, MdLock, MdFileUpload } from "react-icons/md";
+// Importamos MdCheckCircle para el mensaje de tarea entregada
+import { MdVisibility, MdEdit, MdLightbulb, MdLock, MdFileUpload, MdCheckCircle } from "react-icons/md";
 
 export default function TareasCalendario() {
   const navigate = useNavigate();
@@ -134,8 +135,6 @@ export default function TareasCalendario() {
   // LÓGICA DE SUBIDA DE ARCHIVOS Y VALIDACIÓN
   // ==========================================
   const handleClickSubir = () => {
-    // 1. Validación estricta de la fecha
-    // Agregamos 'T23:59:59' para permitir subir hasta el último minuto de ese día
     const fechaLimite = new Date(`${tareaSeleccionada.fecha_entrega}T23:59:59`);
     const ahora = new Date();
 
@@ -144,7 +143,6 @@ export default function TareasCalendario() {
       return;
     }
 
-    // Si está en tiempo, abrimos el selector de archivos
     fileInputRef.current.click();
   };
 
@@ -160,16 +158,18 @@ export default function TareasCalendario() {
 
     try {
       setUploading(true);
-      // Enviamos el ID de la tarea seleccionada al backend
       await entregarTareaEstudiante(idUsuario, tareaSeleccionada.id_tarea, file);
       alert("¡Tarea entregada exitosamente!");
+      
+      // Actualizamos localmente para mostrar el botón verde sin recargar
+      setTareaSeleccionada({ ...tareaSeleccionada, entregada: true });
       cargarTareas();
     } catch (error) {
       console.error("Error al subir el archivo:", error);
       alert("Hubo un error al subir el archivo. Intenta de nuevo.");
     } finally {
       setUploading(false);
-      e.target.value = null; // Limpiamos el input para futuras subidas
+      e.target.value = null; 
     }
   };
 
@@ -181,7 +181,6 @@ export default function TareasCalendario() {
   return (
     <div className="w-full min-h-screen bg-gray-50 p-4 md:p-6 animate-fade-in-up font-sans">
       
-      {/* INPUT OCULTO PARA SUBIR EL PDF */}
       <input 
         type="file" 
         accept=".pdf" 
@@ -190,7 +189,6 @@ export default function TareasCalendario() {
         className="hidden" 
       />
 
-      {/* HEADER PRINCIPAL */}
       <div className="w-full flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-xl shadow-sm border-l-[6px] border-[#0033a0] mb-6">
         <div>
           <h2 className="text-3xl font-extrabold text-gray-800 m-0">Tareas Pendientes</h2>
@@ -204,7 +202,6 @@ export default function TareasCalendario() {
         </button>
       </div>
 
-      {/* BANNER TIP */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 bg-blue-50 p-4 rounded-lg border-l-4 border-[#0033a0] shadow-sm gap-4">
         <div className="flex-1 text-center md:text-left px-2 flex items-center justify-center md:justify-start gap-2">
           <MdLightbulb className="text-lg text-[#0033a0]" />
@@ -217,7 +214,6 @@ export default function TareasCalendario() {
 
       <div className="w-full flex flex-col xl:flex-row items-stretch gap-6">
 
-        {/* CALENDARIO GIGANTE */}
         <div className="flex-1 w-full bg-white rounded-xl shadow-md border border-gray-300 overflow-hidden flex flex-col h-full">
           <div className="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
             <button onClick={irMesAnterior} className="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-100 rounded-lg font-bold text-gray-600 transition-colors shadow-sm flex items-center gap-2">
@@ -320,24 +316,11 @@ export default function TareasCalendario() {
 
           <form onSubmit={handleGuardarTarea} className="flex flex-col gap-5">
 
-            {/* SECCIÓN ESPECIAL PARA TAREAS DEL DOCENTE */}
+            {/* AVISO SUPERIOR PARA TAREAS DEL DOCENTE (Sin botón) */}
             {esSoloLectura && (
-              <div className="flex flex-col gap-3">
-                <div className="bg-yellow-50 text-yellow-800 p-3 rounded-lg border border-yellow-300 text-sm font-bold text-center shadow-sm animate-fade-in-up flex items-center justify-center gap-2">
-                  <MdLock className="text-lg shrink-0" />
-                  <span className="text-left">Esta tarea fue asignada por el docente.</span>
-                </div>
-                
-                {/* BOTÓN DE SUBIDA INTEGRADO */}
-                <button
-                  type="button"
-                  onClick={handleClickSubir}
-                  disabled={uploading}
-                  className="w-full bg-[#0033a0] text-white py-2.5 rounded-lg font-bold hover:bg-blue-800 transition-all shadow flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <MdFileUpload className="text-xl" />
-                  {uploading ? "Subiendo PDF..." : "Subir Tarea (PDF)"}
-                </button>
+              <div className="bg-yellow-50 text-yellow-800 p-3 rounded-lg border border-yellow-300 text-sm font-bold text-center shadow-sm animate-fade-in-up flex items-center justify-center gap-2">
+                <MdLock className="text-lg shrink-0" />
+                <span className="text-left">Esta tarea fue asignada por el docente.</span>
               </div>
             )}
 
@@ -373,6 +356,28 @@ export default function TareasCalendario() {
                 disabled={esSoloLectura}
               />
             </div>
+
+            {/* 👇 NUEVO: SECCIÓN DE SUBIDA O MENSAJE DE ENTREGADO 👇 */}
+            {esSoloLectura && (
+              <div className="pt-2 border-t border-gray-100">
+                {tareaSeleccionada?.entregada ? (
+                  <div className="bg-green-50 text-green-700 p-3 rounded-lg border border-green-200 text-sm font-bold text-center flex items-center justify-center gap-2">
+                    <MdCheckCircle className="text-xl" />
+                    <span>Ya has entregado esta tarea</span>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleClickSubir}
+                    disabled={uploading}
+                    className="w-full bg-[#0033a0] text-white py-2.5 rounded-lg font-bold hover:bg-blue-800 transition-all shadow flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <MdFileUpload className="text-xl" />
+                    {uploading ? "Subiendo PDF..." : "Subir Tarea (PDF)"}
+                  </button>
+                )}
+              </div>
+            )}
 
             {!esSoloLectura && (
               <div>

@@ -1,6 +1,5 @@
 import { pool } from "../config/db.js";
-import { enviarCorreoNuevaActividad } from '../services/mailer.service.js';
-
+import { enviarCorreoNuevaActividad, enviarCorreoCalificacion } from '../services/mailer.service.js';
 // ==========================================
 // 1. OBTENER MATERIAS Y CURSOS (Filtrados por Docente)
 // ==========================================
@@ -273,16 +272,58 @@ export const crearActividad = async (req, res, next) => {
 };
 
 // ==========================================
-// 6. GUARDAR NOTAS Y RETROALIMENTACIÓN (Masivo o Individual)
+// 6. GUARDAR NOTAS Y NOTIFICAR SOLO PRIMERA CALIFICACIÓN
 // ==========================================
 export const guardarNotasActividades = async (req, res, next) => {
   const { notasArray } = req.body; 
-  // Ahora espera: [{ id_actividad: 1, id_estudiante: 10, nota: 4.5, retroalimentacion: "Buen análisis" }, ...]
 
   try {
+    // ---------------------------------------------------------
+    // PASO 1: Identificar previamente qué actividades NO tenían nota
+    // ---------------------------------------------------------
+    // Filtramos las notas que vienen del frontend con un valor numérico válido
+    const notasConValor = notasArray.filter(item => 
+      item.nota !== null && item.nota !== undefined && item.nota !== ""
+    );
+
+    // Lista para almacenar únicamente las combinaciones (estudiante + actividad) que son NUEVAS
+    const nuevasCalificaciones = [];
+
+    if (notasConValor.length > 0) {
+      // Consultamos el estado actual en la base de datos antes de sobrescribir
+      const checkQuery = `
+        SELECT id_actividad, id_estudiante, nota 
+        FROM notas_actividades 
+        WHERE (id_actividad, id_estudiante) IN (
+          ${notasConValor.map((_, i) => `($${i * 2 + 1}, $${i * 2 + 2})`).join(', ')}
+        )
+      `;
+      
+      const paramsCheck = notasConValor.flatMap(n => [parseInt(n.id_actividad, 10), parseInt(n.id_estudiante, 10)]);
+      const { rows: notasExistentes } = await pool.query(checkQuery, paramsCheck);
+
+      // Verificamos cuáles de las notas enviadas no existían o tenían valor NULL previamente
+      notasConValor.forEach(itemEnviado => {
+        const idAct = parseInt(itemEnviado.id_actividad, 10);
+        const idEst = parseInt(itemEnviado.id_estudiante, 10);
+
+        const registroPrevio = notasExistentes.find(
+          r => r.id_actividad === idAct && r.id_estudiante === idEst
+        );
+
+        // Si no existía registro o la nota previa era NULL, se considera PRIMERA CALIFICACIÓN
+        if (!registroPrevio || registroPrevio.nota === null) {
+          nuevasCalificaciones.push({ id_actividad: idAct, id_estudiante: idEst });
+        }
+      });
+    }
+
+    // ---------------------------------------------------------
+    // PASO 2: Guardar o actualizar las notas en la Base de Datos
+    // ---------------------------------------------------------
     await pool.query('BEGIN');
     
-    const query = `
+    const insertQuery = `
       INSERT INTO notas_actividades (id_actividad, id_estudiante, nota, retroalimentacion)
       VALUES ($1, $2, $3, $4)
       ON CONFLICT (id_actividad, id_estudiante) 
@@ -292,20 +333,95 @@ export const guardarNotasActividades = async (req, res, next) => {
     `;
     
     for (let item of notasArray) {
-      // Convertimos los strings vacíos a null para limpiar la base de datos
-      const notaValida = (item.nota !== null && item.nota !== "") ? parseFloat(item.nota) : null;
+      const notaValida = (item.nota !== null && item.nota !== undefined && item.nota !== "") ? parseFloat(item.nota) : null;
       const retroValida = (item.retroalimentacion && item.retroalimentacion.trim() !== "") ? item.retroalimentacion : null;
 
-      // Solo insertamos si al menos hay una nota o una retroalimentación que guardar
       if (notaValida !== null || retroValida !== null) {
-        await pool.query(query, [item.id_actividad, item.id_estudiante, notaValida, retroValida]);
+        await pool.query(insertQuery, [item.id_actividad, item.id_estudiante, notaValida, retroValida]);
       }
     }
     
     await pool.query('COMMIT');
+    // Respondemos rápidamente al cliente HTTP
     res.json({ message: "Notas y comentarios guardados con éxito" });
+
+    // ---------------------------------------------------------
+    // PASO 3: Notificar por correo SOLO a las primeras calificaciones
+    // ---------------------------------------------------------
+    try {
+      console.log(`📊 [NOTIFICACIÓN] Calificaciones nuevas/primeras detectadas: ${nuevasCalificaciones.length}`);
+
+      if (nuevasCalificaciones.length > 0) {
+        // Agrupamos los estudiantes por actividad
+        const actividadesMap = {};
+        nuevasCalificaciones.forEach(n => {
+          if (!actividadesMap[n.id_actividad]) {
+            actividadesMap[n.id_actividad] = [];
+          }
+          actividadesMap[n.id_actividad].push(n.id_estudiante);
+        });
+
+        // Enviamos correos únicamente para cada actividad con nuevas calificaciones
+        for (const [idActividadStr, estudiantesIDs] of Object.entries(actividadesMap)) {
+          const idActividad = parseInt(idActividadStr, 10);
+
+          // Obtener nombre de la actividad, materia y docente
+          const actQuery = `
+            SELECT 
+              a.titulo AS actividad_nombre, 
+              m.nombre AS materia_nombre, 
+              COALESCE(d.nombre_completo, 'Docente CESL') AS docente_nombre
+            FROM actividades a
+            JOIN materias m ON a.id_materia = m.id_materia
+            LEFT JOIN docentes d ON a.id_docente = d.id_docente
+            WHERE a.id_actividad = $1
+          `;
+          const { rows: actRows } = await pool.query(actQuery, [idActividad]);
+          if (actRows.length === 0) continue;
+          
+          const infoActividad = actRows[0];
+
+          // Obtener correos de los estudiantes recién calificados y sus acudientes
+          const correosQuery = `
+            SELECT 
+              ue.email AS email_estudiante,
+              ua.email AS email_acudiente
+            FROM estudiantes e
+            LEFT JOIN users ue ON e.id_usuario = ue.id_usuario
+            LEFT JOIN acudientes ac ON e.id_acudiente = ac.id_acudiente
+            LEFT JOIN users ua ON ac.id_usuario = ua.id_usuario
+            WHERE e.id_estudiante = ANY($1::int[])
+          `;
+          const { rows: correosRows } = await pool.query(correosQuery, [estudiantesIDs]);
+
+          const listaCorreos = new Set();
+          correosRows.forEach(row => {
+            if (row.email_estudiante) listaCorreos.add(row.email_estudiante);
+            if (row.email_acudiente) listaCorreos.add(row.email_acudiente);
+          });
+
+          const correosFinales = Array.from(listaCorreos);
+
+          if (correosFinales.length > 0) {
+            console.log(`✉️ [NOTIFICACIÓN] Enviando correo de PRIMERA calificación a (${correosFinales.length}) usuarios:`, correosFinales);
+            
+            const datosCalificacion = {
+              actividad: infoActividad.actividad_nombre,
+              materia: infoActividad.materia_nombre,
+              docente: infoActividad.docente_nombre
+            };
+
+            enviarCorreoCalificacion(correosFinales, datosCalificacion);
+          }
+        }
+      }
+    } catch (mailError) {
+      console.error("❌ Error en el proceso de notificación por correo:", mailError);
+    }
+
   } catch (error) {
     await pool.query('ROLLBACK');
+    console.error("Error al guardar notas:", error);
     next(error);
   }
 };
@@ -352,7 +468,7 @@ export const getEstudiantesPorCurso = async (req, res, next) => {
       SELECT DISTINCT e.id_estudiante, e.nombre_completo, e.documento
       FROM estudiantes e
       JOIN matriculas m ON e.id_estudiante = m.id_estudiante
-      WHERE m.id_curso = $1 AND m.estado = 'Activa'
+      WHERE m.id_curso = $1 AND m.estado IN ('Activa', 'Matriculado')
       ORDER BY e.nombre_completo ASC
     `;
     const { rows } = await pool.query(query, [idCurso]);

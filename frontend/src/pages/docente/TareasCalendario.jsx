@@ -2,17 +2,18 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 // IMPORTANTE: Asegúrate de tener actualizarTareaGlobal en tu perfilApi.js
 import { obtenerAsignaciones, obtenerTareasDocente, crearTareaGlobal, actualizarTareaGlobal } from "../../api/perfilApi";
+import { MdLightbulb, MdEdit, MdNoteAdd } from "react-icons/md";
 
 export default function CalendarioDocente() {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
-  
+
   const [nuevaTarea, setNuevaTarea] = useState({
     titulo: "", fecha_entrega: "", id_curso: "", id_materia: "", color: "blue"
   });
-  
+
   const [visibilidad, setVisibilidad] = useState("curso");
-  
+
   // 👉 NUEVO ESTADO: Para saber si estamos editando
   const [tareaSeleccionada, setTareaSeleccionada] = useState(null);
 
@@ -43,7 +44,7 @@ export default function CalendarioDocente() {
   // ==========================================
   // FUNCIONES DE SELECCIÓN Y EDICIÓN
   // ==========================================
-  
+
   // Cuando hace clic en un día vacío
   const seleccionarFechaVacia = (dia) => {
     const mesFormateado = String(mesActual + 1).padStart(2, '0');
@@ -57,7 +58,7 @@ export default function CalendarioDocente() {
     e.stopPropagation(); // 👈 MAGIA: Evita que se seleccione el día vacío que está de fondo
     setTareaSeleccionada(tarea);
     setVisibilidad(tarea.id_curso ? "curso" : "personal");
-    
+
     setNuevaTarea({
       titulo: tarea.titulo,
       fecha_entrega: tarea.fecha_entrega,
@@ -73,12 +74,12 @@ export default function CalendarioDocente() {
   };
 
   const handleGuardarTarea = async (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
     if (!idUsuario) return alert("Error: Usuario no identificado");
 
     try {
-      const payload = visibilidad === "personal" 
-        ? { ...nuevaTarea, id_curso: "", id_materia: "" } 
+      const payload = visibilidad === "personal"
+        ? { ...nuevaTarea, id_curso: "", id_materia: "" }
         : nuevaTarea;
 
       if (tareaSeleccionada) {
@@ -90,7 +91,7 @@ export default function CalendarioDocente() {
         await crearTareaGlobal(idUsuario, payload);
         alert(visibilidad === "personal" ? "¡Recordatorio personal guardado!" : "¡Tarea asignada al curso con éxito!");
       }
-      
+
       limpiarFormulario();
       cargarDatosIniciales();
     } catch (error) {
@@ -125,7 +126,7 @@ export default function CalendarioDocente() {
 
   return (
     <div className="w-full min-h-screen bg-gray-50 p-4 md:p-6 animate-fade-in-up font-sans">
-      
+
       <div className="w-full flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-xl shadow-sm border-l-[6px] border-[#0033a0] mb-6">
         <div>
           <h2 className="text-3xl font-extrabold text-gray-800 m-0">Gestión de Tareas y Eventos</h2>
@@ -135,18 +136,18 @@ export default function CalendarioDocente() {
           Volver al Inicio
         </button>
       </div>
-      
+
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 bg-blue-50 p-4 rounded-lg border-l-4 border-[#0033a0] shadow-sm gap-4">
-        <div className="flex-1 text-center md:text-left px-2">
-          <p className="text-[#0033a0] text-sm md:text-base">
-            <span className="font-extrabold text-lg mr-2">💡 Ayuda</span>
-            Para agregar una tarea, haz clic en un <strong className="underline cursor-pointer">día vacío</strong>. Para editar, haz clic directamente <strong className="underline cursor-pointer">sobre la tarea</strong>.
-          </p>
-        </div>
+        <p className="text-[#0033a0] text-sm md:text-base">
+          <span className="font-extrabold text-lg mr-2 inline-flex items-center gap-1">
+            <MdLightbulb className="text-xl" /> Ayuda
+          </span>
+          Para agregar una tarea, haz clic en un <strong className="underline cursor-pointer">día vacío</strong>. Para editar, haz clic directamente <strong className="underline cursor-pointer">sobre la tarea</strong>.
+        </p>
       </div>
 
       <div className="w-full flex flex-col xl:flex-row items-stretch gap-6">
-        
+
         {/* CALENDARIO */}
         <div className="flex-1 w-full bg-white rounded-xl shadow-md border border-gray-300 overflow-hidden flex flex-col h-full">
           <div className="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
@@ -179,9 +180,9 @@ export default function CalendarioDocente() {
                 }
 
                 return (
-                  <div 
-                    key={index} 
-                    onClick={() => dia && seleccionarFechaVacia(dia)} 
+                  <div
+                    key={index}
+                    onClick={() => dia && seleccionarFechaVacia(dia)}
                     className={`p-2 flex flex-col transition-colors overflow-y-auto custom-scrollbar relative ${!dia ? 'bg-gray-100' : 'bg-white hover:bg-blue-50/50 cursor-pointer'} ${esHoy ? 'ring-2 ring-inset ring-[#0033a0] z-10 bg-blue-50' : ''} ${isSelected && !esHoy ? 'ring-2 ring-inset ring-blue-300 bg-blue-50/80 z-10' : ''}`}
                   >
                     {dia && (
@@ -196,20 +197,20 @@ export default function CalendarioDocente() {
                         const tareasDelDia = tareasGuardadas.filter(t => t.fecha_entrega === fechaCelda);
 
                         return tareasDelDia.map(tarea => {
-                           const tailwindColors = {
-                              blue: "bg-blue-100 border-blue-300 text-blue-800", green: "bg-green-100 border-green-300 text-green-800", red: "bg-red-100 border-red-300 text-red-800", yellow: "bg-yellow-100 border-yellow-300 text-yellow-800", purple: "bg-purple-100 border-purple-300 text-purple-800"
-                           };
-                           const estiloColor = tailwindColors[tarea.color] || tailwindColors.blue;
-                           return (
-                             <div 
-                               key={tarea.id_tarea} 
-                               onClick={(e) => seleccionarTareaExistente(tarea, e)}
-                               className={`w-full border text-xs px-1.5 py-1 rounded truncate font-bold cursor-pointer hover:opacity-80 transition-opacity ${estiloColor} ${tarea.id_tarea === tareaSeleccionada?.id_tarea ? 'ring-2 ring-offset-1 ring-gray-400' : ''}`} 
-                               title={`${tarea.titulo}`}
-                             >
-                               {tarea.titulo} {tarea.grado && <span className="font-normal opacity-80">({tarea.grado})</span>}
-                             </div>
-                           );
+                          const tailwindColors = {
+                            blue: "bg-blue-100 border-blue-300 text-blue-800", green: "bg-green-100 border-green-300 text-green-800", red: "bg-red-100 border-red-300 text-red-800", yellow: "bg-yellow-100 border-yellow-300 text-yellow-800", purple: "bg-purple-100 border-purple-300 text-purple-800"
+                          };
+                          const estiloColor = tailwindColors[tarea.color] || tailwindColors.blue;
+                          return (
+                            <div
+                              key={tarea.id_tarea}
+                              onClick={(e) => seleccionarTareaExistente(tarea, e)}
+                              className={`w-full border text-xs px-1.5 py-1 rounded truncate font-bold cursor-pointer hover:opacity-80 transition-opacity ${estiloColor} ${tarea.id_tarea === tareaSeleccionada?.id_tarea ? 'ring-2 ring-offset-1 ring-gray-400' : ''}`}
+                              title={`${tarea.titulo}`}
+                            >
+                              {tarea.titulo} {tarea.grado && <span className="font-normal opacity-80">({tarea.grado})</span>}
+                            </div>
+                          );
                         });
                       })()}
                     </div>
@@ -223,25 +224,27 @@ export default function CalendarioDocente() {
         {/* FORMULARIO LATERAL */}
         <div className="w-full xl:w-[350px] shrink-0 bg-white rounded-xl shadow-md border border-gray-200 p-6 sticky top-6">
           <div className="flex items-center gap-3 mb-6 border-b pb-4">
-            <span className="text-2xl">{tareaSeleccionada ? "✏️" : "📝"}</span>
+            <span className="text-2xl text-[#0033a0]">
+              {tareaSeleccionada ? <MdEdit /> : <MdNoteAdd />}
+            </span>
             <h3 className="text-xl font-bold text-gray-800">
               {tareaSeleccionada ? "Editar Evento" : "Agregar Evento"}
             </h3>
           </div>
-          
+
           <form onSubmit={handleGuardarTarea} className="flex flex-col gap-5">
-            
+
             <div className="flex bg-gray-100 p-1 rounded-lg">
-              <button 
-                type="button" 
-                onClick={() => setVisibilidad("curso")} 
+              <button
+                type="button"
+                onClick={() => setVisibilidad("curso")}
                 className={`flex-1 py-1.5 text-sm font-bold rounded-md transition-colors ${visibilidad === "curso" ? "bg-white shadow text-[#0033a0]" : "text-gray-500 hover:text-gray-700"}`}
               >
                 Para Estudiantes
               </button>
-              <button 
-                type="button" 
-                onClick={() => setVisibilidad("personal")} 
+              <button
+                type="button"
+                onClick={() => setVisibilidad("personal")}
                 className={`flex-1 py-1.5 text-sm font-bold rounded-md transition-colors ${visibilidad === "personal" ? "bg-white shadow text-[#0033a0]" : "text-gray-500 hover:text-gray-700"}`}
               >
                 Privado
@@ -250,21 +253,21 @@ export default function CalendarioDocente() {
 
             <div>
               <label className="block text-sm text-gray-700 font-bold mb-1.5">Título del Evento</label>
-              <input type="text" required placeholder="Ej: Proyecto Final / Revisar notas" className="w-full p-2.5 border border-gray-300 rounded-lg focus:border-[#0033a0] focus:ring-1 focus:ring-[#0033a0] outline-none text-sm" value={nuevaTarea.titulo} onChange={(e) => setNuevaTarea({...nuevaTarea, titulo: e.target.value})} />
+              <input type="text" required placeholder="Ej: Proyecto Final / Revisar notas" className="w-full p-2.5 border border-gray-300 rounded-lg focus:border-[#0033a0] focus:ring-1 focus:ring-[#0033a0] outline-none text-sm" value={nuevaTarea.titulo} onChange={(e) => setNuevaTarea({ ...nuevaTarea, titulo: e.target.value })} />
             </div>
 
             {visibilidad === "curso" && (
               <div className="grid grid-cols-2 gap-3 animate-fade-in-up">
                 <div>
                   <label className="block text-sm text-gray-700 font-bold mb-1.5">Materia</label>
-                  <select required className="w-full p-2.5 border border-gray-300 rounded-lg focus:border-[#0033a0] focus:ring-1 focus:ring-[#0033a0] outline-none bg-white cursor-pointer text-sm" value={nuevaTarea.id_materia} onChange={(e) => setNuevaTarea({...nuevaTarea, id_materia: e.target.value})}>
+                  <select required className="w-full p-2.5 border border-gray-300 rounded-lg focus:border-[#0033a0] focus:ring-1 focus:ring-[#0033a0] outline-none bg-white cursor-pointer text-sm" value={nuevaTarea.id_materia} onChange={(e) => setNuevaTarea({ ...nuevaTarea, id_materia: e.target.value })}>
                     <option value="">Materia...</option>
                     {materias.map(m => <option key={m.id_materia} value={m.id_materia}>{m.nombre}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 font-bold mb-1.5">Curso</label>
-                  <select required className="w-full p-2.5 border border-gray-300 rounded-lg focus:border-[#0033a0] focus:ring-1 focus:ring-[#0033a0] outline-none bg-white cursor-pointer text-sm" value={nuevaTarea.id_curso} onChange={(e) => setNuevaTarea({...nuevaTarea, id_curso: e.target.value})}>
+                  <select required className="w-full p-2.5 border border-gray-300 rounded-lg focus:border-[#0033a0] focus:ring-1 focus:ring-[#0033a0] outline-none bg-white cursor-pointer text-sm" value={nuevaTarea.id_curso} onChange={(e) => setNuevaTarea({ ...nuevaTarea, id_curso: e.target.value })}>
                     <option value="">Curso...</option>
                     {cursos.map(c => <option key={c.id_curso} value={c.id_curso}>{c.nombre} {c.nivel ? `(${c.nivel})` : ''}</option>)}
                   </select>
@@ -274,14 +277,14 @@ export default function CalendarioDocente() {
 
             <div>
               <label className="block text-sm text-gray-700 font-bold mb-1.5">Fecha</label>
-              <input type="date" required className="w-full p-2.5 border border-gray-300 rounded-lg focus:border-[#0033a0] focus:ring-1 focus:ring-[#0033a0] outline-none text-gray-700 bg-white text-sm cursor-pointer" value={nuevaTarea.fecha_entrega} onChange={(e) => setNuevaTarea({...nuevaTarea, fecha_entrega: e.target.value})} />
+              <input type="date" required className="w-full p-2.5 border border-gray-300 rounded-lg focus:border-[#0033a0] focus:ring-1 focus:ring-[#0033a0] outline-none text-gray-700 bg-white text-sm cursor-pointer" value={nuevaTarea.fecha_entrega} onChange={(e) => setNuevaTarea({ ...nuevaTarea, fecha_entrega: e.target.value })} />
             </div>
 
             <div>
               <label className="block text-sm text-gray-700 font-bold mb-2">Color Etiqueta</label>
               <div className="flex justify-between px-1">
                 {Object.keys(colorStyles).map(c => (
-                  <button key={c} type="button" onClick={() => setNuevaTarea({...nuevaTarea, color: c})} className={`w-8 h-8 rounded-full border-2 shadow-sm transition-transform hover:scale-110 ${nuevaTarea.color === c ? 'border-gray-800 scale-125' : 'border-transparent'}`} style={{ backgroundColor: colorStyles[c] }} />
+                  <button key={c} type="button" onClick={() => setNuevaTarea({ ...nuevaTarea, color: c })} className={`w-8 h-8 rounded-full border-2 shadow-sm transition-transform hover:scale-110 ${nuevaTarea.color === c ? 'border-gray-800 scale-125' : 'border-transparent'}`} style={{ backgroundColor: colorStyles[c] }} />
                 ))}
               </div>
             </div>
@@ -290,11 +293,11 @@ export default function CalendarioDocente() {
               <button type="submit" className="w-full bg-[#0033a0] text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition-all shadow">
                 {tareaSeleccionada ? "Guardar Cambios" : (visibilidad === "personal" ? "Guardar Recordatorio" : "Publicar Tarea")}
               </button>
-              
+
               {/* Botón para volver al modo creación */}
               {tareaSeleccionada && (
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={limpiarFormulario}
                   className="w-full bg-white text-gray-600 border border-gray-300 py-2.5 rounded-lg font-bold hover:bg-gray-100 transition-all"
                 >
@@ -302,7 +305,7 @@ export default function CalendarioDocente() {
                 </button>
               )}
             </div>
-            
+
           </form>
         </div>
 

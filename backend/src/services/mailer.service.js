@@ -11,7 +11,9 @@ const transporter = nodemailer.createTransport({
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
-    }
+    },
+    // 👇 ESTA ES LA LÍNEA QUE SOLUCIONA EL ERROR EN RENDER 👇
+    family: 4 // Fuerza a Node.js a usar IPv4 en lugar de IPv6
 });
 
 export const enviarCorreoCodigo = async (destinatario, codigo) => {
@@ -149,5 +151,90 @@ export const enviarCorreoNuevaActividad = async (correosDestino, datosActividad)
         console.log(`📧 Notificación de nueva actividad enviada a ${correosDestino.length} destinatarios.`);
     } catch (error) {
         console.error("❌ Error al enviar el correo de nueva actividad:", error);
+    }
+};
+
+// --- NUEVA FUNCIÓN PARA NOTIFICAR CIERRE DE MATRÍCULAS ---
+export const enviarCorreoCierreMatricula = async (acudiente, fechaLimite) => {
+    try {
+        if (!acudiente.correo && !acudiente.email) return;
+
+        const destino = acudiente.correo || acudiente.email;
+        const mailOptions = {
+            from: `"Centro Educativo Salvador Lenis" <${process.env.EMAIL_USER}>`,
+            to: destino,
+            subject: '⚠️ Importante: Cierre de Matrículas en Línea - CESL',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                    <h2 style="color: #0033a0; text-align: center;">Centro Educativo Salvador Lenis</h2>
+                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+                    
+                    <h3 style="color: #333;">¡Estimado(a) Acudiente ${acudiente.nombre_completo || ''}!</h3>
+                    <p style="font-size: 16px; color: #333;">Le informamos que el plazo estipulado para realizar el proceso de <strong>matrícula en línea</strong> ha finalizado el día de hoy (<strong>${fechaLimite}</strong>).</p>
+                    
+                    <div style="background-color: #fdf2f2; padding: 15px; border-left: 5px solid #dc3545; margin: 20px 0; border-radius: 0 8px 8px 0;">
+                        <p style="margin: 0; color: #721c24; font-size: 15px;">Si su proceso quedó en estado <strong>Pendiente</strong> o no se completó a tiempo, por favor acérquese de manera presencial a la institución para regularizar la situación académica del estudiante.</p>
+                    </div>
+
+                    <p style="font-size: 12px; color: #999; text-align: center; margin-top: 30px;">Este es un mensaje automático, por favor no responda a este correo.</p>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`📧 Aviso de cierre de matrícula enviado a acudiente: ${destino}`);
+    } catch (error) {
+        console.error("❌ Error al enviar el correo de cierre de matrícula:", error);
+    }
+};
+
+// ==========================================
+// FUNCIÓN 5: ALERTA DE ACTIVIDAD CALIFICADA
+// ==========================================
+export const enviarCorreoCalificacion = async (correosDestino, datosCalificacion) => {
+    try {
+        const mailOptions = {
+            from: `"Centro Educativo Salvador Lenis" <${process.env.EMAIL_USER}>`,
+            bcc: correosDestino, // Copia oculta masiva para proteger la privacidad
+            subject: `✅ Actividad Calificada en ${datosCalificacion.materia}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <h2 style="color: #0033a0; margin: 0;">Centro Educativo Salvador Lenis</h2>
+                        <p style="color: #64748b; font-size: 14px; margin-top: 5px;">Notificación Académica</p>
+                    </div>
+                    
+                    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+                    
+                    <h3 style="color: #1e293b;">¡Hola!</h3>
+                    <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                        Te informamos que el docente <strong>${datosCalificacion.docente}</strong> ha registrado una calificación y/o retroalimentación para una de tus actividades académicas.
+                    </p>
+                    
+                    <div style="background-color: #f8fafc; border-left: 5px solid #22c55e; padding: 15px 20px; margin: 25px 0; border-radius: 0 8px 8px 0;">
+                        <p style="margin: 0 0 5px 0; color: #64748b; font-size: 13px; text-transform: uppercase; font-weight: bold;">Materia</p>
+                        <p style="margin: 0 0 15px 0; color: #0f172a; font-size: 16px; font-weight: bold;">${datosCalificacion.materia}</p>
+                        
+                        <p style="margin: 0 0 5px 0; color: #64748b; font-size: 13px; text-transform: uppercase; font-weight: bold;">Actividad Evaluada</p>
+                        <p style="margin: 0; color: #0f172a; font-size: 16px;">${datosCalificacion.actividad}</p>
+                    </div>
+
+                    <div style="background-color: #eff6ff; border: 1px dashed #93c5fd; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 25px;">
+                        <p style="margin: 0; color: #1e3a8a; font-size: 14px;">
+                            🔒 <em>Por motivos de privacidad, las notas exactas solo son visibles dentro de tu perfil en la plataforma.</em>
+                        </p>
+                    </div>
+                    
+                    <p style="font-size: 14px; color: #64748b; text-align: center; margin-top: 30px;">
+                        Por favor, ingresa a la plataforma del colegio para conocer tu resultado y leer los comentarios del docente.
+                    </p>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`📧 Notificación de calificación enviada a ${correosDestino.length} destinatarios (Actividad: ${datosCalificacion.actividad}).`);
+    } catch (error) {
+        console.error("❌ Error al enviar el correo de calificación:", error);
     }
 };

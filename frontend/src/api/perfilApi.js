@@ -429,3 +429,19 @@ export const modificarPerfilDocente = async (idUsuario, datosNuevos) => {
     throw error;
   }
 };
+
+//FUNCIONES CORRESPONDIENTES A JEFRY (ACUDIENTE)
+
+export const obtenerFechaLimiteMatricula = async () => {
+  try {
+    const response = await api.get('/users/matricula/limite');
+    let fechaLimpia = response.data.fecha_limite;
+    if (fechaLimpia && fechaLimpia.includes(' ')) {
+      fechaLimpia = fechaLimpia.replace(' ', 'T');
+    }
+    return fechaLimpia;
+  } catch (error) {
+    console.error("Error obteniendo fecha límite de la BD:", error);
+    return '2026-08-15T23:59:59';
+  }
+};

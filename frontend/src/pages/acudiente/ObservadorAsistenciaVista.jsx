@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { obtenerObservacionesHijo, obtenerAsistenciaHijo } from "../../api/perfilApi";
+import { MdWarning, MdCheckCircle, MdLightbulb, MdChevronRight, MdEdit, MdLogout } from "react-icons/md";
 
 export default function ObservadorAsistenciaVista() {
   const location = useLocation();
@@ -59,13 +60,13 @@ export default function ObservadorAsistenciaVista() {
             onClick={() => setPestaña("observador")} 
             className={`flex-1 py-4 font-bold text-sm sm:text-base transition-colors ${pestaña === "observador" ? "text-green-700 border-b-4 border-green-600 bg-white" : "text-gray-500 hover:bg-gray-100"}`}
           >
-            📖 Observador (Anotaciones)
+             Observador (Anotaciones)
           </button>
           <button 
             onClick={() => setPestaña("asistencia")} 
             className={`flex-1 py-4 font-bold text-sm sm:text-base transition-colors ${pestaña === "asistencia" ? "text-orange-600 border-b-4 border-orange-500 bg-white" : "text-gray-500 hover:bg-gray-100"}`}
           >
-            ✅ Control de Asistencia
+             Control de Asistencia
           </button>
         </div>
 

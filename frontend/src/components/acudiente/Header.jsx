@@ -1,24 +1,57 @@
-import logo from "../../assets/logo.webp";
+import React from 'react';
+import { Link } from 'react-router-dom';
 
-export default function Header({ onOpenPerfil }) {
+const Header = ({ user }) => {
+
+  const headerStyle = {
+    backgroundColor: '#3b4799', 
+    backgroundImage: `
+      linear-gradient(135deg, 
+        #3b4799 0px, #3b4799 35px,   
+        #ffffff 35px, #ffffff 70px,  
+        #d32f2f 70px, #d32f2f 105px, 
+        transparent 105px            
+      ),
+      linear-gradient(-135deg, 
+        #3b4799 0px, #3b4799 35px,   
+        #ffffff 35px, #ffffff 70px,  
+        #d32f2f 70px, #d32f2f 105px, 
+        transparent 105px            
+      )
+    `,
+    backgroundPosition: 'top left, top right',
+    backgroundRepeat: 'no-repeat',
+  };
+
   return (
-    <header className="bg-blue-800 text-white">
-      <div className="max-w-7xl mx-auto flex items-center justify-between p-8">
-        <div>
-          <h1 className="text-3xl font-bold">Bienvenidos al</h1>
-          <p className="text-2xl font-semibold">
-            Centro Educativo Salvador Lenis
-          </p>
-        </div>
+    <header 
+      style={headerStyle} 
+      className="w-full relative flex items-center justify-between px-32 md:px-40 py-4 shadow-lg"
+    >
+      {/* SECCIÓN IZQUIERDA: Texto Portal */}
+      <div className="flex-1 flex justify-start items-center">
+        <Link to="/estudiante/" className="text-white text-xl md:text-3xl font-extrabold tracking-wide hover:opacity-90 transition-opacity">
+          Portal Acudiente
+        </Link>
+      </div>
 
-        <div className="flex items-center space-x-6">
-          <img
-            src={logo}
-            alt="logo"
-            className="w-24 h-24 object-contain rounded-full bg-white p-2"
-          />
-        </div>
+      {/* SECCIÓN CENTRAL: Escudo Institucional */}
+      <div className="flex-1 flex justify-center items-center z-10">
+        <img 
+          src="/logo.svg" 
+          alt="Escudo Institucional" 
+          className="h-16 md:h-24 object-contain drop-shadow-md hover:scale-105 transition-transform"
+        />
+      </div>
+
+      {/* SECCIÓN DERECHA: Texto CESL */}
+      <div className="flex-1 flex justify-end items-center gap-6">
+        <h1 className="text-white text-xl md:text-3xl font-extrabold tracking-wide hidden sm:block">
+          CESL Académico
+        </h1>
       </div>
     </header>
   );
-}
+};
+
+export default Header;

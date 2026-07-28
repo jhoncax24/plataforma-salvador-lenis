@@ -1,4 +1,6 @@
 import React from "react";
+import { MdClose } from "react-icons/md";
+import { MdWarning, MdCheckCircle, MdLightbulb, MdChevronRight, MdEdit, MdLogout } from "react-icons/md";
 
 export default function PerfilModal({ isOpen, onClose, profile, hijos = [], onEdit, onChangePassword }) {
   if (!isOpen || !profile) return null;
@@ -11,10 +13,10 @@ export default function PerfilModal({ isOpen, onClose, profile, hijos = [], onEd
         {/* ENCABEZADO */}
         <div className="bg-[#0033a0] p-4 flex justify-between items-center shrink-0">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <span>👤</span> Mi Perfil Institucional
+            <span></span> Mi Perfil Institucional
           </h2>
           <button onClick={onClose} className="text-white hover:text-gray-300 transition-colors">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <MdClose />
           </button>
         </div>
 
@@ -86,19 +88,19 @@ export default function PerfilModal({ isOpen, onClose, profile, hijos = [], onEd
                         </div>
                       </div>
 
-                      {/* 👇 BOTONES DE ACCIÓN DEL HIJO RECUPERADOS Y ESTILIZADOS 👇 */}
+                      
                       <div className="pl-2 pt-3 border-t border-gray-100 mt-1 flex gap-2">
                         <button 
                           onClick={() => onChangePassword({ tipo: 'estudiante', id: hijo.id, nombreHijo: hijo.nombre })}
                           className="flex-1 text-xs bg-white text-[#0033a0] border border-blue-200 py-2 rounded-lg font-bold hover:bg-blue-50 transition-all shadow-sm truncate px-1"
                         >
-                          🔒 Contraseña
+                           Contraseña
                         </button>
                         <button 
                           onClick={() => onEdit({ ...hijo, grado: hijo.grado })}
                           className="flex-1 text-xs bg-gray-100 text-gray-700 py-2 rounded-lg font-bold hover:bg-gray-200 transition-all truncate px-1"
                         >
-                          ✏️ Editar Datos
+                           Editar Datos
                         </button>
                       </div>
 
@@ -118,13 +120,13 @@ export default function PerfilModal({ isOpen, onClose, profile, hijos = [], onEd
               onClick={() => onChangePassword({ tipo: 'acudiente', id: profile.id })}
               className="w-full sm:w-auto text-sm bg-white border-2 border-blue-200 text-[#0033a0] px-4 py-2 rounded-lg font-bold hover:bg-blue-50 transition-colors shadow-sm"
             >
-              🔒 Cambiar mi Contraseña
+               Cambiar mi Contraseña
             </button>
             <button 
               onClick={() => onEdit(profile)}
               className="w-full sm:w-auto text-sm bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-200 transition-colors"
             >
-              ✏️ Editar Mis Datos
+               Editar Mis Datos
             </button>
           </div>
           

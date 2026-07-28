@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-// 👇 AHORA SÍ importamos obtenerTodasLasMaterias
 import { obtenerPlanillaNotas, obtenerTodasLasMaterias } from "../../api/perfilApi";
+import { MdWarning, MdCheckCircle, MdLightbulb, MdChevronRight, MdEdit, MdLogout } from "react-icons/md";
 
 export default function NotasVista() {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Recibimos los datos del hijo que seleccionamos en el inicio
+  // Recibimos los datos del hijo y sus notas
   const { estudiante, notas } = location.state || {};
 
   // ==========================================
@@ -16,7 +16,7 @@ export default function NotasVista() {
   const [materias, setMaterias] = useState([]);
   const [seleccion, setSeleccion] = useState({
     id_estudiante: estudiante?.id || "",
-    id_curso: estudiante?.degreeId || estudiante?.id_curso || 1, // Por defecto curso 1
+    id_curso: estudiante?.degreeId || estudiante?.id_curso || 1, 
     id_materia: "",
     periodo: "1"
   });
@@ -25,25 +25,26 @@ export default function NotasVista() {
   const [estudiantes, setEstudiantes] = useState([]); 
   const [cargando, setCargando] = useState(false);
   const [planillaCargada, setPlanillaCargada] = useState(false);
+  
+  // 👇 NUEVO ESTADO: Guardará el docente solo cuando se cargue la planilla
+  const [docenteCargado, setDocenteCargado] = useState("");
 
-  // 👇 EFECTO RESTAURADO: Ya va a la base de datos a buscar las materias
   useEffect(() => {
     const cargarMaterias = async () => {
       try {
-        const datosMaterias = await obtenerTodasLasMaterias();
-        if (datosMaterias && datosMaterias.length > 0) {
-          setMaterias(datosMaterias);
+        if (notas && notas.length > 0) {
+          setMaterias(notas.map(n => ({ id_materia: n.id_materia, nombre: n.materia })));
+        } else {
+          const todas = await obtenerTodasLasMaterias();
+          setMaterias(todas);
         }
-      } catch (error) {
-        console.error("Error al cargar materias en la vista:", error);
+      } catch (err) {
+        console.error("Error cargando materias", err);
       }
     };
     cargarMaterias();
-  }, []);
+  }, [notas]);
 
-  // ==========================================
-  // BUSCAR PLANILLA DETALLADA EN LA BD
-  // ==========================================
   const handleCargarPlanilla = async (e) => {
     e?.preventDefault();
     
@@ -61,6 +62,11 @@ export default function NotasVista() {
       
       setEstudiantes(filaDelHijo);
       setPlanillaCargada(true);
+
+      // 👇 AQUÍ ACTUALIZAMOS EL DOCENTE: Solo cuando la petición fue exitosa
+      const materiaSelect = notas?.find(n => String(n.id_materia) === String(seleccion.id_materia));
+      setDocenteCargado(materiaSelect?.docente || "No asignado");
+
     } catch (error) {
       console.error("❌ ERROR CRÍTICO AL CARGAR PLANILLA:", error);
       alert("Hubo un error al cargar los detalles de la materia.");
@@ -69,9 +75,6 @@ export default function NotasVista() {
     }
   };
 
-  // ==========================================
-  // CÁLCULOS MATEMÁTICOS
-  // ==========================================
   const porcentajeTotal = actividades.reduce((sum, act) => sum + parseFloat(act.porcentaje), 0);
 
   const calcularDefinitiva = (notasDelAlumno) => {
@@ -94,6 +97,15 @@ export default function NotasVista() {
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-800 m-0">Detalle de Calificaciones</h2>
           <p className="text-sm sm:text-base text-gray-500 mt-1 font-medium">
             Consultando actividades de: <strong className="text-[#0033a0] uppercase">{estudiante?.nombre || "Estudiante"}</strong>
+            
+            {/* 👇 MOSTRAMOS EL DOCENTE SOLO SI YA SE CARGÓ LA PLANILLA */}
+            {planillaCargada && docenteCargado && (
+              <>
+                <span className="mx-2 hidden sm:inline">|</span>
+                <br className="sm:hidden" />
+                Docente: <strong className="text-[#0033a0] uppercase">{docenteCargado}</strong>
+              </>
+            )}
           </p>
         </div>
         <button 
@@ -206,7 +218,11 @@ export default function NotasVista() {
                       <tr key={est.id_estudiante} className="hover:bg-gray-50 border-b transition-colors group">
                         
                         <td className="p-3 font-medium text-gray-800 border-r sticky left-0 bg-white group-hover:bg-gray-50 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] text-sm uppercase">
-                          {est.nombre_completo}
+                          <div>{est.nombre_completo}</div>
+                          {/* 👇 DOCENTE AL LADO (DEBAJO) DEL ESTUDIANTE EN LA TABLA CON EL ESTADO CORRECTO */}
+                          <div className="text-xs text-gray-500 capitalize mt-1 font-normal normal-case">
+                            <span className="font-semibold text-[#0033a0]">Docente:</span> {docenteCargado?.toLowerCase()}
+                          </div>
                         </td>
 
                         {/* CELDAS DINÁMICAS (Solo Lectura) */}
@@ -238,7 +254,6 @@ export default function NotasVista() {
           </div>
         </div>
       )}
-
     </div>
   );
 }

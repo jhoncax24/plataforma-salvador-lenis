@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { MdWarning, MdCheckCircle, MdLightbulb, MdChevronRight, MdEdit, MdLogout } from "react-icons/md";
 
 export default function NotasPeriodo({ hijos = [], onVerNotas }) {
   const [hijoId, setHijoId] = useState("");
@@ -48,13 +49,13 @@ export default function NotasPeriodo({ hijos = [], onVerNotas }) {
           onClick={handleClickNotas}
           className="w-full bg-[#0033a0] text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition-all shadow-md flex justify-center items-center gap-2"
         >
-          📊 Ver Calificaciones
+           Ver Calificaciones
         </button>
         <button
           onClick={handleVerComportamiento}
           className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition-all shadow-md flex justify-center items-center gap-2"
         >
-          👀 Observador y Asistencia
+           Observador y Asistencia
         </button>
       </div>
     </div>

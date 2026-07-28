@@ -15,7 +15,8 @@ import {
   registrarMatriculaLineaByAcudiente,
   getEventosCalendarioByAcudiente,
   crearEventoCalendarioByAcudiente,
-  deleteEventoCalendarioByAcudiente
+  deleteEventoCalendarioByAcudiente,
+  getFechaLimiteMatricula
 } from "../controllers/acudientes.controller.js";
 
 const router = Router();
@@ -27,6 +28,7 @@ router.use(authenticateToken);
 router.get("/perfil/:idUsuario", param('idUsuario').isInt(), validateRequest, getAcudienteProfile);
 router.put("/perfil/:idUsuario", param('idUsuario').isInt(), validateRequest, updateAcudienteProfile);
 router.put("/perfil/:idUsuario/password", param('idUsuario').isInt(), validateRequest, changePasswordAcudiente);
+
 
 // 2. Perfil Estudiantes (Hijos)
 router.get("/:idAcudiente/estudiantes", param('idAcudiente').isInt(), validateRequest, getEstudiantesByAcudiente);
@@ -41,9 +43,10 @@ router.get("/planilla/:idCurso/:idMateria/:periodo", getPlanillaDetalleByAcudien
 router.get("/matricula/estado/:idEstudiante", param('idEstudiante').isInt(), validateRequest, getEstadoMatriculaByAcudiente);
 router.post("/matricula/enviar", registrarMatriculaLineaByAcudiente);
 
-// 5. Calendario
+// 5. Calendario Acudiente
 router.get("/calendario/:idAcudiente", param('idAcudiente').isInt(), validateRequest, getEventosCalendarioByAcudiente);
 router.post("/calendario/guardar", crearEventoCalendarioByAcudiente);
-router.delete("/calendario/eliminar/:idEvento", param('idEvento').isInt(), validateRequest, deleteEventoCalendarioByAcudiente);
+router.delete("/calendario/eliminar/:idEvento", validateRequest, deleteEventoCalendarioByAcudiente);
+router.get('/matricula/limite', getFechaLimiteMatricula);
 
 export default router;

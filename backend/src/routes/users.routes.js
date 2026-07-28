@@ -18,7 +18,8 @@ import {
   getEstudianteProfile,
   getHorarioEstudiante,
   getObservacionesAcudiente,
-  getAsistenciaAcudiente
+  getAsistenciaAcudiente,
+  getFechaLimiteMatricula
 } from "../controllers/users.controller.js";
 
 const router = Router();
@@ -40,5 +41,6 @@ router.get("/horario/:idUsuario", getHorarioEstudiante);
 router.put("/password", authenticateToken, changePassword);
 router.post("/vincular", authenticateToken, vincularEstudianteAcudiente);
 router.get("/planilla/:idCurso/:idMateria/:periodo", getPlanillaDetalle);
+router.get('/matricula/limite', getFechaLimiteMatricula);
 
 export default router;

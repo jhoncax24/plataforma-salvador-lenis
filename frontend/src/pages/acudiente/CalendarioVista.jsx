@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { obtenerEventos, guardarEventoBD, eliminarEventoBD } from "../../api/perfilApi";
+import { obtenerEventos, guardarEventoBD, eliminarEventoBD, obtenerPerfilAcudiente } from "../../api/perfilApi";
+import { MdWarning, MdCheckCircle, MdLightbulb, MdChevronRight, MdEdit, MdLogout } from "react-icons/md";
 
 export default function CalendarioVista() {
   const navigate = useNavigate();
@@ -8,7 +9,21 @@ export default function CalendarioVista() {
   
   const userStr = localStorage.getItem("cesl_user");
   const user = userStr ? JSON.parse(userStr) : null;
-  const idAcudiente = user?.id || 3;
+  const idUsuario = user?.id || 3;
+  const [idAcudiente, setIdAcudiente] = useState(idUsuario);
+
+  useEffect(() => {
+    const cargarIdAcudiente = async () => {
+      try {
+        const perfil = await obtenerPerfilAcudiente(idUsuario);
+        const idReal = perfil?.id_acudiente || perfil?.id || idUsuario;
+        setIdAcudiente(idReal);
+      } catch (error) {
+        console.error("Error al obtener id_acudiente:", error);
+      }
+    };
+    cargarIdAcudiente();
+  }, [idUsuario]);
 
   const [eventosGuardados, setEventosGuardados] = useState([]);
   const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
@@ -186,7 +201,6 @@ export default function CalendarioVista() {
         {/* FORMULARIO LATERAL */}
         <div className="w-full xl:w-[350px] shrink-0 bg-white rounded-xl shadow-md border border-gray-200 p-4 sm:p-6 lg:sticky lg:top-6 h-fit mt-4 xl:mt-0">
           <div className="flex items-center gap-3 mb-4 sm:mb-6 border-b pb-4">
-            <span className="text-xl sm:text-2xl">{eventoSeleccionado ? "✏️" : "📝"}</span>
             <h3 className="text-lg sm:text-xl font-bold text-gray-800">
               {eventoSeleccionado ? "Editar Evento" : "Agregar Evento"}
             </h3>

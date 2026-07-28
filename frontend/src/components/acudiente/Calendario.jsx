@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { obtenerEventos, guardarEventoBD, eliminarEventoBD } from "../../api/perfilApi";
+import { MdWarning, MdCheckCircle, MdLightbulb, MdChevronRight, MdEdit, MdLogout } from "react-icons/md";
 
 export default function Calendario({ idAcudiente }) {
   const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];

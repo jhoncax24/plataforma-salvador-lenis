@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { obtenerNotasEstudiante } from "../../api/perfilApi"; 
+import { MdWarning, MdCheckCircle, MdLightbulb, MdChevronRight, MdEdit, MdLogout } from "react-icons/md";
 
 export default function Certificados({ estudiantes = [] }) {
   const [estudianteId, setEstudianteId] = useState("");

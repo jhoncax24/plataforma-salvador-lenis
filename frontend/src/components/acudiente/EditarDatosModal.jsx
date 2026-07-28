@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { MdClose } from "react-icons/md";
+import { MdWarning, MdCheckCircle, MdLightbulb, MdChevronRight, MdEdit, MdLogout } from "react-icons/md";
 
 export default function EditarDatosModal({ isOpen, onClose, data, onSave }) {
   const [form, setForm] = useState({
@@ -26,16 +28,16 @@ export default function EditarDatosModal({ isOpen, onClose, data, onSave }) {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  // Simulación de subida de imagen para que la UI funcione igual al diseño que pasaste
   const handleSubirImagen = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     setIsUploading(true);
-    // Simulamos un tiempo de carga de 2 segundos
-    setTimeout(() => {
-      setForm({ ...form, foto_perfil: URL.createObjectURL(file) });
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setForm({ ...form, foto_perfil: reader.result });
       setIsUploading(false);
-    }, 2000);
+    };
+    reader.readAsDataURL(file);
   };
 
   const noHuboCambios = 
@@ -55,19 +57,21 @@ export default function EditarDatosModal({ isOpen, onClose, data, onSave }) {
     onSave(form);
   };
 
+  // 🚨 Identificamos si es el Estudiante para mostrar u ocultar la foto
   const esEstudiante = data && data.grado !== undefined;
   const inicial = data?.nombre ? data.nombre.charAt(0).toUpperCase() : "U";
 
 return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[110] sm:p-4 animate-fade-in-up backdrop-blur-sm">
       <div className="bg-white sm:rounded-xl shadow-2xl w-full h-full sm:h-auto sm:max-w-5xl overflow-hidden border-0 sm:border border-gray-200 flex flex-col max-h-screen sm:max-h-[95vh]" onClick={(e) => e.stopPropagation()}>
+        
         {/* ENCABEZADO */}
         <div className="bg-[#0033a0] p-4 flex justify-between items-center shrink-0">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <span>⚙️</span> {esEstudiante ? "Configuración del Estudiante" : "Configuración de Perfil"}
+            <span></span> {esEstudiante ? "Configuración del Estudiante" : "Configuración de Perfil"}
           </h2>
           <button onClick={onClose} className="text-white hover:text-gray-300 transition-colors">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <MdClose />
           </button>
         </div>
 
@@ -88,7 +92,7 @@ return (
                     )}
                   </div>
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    {esEstudiante ? "Avatar Estudiante" : "Foto de perfil actual"}
+                    {esEstudiante ? "Avatar Estudiante" : "Perfil Actual"}
                   </span>
                 </div>
 
@@ -120,20 +124,22 @@ return (
 
                 <div className="space-y-5">
 
-                  {/* Carga de Foto de Perfil con Input File */}
-                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                    <label className="block text-sm font-bold text-[#0033a0] mb-2">Cambiar Foto de Perfil</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleSubirImagen}
-                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#0033a0] file:text-white hover:file:bg-blue-800 transition-all cursor-pointer"
-                    />
-                    {isUploading && <p className="text-sm text-blue-600 font-bold mt-2 animate-pulse">Subiendo imagen, por favor espera...</p>}
-                    {form.foto_perfil && form.foto_perfil !== data.foto_perfil && !isUploading && (
-                      <p className="text-sm text-green-600 font-bold mt-2">¡Imagen lista para guardar!</p>
-                    )}
-                  </div>
+                  {/* 🚨 MAGIA AQUÍ: Solo muestra la carga de foto si es Estudiante */}
+                  {esEstudiante && (
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                      <label className="block text-sm font-bold text-[#0033a0] mb-2">Cambiar Foto de Perfil</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleSubirImagen}
+                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#0033a0] file:text-white hover:file:bg-blue-800 transition-all cursor-pointer"
+                      />
+                      {isUploading && <p className="text-sm text-blue-600 font-bold mt-2 animate-pulse">Subiendo imagen, por favor espera...</p>}
+                      {form.foto_perfil && form.foto_perfil !== data.foto_perfil && !isUploading && (
+                        <p className="text-sm text-green-600 font-bold mt-2">¡Imagen lista para guardar!</p>
+                      )}
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-1">Nombre Completo</label>

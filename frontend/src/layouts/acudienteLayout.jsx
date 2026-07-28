@@ -7,8 +7,8 @@ export default function AcudienteLayout() {
       {/* Cabecera general del Acudiente */}
       <Header />
 
-      {/* Contenido dinámico (Aquí se renderizará pages/acudiente/inicio.jsx) */}
-      <main className="flex-grow w-full max-w-7xl mx-auto p-6">
+      {/* Contenido dinámico (Se eliminó max-w-7xl y mx-auto para que ocupe todo el ancho) */}
+      <main className="flex-grow w-full p-6">
         <Outlet />
       </main>
     </div>

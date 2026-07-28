@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import { pool } from '../config/db.js'; 
 import { enviarCorreoRecordatorio } from './mailer.service.js';
 
-// Se ejecuta todos los días a las 7:00 AM
+// Se ejecuta todos los días a las 5:00 AM
 cron.schedule('0 5 * * *', async () => {
     console.log("⏰ Iniciando proceso diario de recordatorios...");
 
@@ -97,5 +97,50 @@ cron.schedule('0 5 * * *', async () => {
 
     } catch (error) {
         console.error("❌ Error en la consulta o ejecución del Cron Job:", error);
+    }
+});
+
+// =========================================================
+// CRON JOB 2: VERIFICAR CIERRE DE MATRÍCULAS 
+// =========================================================
+cron.schedule('0 5 * * *', async () => {
+    console.log("⏰ Verificando estado de cierre de matrículas...");
+    
+    try {
+        const query = `
+            SELECT DISTINCT 
+                ac.nombre_completo, 
+                ac.correo, 
+                u.email,
+                m.fecha_limite
+            FROM matriculas m
+            JOIN estudiantes e ON m.id_estudiante = e.id_estudiante
+            JOIN acudientes ac ON e.id_acudiente = ac.id_acudiente
+            LEFT JOIN users u ON ac.id_usuario = u.id_usuario
+            WHERE m.fecha_limite < CURRENT_TIMESTAMP
+              AND m.estado IN ('No Iniciado', 'Pendiente')
+        `;
+        
+        const { rows } = await pool.query(query);
+        console.log("🔍 Registros encontrados para cierre de matrícula:", rows);
+
+        if (rows.length === 0) {
+            console.log("✅ No hay alertas de cierre de matrícula pendientes por enviar.");
+            return;
+        }
+
+        console.log(`📩 Enviando avisos de cierre de matrícula a ${rows.length} acudientes...`);
+
+        // 👇 AQUÍ ESTÁ LA CORRECCIÓN: usamos "item" (o "acudiente" de forma consistente)
+        for (const item of rows) {
+            const fechaFormateada = new Date(item.fecha_limite).toLocaleDateString('es-ES', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            await enviarCorreoCierreMatricula(item, fechaFormateada);
+        }
+    } catch (error) {
+        console.error("❌ Error en Cron Job de Cierre de Matrículas:", error);
     }
 });

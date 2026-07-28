@@ -187,7 +187,8 @@ export const getTareasEstudiante = async (req, res, next) => {
       SELECT 
         id_tarea, titulo, descripcion, 
         TO_CHAR(fecha_entrega, 'YYYY-MM-DD') as fecha_entrega, 
-        color, tipo 
+        color, tipo,
+        false AS entregada -- Los recordatorios no se entregan con archivo
       FROM tareas 
       WHERE id_usuario = $1 AND tipo = 'Recordatorio'
 
@@ -197,10 +198,14 @@ export const getTareasEstudiante = async (req, res, next) => {
       SELECT 
         t.id_tarea, t.titulo, t.descripcion, 
         TO_CHAR(t.fecha_entrega, 'YYYY-MM-DD') as fecha_entrega, 
-        t.color, t.tipo 
+        t.color, t.tipo,
+        -- Verificamos si existe un archivo PDF subido por este estudiante para esta actividad
+        CASE WHEN na.archivo_pdf IS NOT NULL THEN true ELSE false END AS entregada
       FROM tareas t
       JOIN matriculas m ON t.id_curso = m.id_curso
       JOIN estudiantes e ON m.id_estudiante = e.id_estudiante
+      -- Hacemos el cruce con notas_actividades para saber el estado de la entrega
+      LEFT JOIN notas_actividades na ON na.id_actividad = t.id_actividad AND na.id_estudiante = e.id_estudiante
       WHERE e.id_usuario = $1 AND m.estado = 'Activa' AND t.tipo = 'Tarea Docente'
 
       -- Ordenamos todo por fecha de entrega

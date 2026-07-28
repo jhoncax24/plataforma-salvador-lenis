@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { MdClose } from "react-icons/md";
 import { cambiarContrasenaUsuario } from "../../api/perfilApi"; 
+import { MdWarning, MdCheckCircle, MdLightbulb, MdChevronRight, MdEdit, MdLogout } from "react-icons/md";
 
 export default function CambiarPasswordVista() {
   const location = useLocation();
@@ -41,10 +43,10 @@ export default function CambiarPasswordVista() {
         {/* ENCABEZADO ESTILO MODAL */}
         <div className="bg-[#0033a0] p-4 sm:p-5 flex justify-between items-center shrink-0">
           <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
-            <span>🔒</span> Seguridad de Acceso
+            <span></span> Seguridad de Acceso
           </h2>
           <button onClick={() => navigate(-1)} className="text-white hover:text-gray-300 transition-colors p-1">
-            <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <MdClose />
           </button>
         </div>
 
