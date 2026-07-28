@@ -3,18 +3,16 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Configuramos el "cartero" que se conectará a tu cuenta de Gmail
+// Configuramos el "cartero" usando el servicio predefinido de Gmail
 const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: 587,          // 👈 Cambiamos el puerto 465 por 587 (puerto abierto en Render)
-    secure: false,       // 👈 Debe ser 'false' para el puerto 587 (utiliza STARTTLS)
+    service: 'gmail', // Esto reemplaza y optimiza las opciones de host, port y secure
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
-    family: 4,          // Forzamos el uso de IPv4
+    family: 4, // Obligamos al entorno de Node.js a utilizar redes IPv4
     tls: {
-        rejectUnauthorized: false // Evita bloqueos de certificados en entornos en la nube
+        rejectUnauthorized: false // Evita rechazos de certificados en contenedores de la nube
     }
 });
 
