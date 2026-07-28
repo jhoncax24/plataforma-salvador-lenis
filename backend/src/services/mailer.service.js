@@ -3,19 +3,20 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Configuramos el "cartero" usando el servicio predefinido de Gmail
+// Configuramos el "cartero" FORZANDO el puerto 587 para evitar el bloqueo de Render
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // Esto reemplaza y optimiza las opciones de host, port y secure
+    host: 'smtp.gmail.com',
+    port: 587,         // Escribimos el 587 directamente para ignorar variables erróneas
+    secure: false,     // Obligatorio en false cuando usamos el puerto 587 (STARTTLS)
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
-    family: 4, // Obligamos al entorno de Node.js a utilizar redes IPv4
+    family: 4,         // Obligamos al entorno de Node.js a utilizar redes IPv4
     tls: {
-        rejectUnauthorized: false // Evita rechazos de certificados en contenedores de la nube
+        rejectUnauthorized: false // Evita rechazos de certificados en la nube
     }
 });
-
 export const enviarCorreoCodigo = async (destinatario, codigo) => {
     try {
         const mailOptions = {
