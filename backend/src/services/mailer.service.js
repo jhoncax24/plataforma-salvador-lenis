@@ -20,6 +20,8 @@ export const enviarCorreoCodigo = async (destinatario, codigo) => {
             to: destinatario,
             from: emailRemitente,
             subject: 'Código de Recuperación de Contraseña - CESL',
+            // AGREGAMOS ESTA LÍNEA: El texto plano ayuda a evadir los filtros antispam
+            text: `Hola, hemos recibido una solicitud para restablecer tu contraseña. Ingresa este código en la plataforma: ${codigo}. Este código expirará en 15 minutos. Si no solicitaste este cambio, ignora este mensaje.`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
                     <h2 style="color: #0033a0; text-align: center;">Centro Educativo Salvador Lenis</h2>
@@ -44,7 +46,6 @@ export const enviarCorreoCodigo = async (destinatario, codigo) => {
         throw new Error("No se pudo enviar el correo de recuperación");
     }
 };
-
 // ==========================================
 // FUNCIÓN 2: NUEVA FUNCIÓN DE RECORDATORIOS
 // ==========================================
@@ -60,6 +61,8 @@ export const enviarCorreoRecordatorio = async (tarea, diasFaltantes) => {
             to: destinatarios,
             from: emailRemitente,
             subject: `⏰ Recordatorio de Tarea: ${tarea.titulo}`,
+            // AGREGAMOS ESTA LÍNEA: Versión en texto plano para mejorar la reputación y evitar el spam
+            text: `Hola, ${tarea.nombre_estudiante}. Este es un recordatorio automático del Centro Educativo Salvador Lenis. Falta exactamente ${mensajeDias} para la entrega de tu tarea: "${tarea.titulo}". La fecha límite es el ${fechaFormateada}.`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
                     <h2 style="color: #0033a0; text-align: center;">Centro Educativo Salvador Lenis</h2>
@@ -74,7 +77,7 @@ export const enviarCorreoRecordatorio = async (tarea, diasFaltantes) => {
         };
 
         await sgMail.send(mensaje);
-        console.log(`📧 Recordatorio enviado con éxito.`);
+        console.log(`📧 Recordatorio enviado con éxito a ${destinatarios.length} destinatario(s).`);
     } catch (error) {
         console.error("❌ Error al enviar recordatorio:", error.response ? error.response.body : error);
     }
@@ -92,6 +95,8 @@ export const enviarCorreoNuevaActividad = async (correosDestino, datosActividad)
             bcc: correosDestino, // Copia oculta masiva
             from: emailRemitente,
             subject: `📚 Nueva actividad asignada en ${datosActividad.materia}`,
+            // AGREGAMOS ESTA LÍNEA: Texto simple para mejorar la entregabilidad masiva
+            text: `Hola. El docente ${datosActividad.docente} asignó una nueva actividad en ${datosActividad.materia}. Título de la actividad: ${datosActividad.titulo}. Fecha de entrega: ${fechaFormateada}. Por favor, ingresa a la plataforma del Centro Educativo Salvador Lenis para ver más detalles.`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
                     <h2 style="color: #0033a0; text-align: center;">Centro Educativo Salvador Lenis</h2>
@@ -125,6 +130,8 @@ export const enviarCorreoCierreMatricula = async (acudiente, fechaLimite) => {
             to: destino,
             from: emailRemitente,
             subject: '⚠️ Importante: Cierre de Matrículas en Línea - CESL',
+            // AGREGAMOS ESTA LÍNEA: Texto plano para evitar filtros de spam
+            text: `Importante: Le informamos que el plazo para la matrícula en línea en el Centro Educativo Salvador Lenis ha finalizado (${fechaLimite}).`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
                     <h2 style="color: #0033a0; text-align: center;">Centro Educativo Salvador Lenis</h2>
@@ -150,6 +157,8 @@ export const enviarCorreoCalificacion = async (correosDestino, datosCalificacion
             bcc: correosDestino, 
             from: emailRemitente,
             subject: `✅ Actividad Calificada en ${datosCalificacion.materia}`,
+            // AGREGAMOS ESTA LÍNEA: Texto plano para asegurar la entrega en bandeja de entrada
+            text: `Notificación Académica: El docente ${datosCalificacion.docente} ha registrado una calificación para la actividad "${datosCalificacion.actividad}". Por favor, ingresa a la plataforma del Centro Educativo Salvador Lenis para conocer tu resultado.`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
                     <h2 style="color: #0033a0; text-align: center;">Centro Educativo Salvador Lenis</h2>

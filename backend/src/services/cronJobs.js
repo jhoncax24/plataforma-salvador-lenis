@@ -1,7 +1,11 @@
 import cron from 'node-cron';
 import { pool } from '../config/db.js'; 
-import { enviarCorreoRecordatorio } from './mailer.service.js';
+// AGREGAMOS LA FUNCIÓN FALTANTE EN LA IMPORTACIÓN 👇
+import { enviarCorreoRecordatorio, enviarCorreoCierreMatricula } from './mailer.service.js';
 
+// =========================================================
+// CRON JOB 1: RECORDATORIOS DE TAREAS
+// =========================================================
 // Se ejecuta todos los días a las 5:00 AM
 cron.schedule('0 5 * * *', async () => {
     console.log("⏰ Iniciando proceso diario de recordatorios...");
@@ -81,17 +85,14 @@ cron.schedule('0 5 * * *', async () => {
 
         console.log(`📩 Se encontraron ${rows.length} recordatorios por enviar.`);
 
-        // Solo AQUÍ ADENTRO existe la variable "recordatorio"
         for (const recordatorio of rows) {
-            // 👇 ESCUDO PROTECTOR: Si el estudiante no tiene correo, lo saltamos y no crasheamos
             if (!recordatorio.email_estudiante) {
                 console.log(`⚠️ Se omitió el envío a ${recordatorio.nombre_estudiante} porque no tiene correo registrado.`);
-                continue; // Pasa al siguiente estudiante de la lista
+                continue; 
             }
 
             console.log(`🔍 Intentando enviar correo a: ${recordatorio.email_estudiante}`);
             
-            // Llamamos a tu servicio de mailer
             await enviarCorreoRecordatorio(recordatorio, recordatorio.dias_restantes);
         }
 
@@ -131,13 +132,13 @@ cron.schedule('0 5 * * *', async () => {
 
         console.log(`📩 Enviando avisos de cierre de matrícula a ${rows.length} acudientes...`);
 
-        // 👇 AQUÍ ESTÁ LA CORRECCIÓN: usamos "item" (o "acudiente" de forma consistente)
         for (const item of rows) {
             const fechaFormateada = new Date(item.fecha_limite).toLocaleDateString('es-ES', { 
                 year: 'numeric', 
                 month: 'long', 
                 day: 'numeric' 
             });
+            // Esta función ahora se ejecutará correctamente gracias a la importación
             await enviarCorreoCierreMatricula(item, fechaFormateada);
         }
     } catch (error) {
