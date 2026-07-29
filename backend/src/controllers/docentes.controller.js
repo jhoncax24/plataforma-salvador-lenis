@@ -144,6 +144,17 @@ export const getPlanillaNotas = async (req, res, next) => {
       [idCurso, idMateria, periodo]
     );
     
+    // 3.5 Obtener el docente asignado a esta materia/curso
+    const docenteQuery = await pool.query(
+      `SELECT d.nombre_completo AS docente 
+       FROM asignacion_academica aa 
+       JOIN docentes d ON aa.id_docente = d.id_docente 
+       WHERE aa.id_curso = $1 AND aa.id_materia = $2 AND aa.anio_lectivo = '2026' 
+       LIMIT 1`,
+      [idCurso, idMateria]
+    );
+    const nombreDocente = docenteQuery.rows[0]?.docente || "No asignado";
+
     // 4. Armar el objeto para React. Ahora guardamos un objeto con todos los datos, no solo el número.
     const planilla = estudiantes.map(est => {
       const notasDelEstudiante = {};
@@ -160,7 +171,7 @@ export const getPlanillaNotas = async (req, res, next) => {
       return { ...est, notas: notasDelEstudiante };
     });
 
-    res.json({ actividades, planilla });
+    res.json({ actividades, planilla, nombreDocente });
   } catch (error) {
     next(error);
   }

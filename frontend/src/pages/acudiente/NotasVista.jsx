@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { obtenerPlanillaNotas, obtenerTodasLasMaterias } from "../../api/perfilApi";
+import { obtenerPlanillaNotas, obtenerMateriasPorCurso } from "../../api/perfilApi";
 import { MdWarning, MdCheckCircle, MdLightbulb, MdChevronRight, MdEdit, MdLogout } from "react-icons/md";
 
 export default function NotasVista() {
@@ -8,7 +8,7 @@ export default function NotasVista() {
   const navigate = useNavigate();
   
   // Recibimos los datos del hijo y sus notas
-  const { estudiante, notas } = location.state || {};
+  const { estudiante } = location.state || {};
 
   // ==========================================
   // ESTADOS DE FILTROS Y PLANILLA
@@ -32,18 +32,17 @@ export default function NotasVista() {
   useEffect(() => {
     const cargarMaterias = async () => {
       try {
-        if (notas && notas.length > 0) {
-          setMaterias(notas.map(n => ({ id_materia: n.id_materia, nombre: n.materia })));
-        } else {
-          const todas = await obtenerTodasLasMaterias();
-          setMaterias(todas);
+        const idCurso = estudiante?.degreeId || estudiante?.id_curso;
+        if (idCurso) {
+          const materiasDelCurso = await obtenerMateriasPorCurso(idCurso);
+          setMaterias(materiasDelCurso);
         }
       } catch (err) {
         console.error("Error cargando materias", err);
       }
     };
     cargarMaterias();
-  }, [notas]);
+  }, [estudiante]);
 
   const handleCargarPlanilla = async (e) => {
     e?.preventDefault();
@@ -63,9 +62,7 @@ export default function NotasVista() {
       setEstudiantes(filaDelHijo);
       setPlanillaCargada(true);
 
-      // 👇 AQUÍ ACTUALIZAMOS EL DOCENTE: Solo cuando la petición fue exitosa
-      const materiaSelect = notas?.find(n => String(n.id_materia) === String(seleccion.id_materia));
-      setDocenteCargado(materiaSelect?.docente || "No asignado");
+      setDocenteCargado(data.nombreDocente || "No asignado");
 
     } catch (error) {
       console.error("❌ ERROR CRÍTICO AL CARGAR PLANILLA:", error);

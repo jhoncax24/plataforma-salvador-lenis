@@ -76,6 +76,16 @@ export const obtenerTodasLasMaterias = async () => {
   }
 };
 
+export const obtenerMateriasPorCurso = async (idCurso) => {
+  try {
+    const response = await api.get(`/users/materias/curso/${idCurso}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener materias del curso:", error);
+    return [];
+  }
+};
+
 // 👇 FUNCIÓN ACTUALIZADA 👇
 export const obtenerPlanillaNotas = async (idCurso, idMateria, periodo) => {
   try {

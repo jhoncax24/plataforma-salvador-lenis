@@ -146,6 +146,21 @@ export const getTodasLasMaterias = async (req, res) => {
   } catch (err) { res.status(500).json({ error: "Error al cargar materias" }); }
 };
 
+export const getMateriasPorCurso = async (req, res) => {
+  const { idCurso } = req.params;
+  try {
+    const { rows } = await pool.query(
+      `SELECT DISTINCT m.id_materia, m.nombre 
+       FROM asignacion_academica aa 
+       JOIN materias m ON aa.id_materia = m.id_materia 
+       WHERE aa.id_curso = $1 AND aa.anio_lectivo = '2026'
+       ORDER BY m.nombre ASC`,
+      [idCurso]
+    );
+    res.json(rows);
+  } catch (err) { res.status(500).json({ error: "Error al cargar materias del curso" }); }
+};
+
 export const getPlanillaDetalle = async (req, res) => {
   try {
     const { idCurso, idMateria, periodo } = req.params;

@@ -19,11 +19,13 @@ import {
   getHorarioEstudiante,
   getObservacionesAcudiente,
   getAsistenciaAcudiente,
-  getFechaLimiteMatricula
+  getFechaLimiteMatricula,
+  getMateriasPorCurso
 } from "../controllers/users.controller.js";
 
 const router = Router();
 router.get("/materias/todas", getTodasLasMaterias);
+router.get("/materias/curso/:idCurso", getMateriasPorCurso);
 router.get("/acudiente/perfil/:idUsuario", authenticateToken, getAcudienteProfile);
 router.get("/acudiente/:idAcudiente/estudiantes", authenticateToken, getEstudiantesByAcudiente);
 router.put("/acudiente/perfil/:id", authenticateToken, updateAcudienteProfile);
