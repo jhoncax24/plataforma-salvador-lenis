@@ -80,7 +80,7 @@ export default function NotasVista() {
   const calcularDefinitiva = (notasDelAlumno) => {
     let final = 0;
     actividades.forEach(act => {
-      const notaIngresada = parseFloat(notasDelAlumno[act.id_actividad]);
+      const notaIngresada = parseFloat(notasDelAlumno[act.id_actividad]?.nota);
       if (!isNaN(notaIngresada)) {
         final += notaIngresada * (parseFloat(act.porcentaje) / 100);
       }
@@ -227,7 +227,7 @@ export default function NotasVista() {
 
                         {/* CELDAS DINÁMICAS (Solo Lectura) */}
                         {actividades.map(act => {
-                          const nota = est.notas[act.id_actividad];
+                          const nota = est.notas[act.id_actividad]?.nota;
                           return (
                             <td key={act.id_actividad} className="p-2 border-r bg-white text-center">
                               <span className={`font-bold text-base ${nota && parseFloat(nota) < 3.0 ? 'text-red-500' : 'text-gray-700'}`}>
