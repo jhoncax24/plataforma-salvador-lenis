@@ -1,8 +1,10 @@
 import { pool } from '../config/db.js';
+// Asegúrate de que la ruta hacia mailer.service.js sea correcta según tus carpetas
+import { enviarCorreoNuevoMensaje } from '../services/mailer.service.js';
 
 /**
  * DOCUMENTACIÓN: enviarMensaje
- * Guarda un mensaje entre dos usuarios.
+ * Guarda un mensaje en la BD y llama al servicio de correos para notificar en segundo plano.
  */
 export const enviarMensaje = async (req, res) => {
     const { id_emisor, id_receptor, mensaje } = req.body;
@@ -15,18 +17,47 @@ export const enviarMensaje = async (req, res) => {
     }
 
     try {
-        const query = `
+        // 1. Guardar el mensaje
+        const queryInsert = `
             INSERT INTO mensajes_chat (id_emisor, id_receptor, mensaje)
             VALUES ($1, $2, $3)
             RETURNING *;
         `;
-        const { rows } = await pool.query(query, [id_emisor, id_receptor, mensaje.trim()]);
+        const { rows } = await pool.query(queryInsert, [id_emisor, id_receptor, mensaje.trim()]);
+        const mensajeGuardado = rows[0];
 
-        return res.status(201).json({
+        // 2. Responder INMEDIATAMENTE al frontend (experiencia fluida para el usuario)
+        res.status(201).json({
             ok: true,
             mensaje: 'Mensaje enviado exitosamente.',
-            data: rows[0]
+            data: mensajeGuardado
         });
+
+        // 3. EN SEGUNDO PLANO: Buscar datos y enviar correo
+        try {
+            const queryDatosCorreo = `
+                SELECT 
+                    u_receptor.email AS email_receptor,
+                    COALESCE(d_emisor.nombre_completo, a_emisor.nombre_completo, u_emisor.email) AS nombre_emisor
+                FROM users u_receptor
+                LEFT JOIN users u_emisor ON u_emisor.id_usuario = $1
+                LEFT JOIN docentes d_emisor ON u_emisor.id_usuario = d_emisor.id_usuario
+                LEFT JOIN acudientes a_emisor ON u_emisor.id_usuario = a_emisor.id_usuario
+                WHERE u_receptor.id_usuario = $2;
+            `;
+            
+            const datosResult = await pool.query(queryDatosCorreo, [id_emisor, id_receptor]);
+            
+            if (datosResult.rows.length > 0) {
+                const { email_receptor, nombre_emisor } = datosResult.rows[0];
+                
+                // Llamamos a tu servicio centralizado de correos
+                await enviarCorreoNuevoMensaje(email_receptor, nombre_emisor);
+            }
+        } catch (errorCorreo) {
+            console.error('⚠️ Error al procesar datos para el correo de chat:', errorCorreo);
+        }
+
     } catch (error) {
         if (error.code === '23503') {
             return res.status(404).json({
@@ -35,10 +66,11 @@ export const enviarMensaje = async (req, res) => {
             });
         }
         console.error('❌ Error no controlado al enviar mensaje:', error);
-        return res.status(500).json({ ok: false, error: 'Error interno del servidor al enviar el mensaje.' });
+        if (!res.headersSent) {
+            return res.status(500).json({ ok: false, error: 'Error interno del servidor.' });
+        }
     }
 };
-
 /**
  * DOCUMENTACIÓN: obtenerConversacion
  * Retorna el historial de mensajes entre dos usuarios y marca como leídos

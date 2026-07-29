@@ -175,3 +175,37 @@ export const enviarCorreoCalificacion = async (correosDestino, datosCalificacion
         console.error("❌ Error al enviar correo de calificación:", error.response ? error.response.body : error);
     }
 };
+
+// ==========================================
+// FUNCIÓN 6: NOTIFICAR NUEVO MENSAJE DE CHAT
+// ==========================================
+export const enviarCorreoNuevoMensaje = async (emailDestino, nombreEmisor) => {
+    try {
+        const mensaje = {
+            to: emailDestino,
+            from: emailRemitente,
+            subject: 'Tienes un nuevo mensaje en la plataforma CESL',
+            // Texto plano para evadir filtros antispam
+            text: `Hola. Tienes un nuevo mensaje sin leer en la plataforma del Centro Educativo Salvador Lenis. Remitente: ${nombreEmisor}. Por favor, ingresa a tu cuenta para responder.`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+                    <h2 style="color: #0033a0; text-align: center;">Centro Educativo Salvador Lenis</h2>
+                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+                    <p style="font-size: 16px; color: #333;">Hola,</p>
+                    <p style="font-size: 16px; color: #333;">Tienes un nuevo mensaje sin leer en nuestra plataforma.</p>
+                    
+                    <div style="background-color: #f4f6f9; padding: 15px; border-left: 5px solid #0033a0; margin: 20px 0; border-radius: 4px;">
+                        <p style="margin: 0; color: #333;"><strong>Remitente:</strong> ${nombreEmisor}</p>
+                    </div>
+                    
+                    <p style="font-size: 14px; color: #666;">Por favor, ingresa a tu cuenta en la plataforma para leer y responder a esta inquietud.</p>
+                </div>
+            `
+        };
+
+        await sgMail.send(mensaje);
+        console.log(`📧 Notificación de chat enviada a: ${emailDestino}`);
+    } catch (error) {
+        console.error("❌ Error al enviar notificación de chat:", error.response ? error.response.body : error);
+    }
+};
