@@ -21,8 +21,8 @@ pool.on('error', (err) => {
   console.error('Error inesperado en el cliente inactivo', err);
   process.exit(-1);
 });
-
 */
+
 //Conexión a bd local
 // Si en tu .env dice 'localhost' o no hay variable, sabemos que es tu PC.
 const isLocal = process.env.DB_HOST === 'localhost' || !process.env.DB_HOST;

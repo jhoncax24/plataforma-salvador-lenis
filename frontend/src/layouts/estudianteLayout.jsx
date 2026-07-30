@@ -17,13 +17,13 @@ const EstudianteLayout = () => {
   };
 
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       {/* El Header del estudiante recibe sus propiedades 
       */}
       <Header user={user} logout={handleLogout} />
       
       {/* Aquí React inyectará el Horario, Notas, etc. */}
-      <main>
+      <main className="flex-1">
         <Outlet /> 
       </main>
     </div>
