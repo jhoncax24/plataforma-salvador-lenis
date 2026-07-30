@@ -86,11 +86,8 @@ export const obtenerMateriasPorCurso = async (idCurso) => {
   }
 };
 
-// 👇 FUNCIÓN ACTUALIZADA 👇
 export const obtenerPlanillaNotas = async (idCurso, idMateria, periodo) => {
   try {
-    // Conectamos a la ruta del docente y enviamos las variables como 'params'
-    // Esto arma una URL tipo: /docentes/planilla?idCurso=1&idMateria=2&periodo=1
     const response = await api.get(`/docentes/planilla`, {
       params: { idCurso, idMateria, periodo }
     });
@@ -123,14 +120,13 @@ export const cambiarPasswordEstudiante = async (id, payload) => {
     return data;
 };
 
-// Obtiene las notas de un estudiante
 export const obtenerNotasEstudiante = async (idEstudiante) => {
   try {
     const response = await api.get(`/estudiantes/notas/${idEstudiante}`);
     return response.data;
   } catch (error) {
     console.error("Error obteniendo notas:", error);
-    return []; // Si hay error, devolvemos un arreglo vacío para que no se rompa la vista
+    return []; 
   }
 };
 
@@ -223,21 +219,13 @@ export const obtenerAsistenciaHijo = async (idEstudiante) => {
 // ENTREGAR TAREA (SUBIR PDF)
 // ==========================================
 export const entregarTareaEstudiante = async (idUsuario, idActividad, archivoPdf) => {
-  // 1. Instanciamos FormData para empaquetar el archivo y los datos
   const formData = new FormData();
-  
-  // 2. Agregamos los datos que espera el backend
   formData.append('idActividad', idActividad);
-  
-  // 3. Agregamos el archivo PDF. El nombre 'archivoPdf' debe coincidir 
-  // con lo configurado en upload.single('archivoPdf') en el backend.
   formData.append('archivoPdf', archivoPdf); 
 
   try {
-    // Usamos tu instancia 'api' y enviamos el formData
     const response = await api.post(`/estudiantes/tareas/${idUsuario}/entregar`, formData, {
       headers: {
-        // Le indicamos al servidor que enviamos un archivo binario
         'Content-Type': 'multipart/form-data'
       }
     });
@@ -440,8 +428,9 @@ export const modificarPerfilDocente = async (idUsuario, datosNuevos) => {
   }
 };
 
-//FUNCIONES CORRESPONDIENTES A JEFRY (ACUDIENTE)
-
+// ==========================================
+// FUNCIONES CORRESPONDIENTES A JEFRY (ACUDIENTE)
+// ==========================================
 export const obtenerFechaLimiteMatricula = async () => {
   try {
     const response = await api.get('/users/matricula/limite');
@@ -453,5 +442,66 @@ export const obtenerFechaLimiteMatricula = async () => {
   } catch (error) {
     console.error("Error obteniendo fecha límite de la BD:", error);
     return '2026-08-15T23:59:59';
+  }
+};
+
+// Agrega esto en tu sección de MATRÍCULA (ACUDIENTE / ESTUDIANTE) en perfilApi.js
+export const guardarComprobanteMatriculaBD = async (idEstudiante, urlComprobante) => {
+  try {
+    const response = await api.put('/users/acudiente/matricula/comprobante', {
+      id_estudiante: Number(idEstudiante),
+      documentos_url: urlComprobante
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error al guardar URL del comprobante en BD:", error);
+    throw error;
+  }
+};
+
+// ==========================================
+// NUEVO: FUNCIONES DEL ADMINISTRADOR (ADMIN)
+// ==========================================
+export const modificarPerfilAdmin = async (idUsuario, datosNuevos) => {
+  try {
+    // Asumiendo que la ruta en tu backend siga el estándar que has usado
+    const response = await api.put(`/perfil/admin/${idUsuario}`, datosNuevos);
+    return response.data;
+  } catch (error) {
+    console.error("Error en la petición de modificar perfil de admin:", error);
+    throw error;
+  }
+};
+
+export const getMatriculasPendientes = async () => {
+  try {
+    // Asegúrate de crear este endpoint GET en admin.routes.js cuando lo necesites
+    const response = await api.get('/admin/matriculas/pendientes');
+    return response.data;
+  } catch (error) {
+    console.error("Error al obtener matrículas pendientes:", error);
+    return [];
+  }
+};
+
+export const aprobarMatriculaAdmin = async (idMatricula) => {
+  try {
+    // Llama al endpoint exacto que creamos en admin.routes.js
+    const response = await api.put(`/admin/matriculas/aprobar/${idMatricula}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al aprobar matrícula:", error);
+    throw error;
+  }
+};
+
+export const rechazarMatriculaAdmin = async (idMatricula, motivo) => {
+  try {
+    // Debe ser PUT porque en admin.routes.js la definimos como PUT
+    const response = await api.put(`/admin/matriculas/rechazar/${idMatricula}`, { motivo });
+    return response.data;
+  } catch (error) {
+    console.error("Error al rechazar matrícula:", error);
+    throw error;
   }
 };

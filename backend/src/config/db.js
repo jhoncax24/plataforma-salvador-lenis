@@ -14,14 +14,14 @@ export const pool = new Pool({
 
 // Eventos de conexión
 pool.on('connect', () => {
-  //console.log('Conectado a la base de datos de producción (Neon)');
+  console.log('Conectado a la base de datos de producción (Neon)');
 });
 
 pool.on('error', (err) => {
   console.error('Error inesperado en el cliente inactivo', err);
   process.exit(-1);
 });
-/*
+
 */
 //Conexión a bd local
 // Si en tu .env dice 'localhost' o no hay variable, sabemos que es tu PC.
@@ -46,3 +46,4 @@ pool.on('error', (err) => {
   console.error('❌ Error inesperado en la base de datos', err);
   process.exit(-1);
 });
+

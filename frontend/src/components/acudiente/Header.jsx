@@ -30,7 +30,7 @@ const Header = ({ user }) => {
     >
       {/* SECCIÓN IZQUIERDA: Texto Portal */}
       <div className="flex-1 flex justify-start items-center">
-        <Link to="/estudiante/" className="text-white text-xl md:text-3xl font-extrabold tracking-wide hover:opacity-90 transition-opacity">
+        <Link to="/acudiente" className="text-white text-xl md:text-3xl font-extrabold tracking-wide hover:opacity-90 transition-opacity">
           Portal Acudiente
         </Link>
       </div>

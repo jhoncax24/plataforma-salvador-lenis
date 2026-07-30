@@ -5,13 +5,12 @@ const storage = multer.memoryStorage();
 
 // 2. Creamos la función de filtro para aceptar únicamente archivos PDF
 const fileFilter = (req, file, cb) => {
-  // Verificamos el mimetype del archivo
-  if (file.mimetype === 'application/pdf') {
-    // Si es PDF, aceptamos el archivo (pasando 'true' al callback)
+  const imageMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  const pdfMime = 'application/pdf';
+  if (imageMimes.includes(file.mimetype) || file.mimetype === pdfMime) {
     cb(null, true);
   } else {
-    // Si no es PDF, rechazamos el archivo y enviamos un error
-    cb(new Error('Formato no válido. Por favor, sube únicamente un archivo PDF.'), false);
+    cb(new Error('Formato no válido. Por favor, sube imágenes (JPG, PNG, GIF, WEBP) o PDF.'), false);
   }
 };
 

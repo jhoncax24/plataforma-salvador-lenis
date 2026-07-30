@@ -1,5 +1,6 @@
 import { Router } from "express"; 
 import { authenticateToken } from "../middlewares/auth.middleware.js";
+import upload from '../middlewares/upload.middleware.js';
 import { 
   getAcudienteProfile, 
   getEstudiantesByAcudiente,
@@ -20,7 +21,9 @@ import {
   getObservacionesAcudiente,
   getAsistenciaAcudiente,
   getFechaLimiteMatricula,
-  getMateriasPorCurso
+  getMateriasPorCurso,
+  guardarComprobanteMatricula,
+  subirComprobanteMatricula
 } from "../controllers/users.controller.js";
 
 const router = Router();
@@ -33,6 +36,8 @@ router.get("/acudiente/:idAcudiente/eventos", authenticateToken, getEventosCalen
 router.post("/acudiente/eventos", authenticateToken, crearEventoCalendario);
 router.delete("/acudiente/eventos/:idEvento", authenticateToken, deleteEventoCalendario);
 router.post("/acudiente/matricula", authenticateToken, registrarMatriculaLinea);
+router.put("/acudiente/matricula/comprobante", authenticateToken, guardarComprobanteMatricula);
+router.post("/acudiente/matricula/comprobante/upload", authenticateToken, upload.single('comprobante'), subirComprobanteMatricula);
 router.put("/estudiante/perfil/:id", authenticateToken, updateEstudianteProfile);
 router.get("/estudiante/:idEstudiante/notas", authenticateToken, getNotasEstudiante);
 router.get("/estudiante/:idEstudiante/observador", authenticateToken, getObservacionesAcudiente);

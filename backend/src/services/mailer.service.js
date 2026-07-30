@@ -209,3 +209,115 @@ export const enviarCorreoNuevoMensaje = async (emailDestino, nombreEmisor) => {
         console.error("❌ Error al enviar notificación de chat:", error.response ? error.response.body : error);
     }
 };
+
+// ==========================================
+// FUNCIÓN 7: MATRÍCULA APROBADA (CON FIRMA DIGITAL Y PDF)
+// ==========================================
+export const enviarCorreoMatriculaAprobada = async (emailDestino, nombreEstudiante, grado, materias = [], firmaDigitalHash, pdfBase64) => {
+    try {
+        const nombreArchivo = `Constancia_Matricula_${nombreEstudiante.replace(/\s+/g, '_')}.pdf`;
+
+        const listaMateriasHtml = materias.length > 0 
+            ? materias.map(m => `<li style="margin-bottom: 5px; color: #334155;"><strong>${m}</strong></li>`).join('')
+            : '<li style="color: #64748b;">Asignaturas según el plan general institucional.</li>';
+
+        const mensaje = {
+            to: emailDestino,
+            from: emailRemitente,
+            subject: `✅ Matrícula Aprobada para Grado ${grado} - Firma Digital CESL`,
+            text: `Hola. Nos complace informarte que la matrícula del estudiante ${nombreEstudiante} para el grado ${grado} ha sido aprobada exitosamente. Adjunto encontrarás el PDF con la constancia formal y la firma digital SHA-256: ${firmaDigitalHash}.`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
+                    <h2 style="color: #0033a0; text-align: center; margin-bottom: 5px;">Centro Educativo Salvador Lenis</h2>
+                    <p style="text-align: center; color: #64748b; font-size: 13px; margin-top: 0;">Excelencia y Compromiso Académico</p>
+                    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+                    
+                    <h3 style="color: #1e293b; text-align: center;">¡Matrícula Aprobada y Activada!</h3>
+                    
+                    <p style="font-size: 15px; color: #334155;">Estimado(a) Acudiente,</p>
+                    <p style="font-size: 15px; color: #334155; line-height: 1.5;">
+                        Nos complace notificarle que la solicitud de matrícula para el(la) estudiante <strong>${nombreEstudiante}</strong> ha sido verificada y aprobada para cursar el <strong>Grado ${grado}</strong>.
+                    </p>
+                    
+                    <div style="background-color: #f8fafc; border-left: 4px solid #0033a0; padding: 15px; margin: 20px 0; border-radius: 4px;">
+                        <h4 style="margin: 0 0 10px 0; color: #0033a0; font-size: 14px;">📚 Plan Académico Asignado:</h4>
+                        <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
+                            ${listaMateriasHtml}
+                        </ul>
+                    </div>
+
+                    <div style="background-color: #f1f5f9; padding: 12px; border-radius: 6px; text-align: center; margin-bottom: 20px;">
+                        <p style="margin: 0; font-size: 12px; color: #475569;"><strong>Firma Digital Certificada (SHA-256):</strong></p>
+                        <p style="margin: 5px 0 0 0; font-size: 11px; font-family: monospace; color: #0f172a; word-break: break-all;">
+                            ${firmaDigitalHash}
+                        </p>
+                    </div>
+
+                    <p style="font-size: 14px; color: #334155;">
+                        📎 <strong>Adjunto a este correo</strong> encontrará el certificado oficial en formato PDF con la firma digital institucional.
+                    </p>
+                </div>
+            `,
+            attachments: [
+                {
+                    content: pdfBase64,
+                    filename: nombreArchivo,
+                    type: 'application/pdf',
+                    disposition: 'attachment',
+                },
+            ],
+        };
+
+        await sgMail.send(mensaje);
+        console.log(`📧 Correo de matrícula aprobada enviado exitosamente a: ${emailDestino}`);
+    } catch (error) {
+        console.error("❌ Error al enviar correo de matrícula aprobada:", error.response ? error.response.body : error);
+    }
+};
+
+// ==========================================
+// FUNCIÓN 8: MATRÍCULA RECHAZADA / DEVUELTA
+// ==========================================
+export const enviarCorreoMatriculaDevuelta = async (emailDestino, nombreEstudiante, motivo) => {
+    try {
+        const mensaje = {
+            to: emailDestino,
+            from: emailRemitente,
+            subject: `⚠️ Observación en Solicitud de Matrícula - CESL`,
+            text: `Hola. Le informamos que la solicitud de matrícula para el estudiante ${nombreEstudiante} ha sido devuelta/rechazada. Motivo: "${motivo}". Por favor, ingrese a la plataforma para corregir la observación o contacte con la institución.`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
+                    <h2 style="color: #0033a0; text-align: center; margin-bottom: 5px;">Centro Educativo Salvador Lenis</h2>
+                    <p style="text-align: center; color: #64748b; font-size: 13px; margin-top: 0;">Gestión e Informes Académicos</p>
+                    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+                    
+                    <h3 style="color: #dc2626; text-align: center;">Solicitud de Matrícula Devuelta / Rechazada</h3>
+                    
+                    <p style="font-size: 15px; color: #334155;">Estimado(a) Acudiente,</p>
+                    <p style="font-size: 15px; color: #334155; line-height: 1.5;">
+                        Le informamos que la solicitud de matrícula enviada para el(la) estudiante <strong>${nombreEstudiante}</strong> ha sido revisada por la administración y requiere de su atención.
+                    </p>
+                    
+                    <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; margin: 20px 0; border-radius: 4px;">
+                        <h4 style="margin: 0 0 8px 0; color: #991b1b; font-size: 14px;">📝 Motivo de la Observación:</h4>
+                        <p style="margin: 0; color: #7f1d1d; font-size: 14px; font-style: italic; line-height: 1.4;">
+                            "${motivo}"
+                        </p>
+                    </div>
+
+                    <p style="font-size: 14px; color: #334155;">
+                        Por favor, ingrese a la plataforma para subsanar los requisitos o acerquese a la secretaría institucional para resolver la inquietud.
+                    </p>
+                    
+                    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 25px 0 15px 0;" />
+                    <p style="font-size: 11px; color: #94a3b8; text-align: center;">Este es un mensaje automático del portal académico CESL. Por favor no responda a este mensaje.</p>
+                </div>
+            `,
+        };
+
+        await sgMail.send(mensaje);
+        console.log(`📧 Correo de devolución de matrícula enviado a: ${emailDestino}`);
+    } catch (error) {
+        console.error("❌ Error al enviar correo de devolución de matrícula:", error.response ? error.response.body : error);
+    }
+};

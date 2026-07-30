@@ -16,7 +16,8 @@ import {
   getEventosCalendarioByAcudiente,
   crearEventoCalendarioByAcudiente,
   deleteEventoCalendarioByAcudiente,
-  getFechaLimiteMatricula
+  getFechaLimiteMatricula,
+  guardarComprobanteMatricula // 👈 1. IMPORTAMOS LA NUEVA FUNCIÓN
 } from "../controllers/acudientes.controller.js";
 
 const router = Router();
@@ -28,7 +29,6 @@ router.use(authenticateToken);
 router.get("/perfil/:idUsuario", param('idUsuario').isInt(), validateRequest, getAcudienteProfile);
 router.put("/perfil/:idUsuario", param('idUsuario').isInt(), validateRequest, updateAcudienteProfile);
 router.put("/perfil/:idUsuario/password", param('idUsuario').isInt(), validateRequest, changePasswordAcudiente);
-
 
 // 2. Perfil Estudiantes (Hijos)
 router.get("/:idAcudiente/estudiantes", param('idAcudiente').isInt(), validateRequest, getEstudiantesByAcudiente);
@@ -42,6 +42,8 @@ router.get("/planilla/:idCurso/:idMateria/:periodo", getPlanillaDetalleByAcudien
 // 4. Matrícula
 router.get("/matricula/estado/:idEstudiante", param('idEstudiante').isInt(), validateRequest, getEstadoMatriculaByAcudiente);
 router.post("/matricula/enviar", registrarMatriculaLineaByAcudiente);
+// 👇 2. NUEVA RUTA: Guardar comprobante de pago subido a Cloudinary 👇
+router.put("/matricula/comprobante", guardarComprobanteMatricula);
 
 // 5. Calendario Acudiente
 router.get("/calendario/:idAcudiente", param('idAcudiente').isInt(), validateRequest, getEventosCalendarioByAcudiente);

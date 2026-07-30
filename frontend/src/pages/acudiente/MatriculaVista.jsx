@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { obtenerEstadoMatricula, enviarMatriculaBD, obtenerFechaLimiteMatricula } from "../../api/perfilApi"; // 👇 AÑADIDA IMPORTACIÓN
+import { obtenerEstadoMatricula, enviarMatriculaBD, obtenerFechaLimiteMatricula } from "../../api/perfilApi"; 
+import api from "../../api/api";
 
 const TODOS_LOS_CURSOS = [
   { id: 1, nombre: "1-1" }, { id: 2, nombre: "1-2" },
@@ -30,14 +31,17 @@ export default function MatriculaVista() {
   const [enviando, setEnviando] = useState(false);
   const [mostrarQR, setMostrarQR] = useState(false);
 
-  // 👇 EVALUACIÓN DE CIERRE BASADA EN LA BD
+  // ESTADOS PARA SUBIR EL COMPROBANTE A CLOUDINARY
+  const [subiendoComprobante, setSubiendoComprobante] = useState(false);
+  const [comprobanteGuardado, setComprobanteGuardado] = useState(false);
+
+  // EVALUACIÓN DE CIERRE BASADA EN LA BD
   const [fechaLimiteString, setFechaLimiteString] = useState("");
-  const [isMatriculaAbierta, setIsMatriculaAbierta] = useState(true); // Abierto por defecto hasta verificar
+  const [isMatriculaAbierta, setIsMatriculaAbierta] = useState(true);
 
   const estudianteSeleccionado = hijos.find(h => h.id === Number(estudianteId));
 
   useEffect(() => {
-    // Al cargar la vista, primero consultamos la base de datos
     const verificarFecha = async () => {
       const limiteBD = await obtenerFechaLimiteMatricula();
       const fechaLimite = new Date(limiteBD);
@@ -52,6 +56,7 @@ export default function MatriculaVista() {
       const cargarEstado = async () => {
         setLoadingEstado(true);
         setMostrarQR(false);
+        setComprobanteGuardado(false);
         try {
           const res = await obtenerEstadoMatricula(estudianteId);
           setEstadoActual(res);
@@ -97,6 +102,31 @@ export default function MatriculaVista() {
     }
   };
 
+  // Lógica para subir el comprobante de pago a través del backend
+  const handleSubirComprobante = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setSubiendoComprobante(true);
+    const formData = new FormData();
+    formData.append("comprobante", file);
+    formData.append("id_estudiante", Number(estudianteId));
+
+    try {
+      await api.post("/users/acudiente/matricula/comprobante/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      setComprobanteGuardado(true);
+      alert("¡Comprobante de pago adjuntado y registrado con éxito!");
+    } catch (error) {
+      console.error("Error subiendo el comprobante:", error);
+      alert("Hubo un error al subir el comprobante de pago.");
+    } finally {
+      setSubiendoComprobante(false);
+    }
+  };
+
   const cursosFiltrados = TODOS_LOS_CURSOS.filter(curso => {
     if (!estadoActual || !estadoActual.grado_habilitado) return true;
     const gradoDelCurso = curso.nombre.split('-')[0];
@@ -105,7 +135,6 @@ export default function MatriculaVista() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 mt-8">
-      {/* BLOQUE DE CIERRE TOTAL */}
       {!isMatriculaAbierta ? (
         <div className="text-center p-8 bg-red-50 rounded-xl border border-red-200 shadow-md">
           <h2 className="text-3xl font-bold text-red-700 mb-4">Matrículas Cerradas</h2>
@@ -134,9 +163,29 @@ export default function MatriculaVista() {
                 />
               </div>
 
-              <p className="text-sm text-gray-500 mb-8">
-                Una vez se verifique el pago, el estado se actualizará en el sistema.
-              </p>
+              {/* SECCIÓN ADJUNTAR COMPROBANTE DE PAGO */}
+              <div className="max-w-md mx-auto bg-white p-6 rounded-xl border border-gray-200 shadow-sm mb-8">
+                <h3 className="font-bold text-gray-800 text-lg mb-2">Adjuntar Comprobante de Transferencia</h3>
+                <p className="text-xs text-gray-500 mb-4">Suba una foto o captura legible del comprobante para que el administrativo valide la transacción.</p>
+
+                <input 
+                  type="file" 
+                  accept="image/*,application/pdf"
+                  onChange={handleSubirComprobante}
+                  disabled={subiendoComprobante || comprobanteGuardado}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition cursor-pointer"
+                />
+
+                {subiendoComprobante && (
+                  <p className="text-sm font-bold text-blue-600 mt-3 animate-pulse">Subiendo comprobante a la nube...</p>
+                )}
+
+                {comprobanteGuardado && (
+                  <p className="text-sm font-bold text-green-600 mt-3 flex items-center justify-center gap-1">
+                    <span>✅</span> ¡Comprobante registrado correctamente!
+                  </p>
+                )}
+              </div>
 
               <button 
                 onClick={() => navigate("/acudiente")}
@@ -148,7 +197,6 @@ export default function MatriculaVista() {
           ) : (
             <div className="bg-white rounded-lg shadow p-6">
               
-              {/* AVISO INFORMATIVO DE PLAZO MÁXIMO VINCULADO A LA BD */}
               <div className="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 p-4 mb-6 rounded-lg shadow-sm">
                   <p className="font-bold">⚠️ Atención: Plazo de Matrículas</p>
                   <p className="text-sm">El proceso de matrícula en línea estará habilitado únicamente hasta el <strong>{fechaLimiteString}</strong>.</p>

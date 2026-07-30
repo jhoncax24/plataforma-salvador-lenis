@@ -1,5 +1,6 @@
 import { pool } from "../config/db.js";
 import bcrypt from "bcryptjs";
+import cloudinary from "../config/cloudinary.js";
 
 export const getAcudienteProfile = async (req, res) => {
   try {
@@ -319,5 +320,87 @@ export const getFechaLimiteMatricula = async (req, res, next) => {
   } catch (err) { 
     console.error("Error obteniendo la fecha límite:", err);
     res.status(500).json({ error: "Error interno" });
+  }
+};
+
+// ==========================================
+// GUARDAR URL DEL COMPROBANTE DE PAGO
+// ==========================================
+export const guardarComprobanteMatricula = async (req, res, next) => {
+  const { id_estudiante, documentos_url } = req.body;
+
+  if (!id_estudiante || !documentos_url) {
+    return res.status(400).json({ error: "Faltan datos obligatorios (id_estudiante o documentos_url)." });
+  }
+
+  try {
+    const query = `
+      UPDATE matriculas 
+      SET documentos_url = $1 
+      WHERE id_estudiante = $2 AND estado = 'Pendiente'
+      RETURNING *;
+    `;
+    const { rows } = await pool.query(query, [documentos_url, Number(id_estudiante)]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "No se encontró una matrícula pendiente para este estudiante." });
+    }
+
+    res.json({ message: "Comprobante de pago guardado exitosamente", matricula: rows[0] });
+  } catch (error) {
+    console.error("Error guardando comprobante:", error);
+    next(error);
+  }
+};
+
+// ==========================================
+// SUBIR COMPROBANTE DE PAGO CON CLOUDINARY
+// ==========================================
+export const subirComprobanteMatricula = async (req, res, next) => {
+  const { id_estudiante } = req.body;
+  const file = req.file;
+
+  if (!file) {
+    return res.status(400).json({ error: "No se proporcionó un archivo." });
+  }
+
+  if (!id_estudiante) {
+    return res.status(400).json({ error: "Falta id_estudiante." });
+  }
+
+  try {
+    const subirACloudinary = () => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: "cesl_comprobantespago"
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result.secure_url);
+          }
+        );
+        stream.end(file.buffer);
+      });
+    };
+
+    const urlCloudinary = await subirACloudinary();
+
+    const query = `
+      UPDATE matriculas 
+      SET documentos_url = $1 
+      WHERE id_estudiante = $2 AND estado = 'Pendiente'
+      RETURNING *;
+    `;
+    const { rows } = await pool.query(query, [urlCloudinary, Number(id_estudiante)]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "No se encontró una matrícula pendiente para este estudiante." });
+    }
+
+    res.json({ message: "Comprobante de pago guardado exitosamente", matricula: rows[0] });
+  } catch (error) {
+    console.error("Error subiendo comprobante:", error);
+    next(error);
   }
 };

@@ -238,21 +238,59 @@ export const getEstadoMatriculaByAcudiente = async (req, res, next) => {
 
 export const registrarMatriculaLineaByAcudiente = async (req, res, next) => {
   try {
-    const { id_estudiante, documentos_url = '', firma_digital_hash = '', anio_lectivo, id_curso } = req.body;
-    
+    const { 
+      id_estudiante, 
+      documentos_url = '', 
+      firma_digital_hash = '', 
+      anio_lectivo = '2026', 
+      id_curso 
+    } = req.body;
+
+    // Convertimos explícitamente a números enteros
+    const idEstudianteNum = Number(id_estudiante);
+    const idCursoNum = Number(id_curso);
+
+    if (!idEstudianteNum || !idCursoNum) {
+      return res.status(400).json({ error: "id_estudiante e id_curso son obligatorios y deben ser números válidos." });
+    }
+
+    // 1. Verificamos si ya existe la matrícula para ese año lectivo
     const checkQ = 'SELECT id_matricula FROM matriculas WHERE id_estudiante = $1 AND anio_lectivo = $2';
-    const checkRes = await pool.query(checkQ, [id_estudiante, anio_lectivo]);
+    const checkRes = await pool.query(checkQ, [idEstudianteNum, String(anio_lectivo)]);
 
     if (checkRes.rows.length > 0) {
-      const updateQ = `UPDATE matriculas SET documentos_url = $1, firma_digital_hash = $2, estado = 'Pendiente', id_curso = $3, fecha_matricula = CURRENT_TIMESTAMP WHERE id_estudiante = $4 AND anio_lectivo = $5 RETURNING *`;
-      const { rows } = await pool.query(updateQ, [documentos_url, firma_digital_hash, id_curso, id_estudiante, anio_lectivo]);
+      // 2. Si existe, actualizamos
+      const updateQ = `
+        UPDATE matriculas 
+        SET 
+          documentos_url = COALESCE(NULLIF($1, ''), documentos_url), 
+          firma_digital_hash = COALESCE(NULLIF($2, ''), firma_digital_hash), 
+          estado = 'Pendiente', 
+          id_curso = $3, 
+          fecha_matricula = CURRENT_TIMESTAMP 
+        WHERE id_estudiante = $4 AND anio_lectivo = $5 
+        RETURNING *;
+      `;
+      const { rows } = await pool.query(updateQ, [documentos_url, firma_digital_hash, idCursoNum, idEstudianteNum, String(anio_lectivo)]);
       return res.json({ message: "Matrícula actualizada", data: rows[0] });
+
     } else {
-      const insertQ = `INSERT INTO matriculas (id_estudiante, estado, documentos_url, firma_digital_hash, anio_lectivo, id_curso, fecha_matricula) VALUES ($1, 'Pendiente', $2, $3, $4, $5, CURRENT_TIMESTAMP) RETURNING *`;
-      const { rows } = await pool.query(insertQ, [id_estudiante, documentos_url, firma_digital_hash, anio_lectivo, id_curso]);
-      return res.json({ message: "Matricula registrada con éxito", data: rows[0] });
+      // 3. Si no existe, insertamos un nuevo registro
+      const insertQ = `
+        INSERT INTO matriculas 
+          (id_estudiante, estado, documentos_url, firma_digital_hash, anio_lectivo, id_curso, fecha_matricula) 
+        VALUES 
+          ($1, 'Pendiente', $2, $3, $4, $5, CURRENT_TIMESTAMP) 
+        RETURNING *;
+      `;
+      const { rows } = await pool.query(insertQ, [idEstudianteNum, documentos_url, firma_digital_hash, String(anio_lectivo), idCursoNum]);
+      return res.json({ message: "Matrícula registrada con éxito", data: rows[0] });
     }
-  } catch (err) { next(err); }
+
+  } catch (err) { 
+    console.error("❌ Error en registrarMatriculaLineaByAcudiente:", err);
+    next(err); 
+  }
 };
 
 // ---------------------------------------------------------
@@ -324,5 +362,36 @@ export const getFechaLimiteMatricula = async (req, res, next) => {
   } catch (err) { 
     console.error("Error obteniendo la fecha límite:", err);
     res.status(500).json({ error: "Error interno" });
+  }
+};
+
+// ==========================================
+// GUARDAR URL DEL COMPROBANTE DE PAGO
+// ==========================================
+export const guardarComprobanteMatricula = async (req, res, next) => {
+  const { id_estudiante, documentos_url } = req.body;
+
+  if (!id_estudiante || !documentos_url) {
+    return res.status(400).json({ error: "Faltan datos obligatorios (id_estudiante o documentos_url)." });
+  }
+
+  try {
+    const query = `
+      UPDATE matriculas 
+      SET documentos_url = $1 
+      WHERE id_estudiante = $2 AND estado = 'Pendiente'
+      RETURNING *;
+    `;
+    // Importante: Aseguramos que el id sea numérico
+    const { rows } = await pool.query(query, [documentos_url, Number(id_estudiante)]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "No se encontró una matrícula pendiente para este estudiante." });
+    }
+
+    res.json({ message: "Comprobante de pago guardado exitosamente", matricula: rows[0] });
+  } catch (error) {
+    console.error("Error guardando comprobante:", error);
+    next(error);
   }
 };

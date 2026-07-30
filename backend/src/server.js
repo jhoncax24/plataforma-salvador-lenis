@@ -10,6 +10,10 @@ import estudiantesRoutes from './routes/estudiantes.routes.js';
 import docentesRoutes from './routes/docentes.routes.js';
 import './services/cronJobs.js';
 import chatRoutes from './routes/chat.routes.js';
+// Arriba en tus importaciones de server.js
+import adminRoutes from './routes/admin.routes.js';
+
+
 
 // Carga las variables de entorno locales (Render usará las suyas propias)
 dotenv.config();
@@ -34,6 +38,8 @@ app.use("/api/events", eventsRoutes);
 app.use("/api/perfil", perfilRoutes);
 app.use("/api/estudiantes", estudiantesRoutes);
 app.use("/api/docentes", docentesRoutes);
+// Abajo, en tus rutas principales
+app.use("/api/admin", adminRoutes);
 
 // Registrar el módulo de chat en la API
 app.use('/api/chat', chatRoutes);

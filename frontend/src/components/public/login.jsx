@@ -37,6 +37,7 @@ export default function LoginForm() {
       if (user.role === "estudiante") navigate("/estudiante");
       else if (user.role === "docente") navigate("/docente");
       else if (user.role === "acudiente") navigate("/acudiente");
+      else if (user.role === "admin") navigate("/admin");
       else navigate("/");
     } catch (err) {
       setErrorLogin("Credenciales inválidas");
