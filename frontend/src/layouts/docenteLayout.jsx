@@ -28,7 +28,7 @@ const user = JSON.parse(localStorage.getItem('cesl_user'));
       </header>
 
       {/* CONTENIDO PRINCIPAL */}
-      <main className="flex-1 p-8 max-w-[1900px] mx-auto w-full relative">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1900px] mx-auto w-full relative">
         <Outlet />
       </main>
 

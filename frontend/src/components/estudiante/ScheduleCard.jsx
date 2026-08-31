@@ -69,7 +69,7 @@ export default function ScheduleCard({ student, schedule = [], faltas = 0 }) {
           Año Lectivo: 2025-2026
         </h4>
         
-        <table className="w-full border-collapse border border-gray-300 text-center text-xs text-gray-600 mb-4 mt-4">
+        <table className="w-full border-collapse border border-gray-300 text-center text-xs text-gray-600 mb-4 mt-4 hidden md:table">
           <thead>
             <tr className="bg-gray-50 text-gray-700">
               <th className="py-2 px-1 border border-gray-300 font-bold w-1/6">Hora</th>
@@ -120,6 +120,29 @@ export default function ScheduleCard({ student, schedule = [], faltas = 0 }) {
             )}
           </tbody>
         </table>
+
+        {/* TARJETAS MÓVILES: Horario apilado para pantallas pequeñas */}
+        <div className="flex flex-col gap-3 md:hidden mt-4">
+          {horasUnicas.length === 0 ? (
+            <p className="text-center text-gray-500 text-sm py-4">No hay horario registrado.</p>
+          ) : (
+            horasUnicas.flatMap(hora => {
+              const [inicio, fin] = hora.split(' - ');
+              return dias
+                .map(dia => {
+                  const clase = schedule.find(s => s.bloque_hora === hora && s.dia_semana === dia);
+                  return clase ? (
+                    <div key={`${clase.dia_semana}-${clase.bloque_hora}`} className="bg-white border border-gray-300 rounded-lg p-4 shadow-sm flex flex-col gap-1.5">
+                      <p className="text-xs font-bold text-gray-500 uppercase">Día: {clase.dia_semana}</p>
+                      <p className="text-xs font-bold text-gray-500">Hora: {inicio} - {fin}</p>
+                      <p className="font-semibold text-[#0033a0] text-sm break-words">{clase.materia}</p>
+                    </div>
+                  ) : null;
+                })
+                .filter(Boolean);
+            })
+          )}
+        </div>
 
       </div>
       

@@ -130,7 +130,7 @@ export default function AdminInicio() {
     <div className="w-[95%] max-w-[1800px] mx-auto pt-6 pb-12 animate-fade-in-up font-sans">
 
       {/* HEADER DEL PERFIL */}
-      <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-10 relative px-4">
+      <div className="flex flex-col items-center gap-4 mb-10 md:flex-row md:justify-between md:items-end md:relative md:px-4">
         <div className="flex flex-col md:flex-row items-center gap-4 mb-6 md:mb-0">
           <div className="w-28 h-28 flex-shrink-0 rounded-full overflow-hidden bg-white shadow-sm">
             <img src={saludoActual.imagen} alt="Clima" className="w-full h-full object-cover" onError={(e) => e.target.style.display = 'none'} />
@@ -141,7 +141,7 @@ export default function AdminInicio() {
           </div>
         </div>
 
-        <div className="md:absolute md:left-1/2 md:transform md:-translate-x-1/2 md:bottom-0 mb-6 md:mb-0 z-10 flex flex-col items-center">
+        <div className="md:absolute md:left-1/2 md:transform md:-translate-x-1/2 md:bottom-0 z-10 flex flex-col items-center">
           <div className="relative rounded-full overflow-hidden w-28 h-28 border-4 border-white shadow-lg bg-white mb-2">
             {adminData.foto_perfil ? (
               <img src={adminData.foto_perfil} alt="Perfil Admin" className="w-full h-full object-cover" />

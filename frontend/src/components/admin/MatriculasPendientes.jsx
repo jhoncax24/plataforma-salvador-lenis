@@ -101,12 +101,12 @@ export default function MatriculasPendientes() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-xs text-gray-500 uppercase tracking-wider">
-                <th className="p-4 font-bold">Estado</th>
-                <th className="p-4 font-bold">Estudiante</th>
-                <th className="p-4 font-bold">Curso a Matricular</th>
-                <th className="p-4 font-bold">Acudiente</th>
-                <th className="p-4 font-bold text-center">Fecha Solicitud</th>
-                <th className="p-4 font-bold text-center">Acción</th>
+                <th className="p-4 font-bold text-xs sm:text-sm">Estado</th>
+                <th className="p-4 font-bold text-xs sm:text-sm">Estudiante</th>
+                <th className="p-4 font-bold text-xs sm:text-sm">Curso a Matricular</th>
+                <th className="p-4 font-bold text-xs sm:text-sm">Acudiente</th>
+                <th className="p-4 font-bold text-center text-xs sm:text-sm">Fecha Solicitud</th>
+                <th className="p-4 font-bold text-center text-xs sm:text-sm">Acción</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -130,23 +130,23 @@ export default function MatriculasPendientes() {
                       )}
                     </td>
 
-                    <td className="p-4">
+                    <td className="p-4 text-xs sm:text-sm">
                       <p className="font-bold text-gray-800">{mat.estudiante}</p>
                       <p className="text-xs text-gray-500">Doc: {mat.documento}</p>
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 text-xs sm:text-sm">
                       <span className="font-semibold text-[#0033a0] bg-blue-100 px-2.5 py-1 rounded text-sm">
                         {mat.curso_destino}
                       </span>
                     </td>
-                    <td className="p-4">
+                    <td className="p-4 text-xs sm:text-sm">
                       <p className="font-medium text-gray-700">{mat.acudiente}</p>
                       <p className="text-xs text-gray-500">Tel: {mat.telefono_acudiente}</p>
                     </td>
-                    <td className="p-4 text-center text-sm font-medium text-gray-600">
+                    <td className="p-4 text-center text-sm font-medium text-gray-600 text-xs sm:text-sm">
                       {mat.fecha_solicitud}
                     </td>
-                    <td className="p-4 text-center">
+                    <td className="p-4 text-center text-xs sm:text-sm">
                       <button 
                         onClick={() => abrirValidacion(mat)}
                         className={`text-sm font-bold text-white px-4 py-2 rounded-lg shadow-sm transition-all ${

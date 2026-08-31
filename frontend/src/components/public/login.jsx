@@ -99,7 +99,7 @@ export default function LoginForm() {
   return (
     <>
       {/* FORMULARIO DE LOGIN NORMAL */}
-      <aside className="w-full md:w-1/3 flex flex-col justify-center bg-white shadow-md rounded-xl m-6 p-6">
+      <aside className="w-full md:w-1/3 flex flex-col justify-center bg-white shadow-md rounded-xl mx-4 p-6">
         <h3 className="text-xl font-semibold mb-4 text-center">Ingreso a la plataforma</h3>
         <form className="space-y-4" onSubmit={handleLogin}>
           {errorLogin && <p className="text-red-500 text-center text-sm">{errorLogin}</p>}
@@ -124,7 +124,7 @@ export default function LoginForm() {
       {/* ========================================= */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden relative">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-sm sm:max-w-md overflow-hidden relative">
             
             {/* Botón Cerrar (X) - Solo visible antes del ÉXITO */}
             {modalState !== 'SUCCESS' && (

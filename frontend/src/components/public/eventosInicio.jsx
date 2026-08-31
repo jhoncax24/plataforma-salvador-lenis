@@ -44,7 +44,7 @@ export default function EventosInicio() {
   }, [indice]); // Se deja 'indice' para que el intervalo se reinicie si el usuario hace clic
 
   return (
-    <div className="w-full md:w-2/3 flex flex-col justify-center bg-white shadow-md rounded-xl m-6 p-6">
+    <div className="w-full md:w-2/3 flex flex-col justify-center bg-white shadow-md rounded-xl mx-4 my-6 md:m-6 p-6">
       <h1 className="text-center text-2xl font-semibold mt-4 mb-4">
         Nuestros eventos
       </h1>
@@ -56,7 +56,7 @@ export default function EventosInicio() {
         <img
           src={eventos[indice].imagen}
           alt={eventos[indice].titulo}
-          className="w-full h-[450px] object-contain rounded-xl transition-all duration-700"
+          className="w-full h-[250px] sm:h-[350px] md:h-[450px] object-contain rounded-xl transition-all duration-700"
         />
 
         <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-3 rounded-b-xl align-middle text-center">

@@ -18,18 +18,18 @@ export default function GradesCard({ grades = [] }) {
       <div className="bg-white p-4 flex-1 flex flex-col min-h-0">
         
         {/* Tabla con Scroll Automático solo si es necesario */}
-        <div className="flex-1 overflow-y-auto pr-1">
+        <div className="flex-1 overflow-y-auto overflow-x-auto pr-1">
           <table className="w-full border-collapse text-left text-sm text-gray-700">
             <thead className="bg-blue-50 sticky top-0 z-10">
               <tr>
-                <th className="py-3 px-3 font-bold text-[#0033a0] border-b-2 border-blue-200">Materia</th>
-                <th className="py-3 px-3 font-bold text-[#0033a0] border-b-2 border-blue-200 text-center">Promedio</th>
+                <th className="py-3 px-3 font-bold text-[#0033a0] border-b-2 border-blue-200 text-xs sm:text-sm">Materia</th>
+                <th className="py-3 px-3 font-bold text-[#0033a0] border-b-2 border-blue-200 text-center text-xs sm:text-sm">Promedio</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {grades.length === 0 ? (
                 <tr>
-                  <td colSpan="2" className="py-6 text-center text-gray-500 italic">
+                  <td colSpan="2" className="py-6 text-center text-gray-500 italic text-xs sm:text-sm">
                     No hay notas registradas.
                   </td>
                 </tr>
@@ -39,10 +39,10 @@ export default function GradesCard({ grades = [] }) {
                   
                   return (
                     <tr key={index} className="hover:bg-blue-50 transition-colors duration-200">
-                      <td className="py-3 px-3 font-semibold text-gray-800">
+                      <td className="py-3 px-3 font-semibold text-gray-800 text-xs sm:text-sm">
                         {nota.materia}
                       </td>
-                      <td className="py-3 px-3 text-center">
+                      <td className="py-3 px-3 text-center text-xs sm:text-sm">
                         {/* Píldora de color para la nota */}
                         <span className={`px-3 py-1 rounded-full font-bold text-xs shadow-sm inline-block w-12 text-center
                           ${nota.definitiva === "0.0" || nota.definitiva === 0 

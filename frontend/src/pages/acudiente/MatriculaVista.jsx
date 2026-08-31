@@ -134,7 +134,7 @@ export default function MatriculaVista() {
   });
 
   return (
-    <div className="max-w-4xl mx-auto p-6 mt-8">
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 mt-4 sm:mt-8">
       {!isMatriculaAbierta ? (
         <div className="text-center p-8 bg-red-50 rounded-xl border border-red-200 shadow-md">
           <h2 className="text-3xl font-bold text-red-700 mb-4">Matrículas Cerradas</h2>

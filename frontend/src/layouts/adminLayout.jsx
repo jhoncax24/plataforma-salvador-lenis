@@ -27,7 +27,7 @@ const AdminLayout = () => {
       </header>
 
       {/* CONTENIDO PRINCIPAL */}
-      <main className="flex-1 p-8 max-w-[1900px] mx-auto w-full relative">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1900px] mx-auto w-full relative">
         {/* Aquí se renderizarán las páginas del admin, como la vista de matrículas */}
         <Outlet />
       </main>

@@ -27,7 +27,7 @@ const Footer = ({ logo }) => {
     <footer 
       style={footerStyle} 
       
-      className="w-full relative flex flex-col md:flex-row items-center justify-between px-10 md:px-40 py-8 shadow-inner gap-8 md:gap-0"
+       className="w-full relative flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 lg:px-8 py-8 shadow-inner gap-8 md:gap-0"
     >
       
       {/* SECCIÓN IZQUIERDA: Info de Desarrolladores */}

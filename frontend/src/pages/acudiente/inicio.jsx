@@ -214,7 +214,7 @@ export default function AcudienteInicio() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch px-2 sm:px-4">
-        <div className="w-full bg-white border-2 border-gray-200 rounded-xl shadow-md p-5 sm:p-6 flex flex-col min-h-[400px]">
+        <div className="w-full bg-white border-2 border-gray-200 rounded-xl shadow-md p-4 sm:p-5 flex flex-col min-h-[400px]">
           <h3 className="text-xl sm:text-2xl font-bold mb-2 text-[#0033a0]">Progreso Académico</h3>
           <p className="text-xs sm:text-sm text-gray-500 font-medium mb-4">Consulta el boletín de calificaciones de tus hijos.</p>
           <div className="flex-1 flex flex-col">
@@ -222,7 +222,7 @@ export default function AcudienteInicio() {
           </div>
         </div>
         
-        <div className="w-full bg-white border-2 border-gray-200 rounded-xl shadow-md p-5 sm:p-6 flex flex-col min-h-[400px]">
+        <div className="w-full bg-white border-2 border-gray-200 rounded-xl shadow-md p-4 sm:p-5 flex flex-col min-h-[400px]">
           <h3 className="text-xl sm:text-2xl font-bold mb-2 text-[#0033a0]">Calendario Escolar</h3>
           <p className="text-xs sm:text-sm text-gray-500 font-medium mb-4">Tus recordatorios personales del mes.</p>
 
@@ -243,7 +243,7 @@ export default function AcudienteInicio() {
               })
             )}
 
-            <div className="border border-gray-300 rounded mt-auto p-4">
+            <div className="border border-gray-300 rounded mt-auto p-4 w-full overflow-x-auto">
               <div className="flex justify-between items-center mb-4">
                 <h4 className="font-bold text-gray-800 capitalize">{monthName}</h4>
                 <div className="text-gray-500 font-bold tracking-widest cursor-pointer select-none">
@@ -293,7 +293,7 @@ export default function AcudienteInicio() {
           </div>
         </div>
         
-        <div className="w-full bg-white border-2 border-gray-200 rounded-xl shadow-md p-5 sm:p-6 flex flex-col min-h-[400px]">
+        <div className="w-full bg-white border-2 border-gray-200 rounded-xl shadow-md p-4 sm:p-5 flex flex-col min-h-[400px]">
           <h3 className="text-xl sm:text-2xl font-bold mb-4 text-[#0033a0]">Trámites y Documentos</h3>
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <Certificados estudiantes={data.hijos} />

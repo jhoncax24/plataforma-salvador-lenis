@@ -150,7 +150,7 @@ useEffect(() => {
       </div>
 
       {/* TARJETAS */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch px-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch px-4">
         <div className="w-full"><GradesCard grades={data.grades} /></div>
         <div className="w-full"><ScheduleCard student={data.student} schedule={data.schedule} faltas={data.faltas} /></div>
         <div className="w-full"><TasksCard tasks={data.tasks} /></div>
