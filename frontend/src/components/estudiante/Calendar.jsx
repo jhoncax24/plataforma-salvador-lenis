@@ -41,12 +41,12 @@ export default function Calendar({ onDayClick }) {
         <button onClick={() => changeMonth(1)}>&gt;</button>
       </div>
 
-      <div className="grid grid-cols-7 font-semibold mb-2 text-center">
+      <div className="grid grid-cols-7 font-semibold mb-2 text-center text-xs sm:text-sm">
         <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div>
         <div>Jue</div><div>Vie</div><div>Sáb</div>
       </div>
 
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 auto-rows-[90px] sm:auto-rows-[120px] gap-2">
         {[...blanks, ...days].map((day, idx) => (
           <div
             key={idx}

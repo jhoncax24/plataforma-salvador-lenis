@@ -287,7 +287,7 @@ export default function NotasDocente() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-max">
+            <table className="hidden md:table w-full text-left border-collapse min-w-max">
               <thead>
                 <tr className="bg-gray-100 text-gray-700 text-sm">
                   <th className="p-3 font-bold border-b border-r w-10 text-center">N°</th>
@@ -310,14 +310,14 @@ export default function NotasDocente() {
                             className="text-blue-500 hover:text-blue-700 bg-white p-1 rounded shadow-sm border border-blue-100 transition-colors" 
                             title="Editar Actividad"
                           >
-                            <MdEdit size={14} />
+                            <MdEdit size={20} />
                           </button>
                           <button 
                             onClick={() => handleEliminarActividad(act.id_actividad)} 
                             className="text-red-500 hover:text-red-700 bg-white p-1 rounded shadow-sm border border-red-100 transition-colors" 
                             title="Eliminar Actividad"
                           >
-                            <MdDelete size={14} />
+                            <MdDelete size={20} />
                           </button>
                         </div>
                       </div>
@@ -352,7 +352,7 @@ export default function NotasDocente() {
                                 <input
                                   type="text"
                                   maxLength="3"
-                                  className="w-16 mx-auto text-center p-1 border border-transparent rounded bg-transparent font-bold focus:border-[#0033a0] focus:bg-white focus:ring-1 focus:ring-[#0033a0] outline-none transition-all hover:bg-gray-100"
+                                  className="min-h-[40px] text-sm w-full max-w-[80px] mx-auto text-center p-1 border border-transparent rounded bg-transparent font-bold focus:border-[#0033a0] focus:bg-white focus:ring-1 focus:ring-[#0033a0] outline-none transition-all hover:bg-gray-100"
                                   value={celdaData.nota || ""}
                                   onChange={(e) => handleChangeData(est.id_estudiante, act.id_actividad, 'nota', e.target.value)}
                                   placeholder="0.0"
@@ -374,7 +374,7 @@ export default function NotasDocente() {
                                 {/* Input de retroalimentación */}
                                 <input
                                   type="text"
-                                  className="text-[10px] p-1.5 border border-gray-200 rounded bg-gray-50 focus:bg-white focus:border-[#0033a0] focus:ring-1 focus:ring-[#0033a0] outline-none w-full transition-all"
+                                  className="min-h-[40px] text-sm mt-1 p-1.5 border border-gray-200 rounded bg-gray-50 focus:bg-white focus:border-[#0033a0] focus:ring-1 focus:ring-[#0033a0] outline-none w-full transition-all"
                                   placeholder="Escribir retroalimentación..."
                                   value={celdaData.retroalimentacion || ""}
                                   onChange={(e) => handleChangeData(est.id_estudiante, act.id_actividad, 'retroalimentacion', e.target.value)}
@@ -393,6 +393,64 @@ export default function NotasDocente() {
                 )}
               </tbody>
             </table>
+
+            {/* VISTA DE TARJETAS PARA MÓVIL */}
+            <div className="flex flex-col gap-4 md:hidden mt-4">
+              {estudiantes.length === 0 ? (
+                <p className="text-center p-8 text-gray-400">No hay estudiantes matriculados.</p>
+              ) : (
+                estudiantes.map((est, index) => {
+                  const definitiva = calcularDefinitiva(est.notas);
+                  const colorDefinitiva = definitiva >= 3.0 ? 'text-green-600' : 'text-red-600';
+                  return (
+                    <div key={est.id_estudiante} className="bg-white rounded-lg p-4 shadow border border-gray-200">
+                      <div className="flex justify-between items-start mb-3 border-b pb-2">
+                        <div>
+                          <span className="text-xs text-gray-400 font-bold">#{index + 1}</span>
+                          <div className="text-sm font-bold text-gray-800 mt-0.5">{est.nombre_completo}</div>
+                        </div>
+                        <span className={`text-lg font-extrabold ${colorDefinitiva}`}>{definitiva}</span>
+                      </div>
+                      <div className="flex flex-col gap-3">
+                        {actividades.map(act => {
+                          const celdaData = est.notas[act.id_actividad] || {};
+                          return (
+                            <div key={act.id_actividad} className="border-t pt-2">
+                              <div className="text-xs text-gray-800 truncate" title={act.titulo}>{act.titulo}</div>
+                              <div className="text-[10px] text-blue-700">{parseFloat(act.porcentaje)}%</div>
+                              <input
+                                type="text"
+                                maxLength="3"
+                                className="min-h-[40px] text-sm w-full max-w-[80px] mx-auto mt-1 text-center p-1 border border-transparent rounded bg-transparent font-bold focus:border-[#0033a0] focus:bg-white focus:ring-1 focus:ring-[#0033a0] outline-none transition-all hover:bg-gray-100"
+                                value={celdaData.nota || ""}
+                                onChange={(e) => handleChangeData(est.id_estudiante, act.id_actividad, 'nota', e.target.value)}
+                                placeholder="0.0"
+                              />
+                              {act.requiere_pdf && (
+                                <div className="text-[11px] border-t border-gray-100 pt-1 mt-1 text-center">
+                                  {celdaData.archivoPdf ? (
+                                    <a href={celdaData.archivoPdf} target="_blank" rel="noreferrer" className="text-blue-600 font-bold hover:underline" title={`Entregado: ${new Date(celdaData.fechaEntrega).toLocaleDateString()}`}>Ver Entrega</a>
+                                  ) : (
+                                    <span className="text-red-400 font-medium">Sin entregar</span>
+                                  )}
+                                </div>
+                              )}
+                              <input
+                                type="text"
+                                className="min-h-[40px] text-sm mt-1 p-1.5 border border-gray-200 rounded bg-gray-50 focus:bg-white focus:border-[#0033a0] focus:ring-1 focus:ring-[#0033a0] outline-none w-full transition-all"
+                                placeholder="Retroalimentación..."
+                                value={celdaData.retroalimentacion || ""}
+                                onChange={(e) => handleChangeData(est.id_estudiante, act.id_actividad, 'retroalimentacion', e.target.value)}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
 
           <div className="p-4 bg-gray-50 border-t flex justify-end">

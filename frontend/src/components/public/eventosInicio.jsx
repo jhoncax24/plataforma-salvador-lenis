@@ -44,7 +44,7 @@ export default function EventosInicio() {
   }, [indice]); // Se deja 'indice' para que el intervalo se reinicie si el usuario hace clic
 
   return (
-    <div className="w-full md:w-2/3 flex flex-col justify-center bg-white shadow-md rounded-xl mx-4 my-6 md:m-6 p-6">
+    <div className="w-full flex flex-col justify-center bg-white shadow-md rounded-xl p-6">
       <h1 className="text-center text-2xl font-semibold mt-4 mb-4">
         Nuestros eventos
       </h1>
@@ -56,7 +56,8 @@ export default function EventosInicio() {
         <img
           src={eventos[indice].imagen}
           alt={eventos[indice].titulo}
-          className="w-full h-[250px] sm:h-[350px] md:h-[450px] object-contain rounded-xl transition-all duration-700"
+          loading={indice === 0 ? "eager" : "lazy"}
+          className="w-full h-[250px] sm:h-[350px] md:h-[450px] object-cover w-full rounded-lg shadow-sm transition-all duration-700"
         />
 
         <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-3 rounded-b-xl align-middle text-center">
@@ -65,12 +66,14 @@ export default function EventosInicio() {
         </div>
 
         <button
+          aria-label="Ver evento anterior"
           onClick={anterior}
           className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white p-2 rounded-full transition"
         >
           <ChevronLeft size={24} />
         </button>
         <button
+          aria-label="Ver evento siguiente"
           onClick={siguiente}
           className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white p-2 rounded-full transition"
         >

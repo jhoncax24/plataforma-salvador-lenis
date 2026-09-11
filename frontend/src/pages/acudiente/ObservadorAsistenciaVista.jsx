@@ -114,10 +114,10 @@ export default function ObservadorAsistenciaVista() {
                       Aún no hay registros de asistencia para este estudiante.
                     </div>
                   ) : (
-                    <div className="overflow-x-auto bg-white rounded-lg border border-gray-200 shadow-sm">
+                    <div className="w-full overflow-x-auto shadow-[inset_-12px_0_8px_-12px_rgba(0,0,0,0.1)] bg-white rounded-lg border border-gray-200">
                       <table className="w-full text-left border-collapse min-w-[500px]">
                         <thead>
-                          <tr className="bg-gray-100 text-gray-600 text-xs uppercase">
+                          <tr className="bg-gray-100 text-gray-600 text-xs sm:text-sm uppercase">
                             <th className="p-3 font-bold border-b text-center">Fecha</th>
                             <th className="p-3 font-bold border-b">Materia</th>
                             <th className="p-3 font-bold border-b">Docente</th>
@@ -127,9 +127,9 @@ export default function ObservadorAsistenciaVista() {
                         <tbody>
                           {asistencias.map((asis, idx) => (
                             <tr key={idx} className="border-b hover:bg-gray-50 transition-colors">
-                              <td className="p-3 text-center text-sm font-bold text-gray-700">{asis.fecha_formato}</td>
-                              <td className="p-3 font-medium text-sm text-gray-800">{asis.materia}</td>
-                              <td className="p-3 text-sm text-gray-600">{asis.docente}</td>
+                              <td className="p-3 text-center text-xs sm:text-sm font-bold text-gray-700">{asis.fecha_formato}</td>
+                              <td className="p-3 font-medium text-xs sm:text-sm text-gray-800">{asis.materia}</td>
+                              <td className="p-3 text-xs sm:text-sm text-gray-600">{asis.docente}</td>
                               <td className="p-3 text-center">
                                 <span className={`px-3 py-1 text-xs font-bold rounded-full 
                                   ${asis.estado === 'Presente' ? 'bg-green-100 text-green-700' : 

@@ -181,10 +181,10 @@ export default function AsistenciaDocente() {
               <p className="text-center font-medium text-gray-400 p-10">No hay estudiantes en este curso.</p>
             ) : (
               <>
-                <div className="overflow-x-auto">
+                <div className="w-full overflow-x-auto shadow-[inset_-12px_0_8px_-12px_rgba(0,0,0,0.1)]">
                   <table className="w-full text-left border-collapse min-w-[600px]">
                     <thead>
-                      <tr className="bg-gray-100 text-gray-700 text-xs uppercase">
+                      <tr className="bg-gray-100 text-gray-700 text-xs sm:text-sm uppercase">
                         <th className="p-3 font-bold border-b w-10 text-center">N°</th>
                         <th className="p-3 font-bold border-b">Estudiante</th>
                         <th className="p-3 font-bold border-b text-center">Estado</th>
@@ -194,7 +194,7 @@ export default function AsistenciaDocente() {
                       {alumnos.map((est, index) => (
                         <tr key={est.id_estudiante} className={`border-b transition-colors ${est.estado === "" ? "bg-red-50/20" : "hover:bg-gray-50"}`}>
                           <td className="p-3 text-center text-xs font-bold text-gray-400">{index + 1}</td>
-                          <td className="p-3 font-medium text-gray-800 text-sm">{est.nombre_completo}</td>
+                          <td className="p-3 font-medium text-gray-800 text-xs sm:text-sm">{est.nombre_completo}</td>
                           <td className="p-2">
                             <div className="flex justify-center gap-1.5 flex-wrap">
                               <button onClick={() => cambiarEstado(est.id_estudiante, "Presente")} className={`px-2 py-1 text-[11px] font-bold rounded border transition-all ${est.estado === "Presente" ? 'bg-green-100 border-green-500 text-green-700 shadow-sm' : 'bg-white text-gray-500 hover:bg-gray-50'}`}>Presente</button>
@@ -226,10 +226,10 @@ export default function AsistenciaDocente() {
             {cargandoResumen ? (
               <p className="text-center font-bold text-gray-500 p-10 text-sm">Calculando...</p>
             ) : (
-              <div className="overflow-x-auto max-h-[500px] custom-scrollbar">
+              <div className="w-full overflow-x-auto shadow-[inset_-12px_0_8px_-12px_rgba(0,0,0,0.1)] max-h-[500px] custom-scrollbar">
                 <table className="w-full text-left border-collapse">
                   <thead className="sticky top-0 bg-white shadow-sm z-10">
-                    <tr className="text-gray-600 text-[10px] uppercase">
+                    <tr className="text-gray-600 text-xs sm:text-sm uppercase">
                       <th className="p-3 font-bold border-b">Estudiante</th>
                       <th className="p-3 font-bold border-b text-center text-green-600" title="Presentes">P</th>
                       <th className="p-3 font-bold border-b text-center text-red-600" title="Ausencias">A</th>

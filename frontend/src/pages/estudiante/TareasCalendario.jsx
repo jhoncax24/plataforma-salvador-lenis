@@ -236,7 +236,7 @@ export default function TareasCalendario() {
           </div>
 
           <div className="flex-1 overflow-auto">
-            <div className="grid grid-cols-7 auto-rows-[120px] gap-px bg-gray-200">
+            <div className="grid grid-cols-7 auto-rows-[90px] sm:auto-rows-[120px] gap-px bg-gray-200">
               {cuadricula.map((dia, index) => {
                 const esHoy = esMesActual && dia === fechaHoy.getDate();
                 let isSelected = false;

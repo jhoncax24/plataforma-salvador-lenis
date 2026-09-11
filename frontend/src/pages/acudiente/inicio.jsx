@@ -251,10 +251,10 @@ export default function AcudienteInicio() {
                   <span onClick={nextMonth} className="hover:text-blue-600 px-2 text-lg">&gt;</span>
                 </div>
               </div>
-              <div className="grid grid-cols-7 text-center text-xs font-bold text-[#0033a0] mb-2">
+              <div className="grid grid-cols-7 text-center text-xs sm:text-sm font-bold text-[#0033a0] mb-2">
                 <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
               </div>
-              <div className="grid grid-cols-7 text-center text-sm gap-y-2">
+              <div className="grid grid-cols-7 auto-rows-[90px] sm:auto-rows-[120px] text-center text-sm gap-y-2">
                 {daysArray.map((day, index) => {
                   if (!day) return <div key={index}></div>;
                   

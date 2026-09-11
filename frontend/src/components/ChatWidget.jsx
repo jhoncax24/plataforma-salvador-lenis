@@ -151,7 +151,7 @@ export const ChatWidget = ({ usuarioActual, API_URL = 'http://localhost:4000/api
     return (
         <div className="fixed z-50 bottom-5 right-5 flex flex-col items-end pointer-events-auto" style={{ transform: `translate(${posicion.x}px, ${posicion.y}px)` }}>
             {abierto && (
-                <div className="w-80 sm:w-96 h-[460px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden mb-3 transition-all">
+                <div className="w-[calc(100vw-2rem)] sm:w-96 h-[75vh] sm:h-[460px] max-h-[600px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden mb-3 transition-all">
                     
                     {/* ENCABEZADO */}
                     <div className="bg-[#0033a0] text-white p-4 flex items-center justify-between select-none">
@@ -171,7 +171,7 @@ export const ChatWidget = ({ usuarioActual, API_URL = 'http://localhost:4000/api
                                 <p className="text-xs text-blue-200">Bandeja de entrada</p>
                             </div>
                         )}
-                        <button onClick={() => setAbierto(false)} className="text-white hover:text-gray-300 font-bold text-lg px-2">✕</button>
+                        <button aria-label="Cerrar chat de mensajería" onClick={() => setAbierto(false)} className="text-white hover:text-gray-300 font-bold text-lg px-2">✕</button>
                     </div>
 
                     {/* CUERPO DEL CHAT */}
@@ -302,6 +302,7 @@ export const ChatWidget = ({ usuarioActual, API_URL = 'http://localhost:4000/api
 
             {/* BOTÓN BURBUJA FLOTANTE */}
             <button
+                aria-label={abierto ? "Cerrar chat de mensajería" : "Abrir chat de mensajería"}
                 onMouseDown={iniciarArrastre}
                 onClick={manejarClicBurbuja}
                 className={`bg-[#0033a0] hover:bg-blue-800 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-transform transform ${

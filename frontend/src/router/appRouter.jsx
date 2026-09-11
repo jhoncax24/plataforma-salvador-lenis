@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 
 // Layouts
@@ -14,45 +15,50 @@ import PrivateRoute from "./privateRoute";
 import RoleRoute from "./roleRoute";
 
 // Public pages
-import Inicio from "../pages/public/inicio";
-import QuienesSomos from "../pages/public/quienesSomos";
-import InicioContacto from "../pages/public/contacto";
-import InicioAyuda from "../pages/public/ayuda";
-import Login from "../components/public/login";
+const Inicio = lazy(() => import("../pages/public/inicio"));
+const QuienesSomos = lazy(() => import("../pages/public/quienesSomos"));
+const InicioContacto = lazy(() => import("../pages/public/contacto"));
+const InicioAyuda = lazy(() => import("../pages/public/ayuda"));
+const Login = lazy(() => import("../components/public/login"));
 
 // Private pages
 
 // Estudiante
-import EstudianteInicio from "../pages/estudiante/inicio";
-import NotasDetalle from "../pages/estudiante/NotasDetalle";
-import MateriaConsolidado from "../pages/estudiante/MateriaConsolidado";
-import HistorialAcademico from "../pages/estudiante/HistorialAcademico";
-import TareasCalendarioEstudiante from "../pages/estudiante/TareasCalendario";
-import AsistenciasEstudiante from "../pages/estudiante/AsistenciasEstudiante"; 
+const EstudianteInicio = lazy(() => import("../pages/estudiante/inicio"));
+const NotasDetalle = lazy(() => import("../pages/estudiante/NotasDetalle"));
+const MateriaConsolidado = lazy(() => import("../pages/estudiante/MateriaConsolidado"));
+const HistorialAcademico = lazy(() => import("../pages/estudiante/HistorialAcademico"));
+const TareasCalendarioEstudiante = lazy(() => import("../pages/estudiante/TareasCalendario"));
+const AsistenciasEstudiante = lazy(() => import("../pages/estudiante/AsistenciasEstudiante"));
 
 // Docente
-import DocenteInicio from "../pages/docente/inicio";
-import TareasCalendarioDocente from "../pages/docente/TareasCalendario";
-import NotasPlanilla from "../pages/docente/NotasDocente";
-import ObservadorDocente from "../pages/docente/ObservadorDocente";
-import AsistenciaDocente from "../pages/docente/AsistenciaDocente"; 
+const DocenteInicio = lazy(() => import("../pages/docente/inicio"));
+const TareasCalendarioDocente = lazy(() => import("../pages/docente/TareasCalendario"));
+const NotasPlanilla = lazy(() => import("../pages/docente/NotasDocente"));
+const ObservadorDocente = lazy(() => import("../pages/docente/ObservadorDocente"));
+const AsistenciaDocente = lazy(() => import("../pages/docente/AsistenciaDocente"));
 
 // Acudiente
-import AcudienteInicio from "../pages/acudiente/inicio";
-import NotasVista from "../pages/acudiente/NotasVista";
-import CertificadoVista from "../pages/acudiente/CertificadoVista";
-import CambiarPasswordVista from "../pages/acudiente/CambiarPasswordVista";
-import MatriculaVista from "../pages/acudiente/MatriculaVista";
-import CalendarioVista from "../pages/acudiente/CalendarioVista";
-import ObservadorAsistenciaVista from "../pages/acudiente/ObservadorAsistenciaVista";
+const AcudienteInicio = lazy(() => import("../pages/acudiente/inicio"));
+const NotasVista = lazy(() => import("../pages/acudiente/NotasVista"));
+const CertificadoVista = lazy(() => import("../pages/acudiente/CertificadoVista"));
+const CambiarPasswordVista = lazy(() => import("../pages/acudiente/CambiarPasswordVista"));
+const MatriculaVista = lazy(() => import("../pages/acudiente/MatriculaVista"));
+const CalendarioVista = lazy(() => import("../pages/acudiente/CalendarioVista"));
+const ObservadorAsistenciaVista = lazy(() => import("../pages/acudiente/ObservadorAsistenciaVista"));
 
 // 👇 IMPORTACIÓN DE LA PÁGINA ADMIN
-import AdminInicio from "../pages/admin/inicio";
+const AdminInicio = lazy(() => import("../pages/admin/inicio"));
 
 
 export default function AppRouter() {
   return (
-    <Routes>
+    <Suspense fallback={
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-[#0033a0]"></div>
+      </div>
+    }>
+      <Routes>
 
       {/* PUBLIC ROUTES */}
       <Route element={<PublicLayout />}>
@@ -132,6 +138,7 @@ export default function AppRouter() {
 
       </Route>
 
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 }

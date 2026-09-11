@@ -26,7 +26,7 @@ const Footer = ({ logo }) => {
     <footer 
       style={footerStyle} 
       
-      className="w-full relative flex flex-col md:flex-row items-center justify-between px-10 md:px-40 py-8 shadow-inner gap-8 md:gap-0"
+      className="w-full relative z-10 flex flex-col md:flex-row items-center justify-between px-10 md:px-40 py-8 pb-16 sm:pb-8 shadow-inner gap-8 md:gap-0"
     >
       
       {/* SECCIÓN IZQUIERDA: Info de Desarrolladores */}
@@ -41,6 +41,7 @@ const Footer = ({ logo }) => {
         <img 
           src={logo} 
           alt="Logo Institucional" 
+          loading="lazy"
           className="w-16 md:w-20 object-contain drop-shadow-md hover:scale-105 transition-transform" 
         />
       </div>

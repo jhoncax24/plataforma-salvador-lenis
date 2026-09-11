@@ -171,7 +171,7 @@ export default function MatriculasPendientes() {
       {/* ========================================== */}
       {isModalOpen && selectedMatricula && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4 animate-fade-in-up">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[95vh]">
+          <div className="bg-white rounded-xl shadow-2xl w-full h-full sm:w-auto sm:h-auto sm:max-w-5xl sm:max-h-[95vh] overflow-y-auto flex flex-col">
             
             {/* Header del Modal */}
             <div className="bg-[#0033a0] p-5 flex justify-between items-center shrink-0">
@@ -186,7 +186,7 @@ export default function MatriculasPendientes() {
             {/* Cuerpo del Modal con Scroll */}
             <div className="p-6 overflow-y-auto bg-gray-50">
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 {/* TARJETA DATOS PERSONALES */}
                 <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex flex-col justify-between">
                   <div>

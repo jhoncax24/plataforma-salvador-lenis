@@ -2,7 +2,6 @@ import React from 'react';
 
 
 const Footer = ({ logo }) => {
-  
   const footerStyle = {
     backgroundColor: '#3b4799',
     backgroundImage: `
@@ -25,9 +24,8 @@ const Footer = ({ logo }) => {
 
   return (
     <footer 
-      style={footerStyle} 
-      
-       className="w-full relative flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 lg:px-8 py-8 shadow-inner gap-8 md:gap-0"
+      style={footerStyle}
+      className="w-full relative z-10 flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 lg:px-8 py-8 pb-16 sm:pb-8 shadow-inner gap-8 md:gap-0"
     >
       
       {/* SECCIÓN IZQUIERDA: Info de Desarrolladores */}
@@ -40,8 +38,9 @@ const Footer = ({ logo }) => {
       {/* SECCIÓN CENTRAL: Escudo Institucional */}
       <div className="flex-1 flex justify-center items-center z-10">
         <img 
-          src={"https://res.cloudinary.com/dmzq2qw0t/image/upload/v1776445496/logo_g99cn4.svg"} 
+          src="/logo.svg"
           alt="Logo Institucional" 
+          loading="lazy"
           className="w-16 md:w-20 object-contain drop-shadow-md hover:scale-105 transition-transform" 
         />
       </div>

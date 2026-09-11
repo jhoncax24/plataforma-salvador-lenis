@@ -62,7 +62,7 @@ export async function login(req, res, next) {
 
     // 4. Generar Token (Esto se queda igual)
     const payload = { id: user.id_usuario, username: user.username, role: user.role };
-    const token = jwt.sign(payload, process.env.JWT_SECRET || 'cesl_secret_key_2024', { expiresIn: process.env.JWT_EXPIRES_IN || '8h' });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '24h' });
 
     // 5. Responder al frontend (¡Añadimos teléfono y correo al objeto final!)
     res.json({ 

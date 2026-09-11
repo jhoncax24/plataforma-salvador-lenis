@@ -79,17 +79,17 @@ export default function AsistenciasEstudiante() {
       </div>
 
       <div className="bg-white rounded-xl shadow-md border border-gray-300 overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="w-full overflow-x-auto shadow-[inset_-12px_0_8px_-12px_rgba(0,0,0,0.1)]">
           <table className="w-full text-left min-w-[800px] border-collapse">
             
             <thead className="bg-[#0033a0]">
               <tr>
-                <th className="py-4 px-6 text-white text-sm font-semibold tracking-wider">Módulo</th>
-                <th className="py-4 px-6 text-white text-sm font-semibold tracking-wider">Reporte por</th>
-                <th className="py-4 px-6 text-white text-sm font-semibold tracking-wider text-center">Días Evaluados</th>
-                <th className="py-4 px-6 text-white text-sm font-semibold tracking-wider text-center">Fallas Acumuladas</th>
-                <th className="py-4 px-6 text-white text-sm font-semibold tracking-wider text-center">% Asistencia</th>
-                <th className="py-4 px-6 text-white text-sm font-semibold tracking-wider text-center">Estado</th>
+                <th className="py-4 px-6 text-white text-xs sm:text-sm font-semibold tracking-wider">Módulo</th>
+                <th className="py-4 px-6 text-white text-xs sm:text-sm font-semibold tracking-wider">Reporte por</th>
+                <th className="py-4 px-6 text-white text-xs sm:text-sm font-semibold tracking-wider text-center">Días Evaluados</th>
+                <th className="py-4 px-6 text-white text-xs sm:text-sm font-semibold tracking-wider text-center">Fallas Acumuladas</th>
+                <th className="py-4 px-6 text-white text-xs sm:text-sm font-semibold tracking-wider text-center">% Asistencia</th>
+                <th className="py-4 px-6 text-white text-xs sm:text-sm font-semibold tracking-wider text-center">Estado</th>
               </tr>
             </thead>
             
@@ -111,16 +111,16 @@ export default function AsistenciasEstudiante() {
                         ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} 
                         hover:bg-blue-50`}
                     >
-                      <td className="py-5 px-6 text-gray-800 font-bold text-[15px] flex items-center gap-2">
+                      <td className="py-5 px-6 text-gray-800 font-bold text-xs sm:text-sm flex items-center gap-2">
                         <span className={`text-gray-400 transition-transform duration-200 flex items-center justify-center ${materiaExpandida === asistencia.id_materia ? 'rotate-90' : ''}`}>
                           <MdChevronRight className="text-xl" />
                         </span>
                         {asistencia.nombre_materia}
                       </td>
-                      <td className="py-5 px-6 text-gray-600 text-sm font-medium">{asistencia.docente}</td>
-                      <td className="py-5 px-6 text-gray-800 font-bold text-center">{asistencia.clases_totales}</td>
-                      <td className="py-5 px-6 text-gray-800 font-bold text-center">{asistencia.fallas_acumuladas}</td>
-                      <td className="py-5 px-6 text-gray-800 font-bold text-center">{asistencia.porcentaje.toFixed(1)}%</td>
+                      <td className="py-5 px-6 text-gray-600 text-xs sm:text-sm font-medium">{asistencia.docente}</td>
+                      <td className="py-5 px-6 text-gray-800 font-bold text-xs sm:text-sm text-center">{asistencia.clases_totales}</td>
+                      <td className="py-5 px-6 text-gray-800 font-bold text-xs sm:text-sm text-center">{asistencia.fallas_acumuladas}</td>
+                      <td className="py-5 px-6 text-gray-800 font-bold text-xs sm:text-sm text-center">{asistencia.porcentaje.toFixed(1)}%</td>
                       <td className="py-5 px-6 text-center">{renderEstadoPill(asistencia.porcentaje)}</td>
                     </tr>
 

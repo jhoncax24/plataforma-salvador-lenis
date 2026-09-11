@@ -99,7 +99,7 @@ export default function LoginForm() {
   return (
     <>
       {/* FORMULARIO DE LOGIN NORMAL */}
-      <aside className="w-full md:w-1/3 flex flex-col justify-center bg-white shadow-md rounded-xl mx-4 p-6">
+      <aside className="w-full max-w-md mx-auto flex flex-col justify-center bg-white shadow-md rounded-xl px-4 py-6 sm:p-6">
         <h3 className="text-xl font-semibold mb-4 text-center">Ingreso a la plataforma</h3>
         <form className="space-y-4" onSubmit={handleLogin}>
           {errorLogin && <p className="text-red-500 text-center text-sm">{errorLogin}</p>}

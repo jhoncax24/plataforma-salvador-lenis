@@ -3,10 +3,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Inicializamos el cliente de SendGrid con tu clave de entorno
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// Este DEBE ser exactamente el correo de Gmail que verificaste en la plataforma de SendGrid
 const emailRemitente = 'salvadorlenisce@gmail.com';
 
 // ==========================================

@@ -12,7 +12,7 @@ export default function PublicLayout() {
       <Header />
 
       {/* AQUÍ VA EL CONTENIDO DE CADA PÁGINA (Intacto) */}
-      <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
+      <main className="flex-1 flex flex-col md:flex-row overflow-auto">
         <Outlet />
       </main>
 

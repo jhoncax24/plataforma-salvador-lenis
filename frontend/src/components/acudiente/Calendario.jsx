@@ -88,13 +88,13 @@ export default function Calendario({ idAcudiente }) {
         <button onClick={() => setMes(mes === 11 ? 0 : mes + 1)} className="text-[#0033a0] hover:bg-gray-200 px-3 py-1.5 rounded transition-colors font-bold text-lg sm:text-xl">▶</button>
       </div>
 
-      <div className="grid grid-cols-7 text-center font-bold text-gray-700 py-1.5 sm:py-2 bg-white border-b border-gray-200 text-[10px] sm:text-xs">
+      <div className="grid grid-cols-7 text-center font-bold text-gray-700 py-1.5 sm:py-2 bg-white border-b border-gray-200 text-xs sm:text-sm">
         {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map(dia => (
           <div key={dia}>{dia}</div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 flex-1 gap-px bg-gray-200 border-b border-gray-200">
+      <div className="grid grid-cols-7 auto-rows-[90px] sm:auto-rows-[120px] flex-1 gap-px bg-gray-200 border-b border-gray-200">
         {cuadricula.map((dia, index) => {
           const dateKey = dia ? `${anio}-${mes}-${dia}` : null;
           const evs = eventos[dateKey] || [];
