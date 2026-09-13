@@ -1,7 +1,7 @@
 import React from 'react';
 
 
-const Footer = ({ logo }) => {
+const Footer = () => {
   const footerStyle = {
     backgroundColor: '#3b4799',
     backgroundImage: `

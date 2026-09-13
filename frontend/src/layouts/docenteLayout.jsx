@@ -1,23 +1,14 @@
 import React from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 // Importamos el Header que vive en la carpeta del docente
 import Header from '../components/docente/Header';
 // 1. Importamos el componente de la burbuja de chat
 import { ChatWidget } from '../components/ChatWidget';
 
 const DocenteLayout = () => {
-  const navigate = useNavigate();
-  
   // Obtenemos los datos del usuario logueado para pasarlos al Header y al Chat
   // Leemos la clave correcta que aparece en DevTools: 'cesl_user'
 const user = JSON.parse(localStorage.getItem('cesl_user'));
-
-  // Lógica de seguridad para cerrar la sesión
-  const handleLogout = () => {
-    localStorage.removeItem('token'); // Borramos el JWT
-    localStorage.removeItem('user');  // Borramos los datos
-    navigate('/login');               // Redirigimos al inicio de sesión
-  };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f4f6f9]">

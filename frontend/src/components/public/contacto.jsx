@@ -1,11 +1,7 @@
 export default function ComponentsContacto() {
     return (
-        <section className="w-full md:w-2/3 flex flex-col justify-center bg-white shadow-md rounded-xl m-6 p-6">
+        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col justify-center bg-white shadow-md rounded-xl">
             <h2 className="text-2xl font-semibold text-center mb-6">Contacto</h2>
-
-            <br />
-            <br />
-
 
 
 
@@ -49,7 +45,7 @@ export default function ComponentsContacto() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"
                                 d="M3 5l9 6 9-6m-18 0v14h18V5m-18 14l9-6 9 6" />
                         </svg>
-                        <p className="text-gray-700">coordinacion@cesl.edu.co</p>
+                        <p className="text-gray-700 break-words">coordinacion@cesl.edu.co</p>
                     </div>
                 </div>
 
@@ -82,7 +78,7 @@ export default function ComponentsContacto() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"
                                 d="M3 5l9 6 9-6m-18 0v14h18V5m-18 14l9-6 9 6" />
                         </svg>
-                        <p className="text-gray-700">secretaria@cesl.edu.co</p>
+                        <p className="text-gray-700 break-words">secretaria@cesl.edu.co</p>
                     </div>
                 </div>
             </div>

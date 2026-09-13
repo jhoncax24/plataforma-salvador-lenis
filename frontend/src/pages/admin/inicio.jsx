@@ -4,8 +4,7 @@ import { useNavigate } from "react-router-dom";
 // 👇 Aquí importaremos el componente que crearemos a continuación
  import MatriculasPendientes from "../../components/admin/MatriculasPendientes";
 
-// Asegúrate de tener o crear esta función en tu perfilApi.js
-//import { modificarPerfilAdmin } from "../../api/perfilApi";
+import { modificarPerfilAdmin } from "../../api/perfilApi";
 
 export default function AdminInicio() {
   const navigate = useNavigate();

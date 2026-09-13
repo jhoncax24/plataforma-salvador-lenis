@@ -8,9 +8,6 @@ import { ChatWidget } from '../components/ChatWidget';
 const AdminLayout = () => {
   const navigate = useNavigate();
   
-  // Obtenemos los datos del usuario logueado para pasarlos al Header y al Chat
-  const user = JSON.parse(localStorage.getItem('cesl_user'));
-
   // Lógica de seguridad para cerrar la sesión
   const handleLogout = () => {
     localStorage.removeItem('token'); // Borramos el JWT

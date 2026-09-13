@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { DashboardCard } from "../shared/DashboardCard";
 
 export default function TasksCard({ tasks = [] }) {
   const navigate = useNavigate();
@@ -55,12 +56,12 @@ export default function TasksCard({ tasks = [] }) {
   };
 
   return (
-    <div className="bg-[#e9ecef] border-2 border-gray-400 rounded flex flex-col h-full shadow-sm">
-      <h3 className="text-xl text-center text-gray-800 py-4 border-b-2 border-gray-400 m-0 font-bold">
-        Tareas/Pendientes
-      </h3>
-
-      <div className="bg-white p-6 flex flex-col gap-4 flex-1">
+    <DashboardCard
+      titulo="Tareas/Pendientes"
+      accionPrincipal="Abrir Módulo de Tareas"
+      onAccion={() => navigate("/estudiante/calendario")}
+    >
+      <div className="flex flex-col gap-4 flex-1">
         <p className="text-center text-gray-700 font-medium mb-2">Tareas más cercanas a la fecha</p>
 
         {/* LISTA DINÁMICA DE TAREAS */}
@@ -170,14 +171,6 @@ export default function TasksCard({ tasks = [] }) {
         </div>
       </div>
 
-      <div className="bg-[#e9ecef] border-t-2 border-gray-400 p-5 shrink-0 flex justify-center">
-        <button 
-          onClick={() => navigate("/estudiante/calendario")}
-          className="w-full bg-[#0033a0] text-white px-4 py-2.5 rounded-lg font-bold hover:bg-blue-800 transition-all shadow-md hover:shadow-lg"
-        >
-          Abrir Módulo de Tareas
-        </button>
-      </div>
-    </div>
+    </DashboardCard>
   );
 }

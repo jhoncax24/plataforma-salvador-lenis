@@ -1,6 +1,7 @@
 import React from "react";
 // 👇 NUEVO: Importamos useNavigate para el botón de detalles
 import { useNavigate } from "react-router-dom"; 
+import { DashboardCard } from "../shared/DashboardCard";
 // FORMA CORRECTA DE IMPORTAR PARA EVITAR EL ERROR DE AUTOTABLE
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -59,11 +60,12 @@ export default function ScheduleCard({ student, schedule = [], faltas = 0 }) {
   };
 
   return (
-    <div className="bg-[#e9ecef] border-2 border-gray-400 rounded flex flex-col h-full shadow-sm">
-      <h3 className="text-xl text-center text-gray-800 py-4 border-b-2 border-gray-400 m-0 font-bold">Tu horario e información</h3>
-
-      {/* Cuadro Blanco (Le añadimos max-h-[350px] y overflow-y-auto) */}
-      <div className="bg-white p-4 w-full overflow-x-auto overflow-y-auto max-h-[400px]">
+    <DashboardCard
+      titulo="Tu horario e información"
+      accionPrincipal="Descargar Horario PDF"
+      onAccion={handleDownloadPDF}
+    >
+      <div className="w-full overflow-x-auto overflow-y-auto max-h-[400px]">
 
         <h4 className="text-center text-gray-700 font-semibold mb-2 mt-2">
           Año Lectivo: 2025-2026
@@ -146,17 +148,7 @@ export default function ScheduleCard({ student, schedule = [], faltas = 0 }) {
 
       </div>
       
-      <div className="bg-[#e9ecef] flex flex-col items-center justify-center p-6 flex-1 w-full">
-        <button
-          onClick={handleDownloadPDF}
-          className="bg-[#0033a0] text-white px-6 py-2 rounded font-semibold hover:bg-blue-800 transition-colors w-3/4 shadow"
-        >
-          Descargar Horario PDF
-        </button>
-      </div>
-
-      {/* Cuadro Gris Inferior con mt-auto */}
-      <div className="bg-[#e9ecef] flex flex-col items-center border-t-2 border-gray-400 p-6 mt-auto w-full">
+      <div className="flex flex-col items-center border-t border-gray-100 pt-6 mt-6 w-full">
 
         {/* 👇 NUEVO: Lógica dinámica para el mensaje de asistencias 👇 */}
         <div className="w-[90%] mb-6">
@@ -197,6 +189,6 @@ export default function ScheduleCard({ student, schedule = [], faltas = 0 }) {
           <p>Acudiente: <span className="font-semibold">{student?.acudiente || 'Sin asignar'}</span></p>
         </div>
       </div>
-    </div>
+    </DashboardCard>
   );
 }

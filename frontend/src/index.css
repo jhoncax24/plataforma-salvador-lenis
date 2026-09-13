@@ -31,65 +31,39 @@
   }
 }
 
-/* ========================================================= */
-/* =======   ESTILOS DEL PROYECTO DE TU COMPAÑERO   ======== */
-/* ========================================================= */
-
-:root{
-  --cesl-blue:#0a4aa0;
-  --cesl-dark:#073b86;
-  --cesl-panel:#efeff1;
+.diagonal-header {
+  background-color: #3b4799;
+  background-image:
+    linear-gradient(135deg,
+      #3b4799 0px, #3b4799 35px,
+      #ffffff 35px, #ffffff 70px,
+      #d32f2f 70px, #d32f2f 105px,
+      transparent 105px
+    ),
+    linear-gradient(-135deg,
+      #3b4799 0px, #3b4799 35px,
+      #ffffff 35px, #ffffff 70px,
+      #d32f2f 70px, #d32f2f 105px,
+      transparent 105px
+    );
+  background-position: top left, top right;
+  background-repeat: no-repeat;
 }
 
-body { font-family: 'Inter', sans-serif; background:#fff; }
-
-/* Header */
-.cesl-header {
-  background: linear-gradient(180deg,var(--cesl-blue),var(--cesl-dark));
-  color: white;
-}
-
-.cesl-title { font-weight:700; font-size:2rem; line-height:1; }
-.cesl-logo { width:120px; }
-
-/* Navbar */
-.cesl-nav { background: linear-gradient(180deg, rgba(8,45,82,0.95), rgba(7,41,74,0.95)); border-radius:8px; padding:8px; box-shadow:0 8px 20px rgba(12,40,74,0.18); }
-.cesl-nav ul{display:flex; gap:2rem; list-style:none; margin:0; padding:0; justify-content:center; align-items:center;}
-.cesl-nav li{color:#fff; padding:8px 12px; font-weight:600;}
-.cesl-nav .active{ background:#fff; color:var(--cesl-dark); padding:8px 28px; border-radius:6px; box-shadow:0 6px 16px rgba(2,20,60,0.12); }
-
-/* Panels */
-.cesl-panel{
-  background:#fff;
-  border-radius:12px;
-  padding:1.5rem;
-  box-shadow:0 6px 20px rgba(15,35,64,0.06);
-  border:1px solid rgba(0,0,0,0.03);
-}
-
-/* Event cards */
-.cesl-event-card{ border-radius:12px; overflow:hidden; position:relative; }
-.cesl-event-media{ width:100%; height:320px; object-fit:cover; display:block; }
-.cesl-event-caption .overlay{ position:absolute; left:0; right:0; bottom:0; padding:1rem; background:linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 100%); color:white; }
-
-/* Login inputs */
-.cesl-login .cesl-input { width:100%; padding:.6rem .8rem; border:1px solid #e5e7eb; border-radius:6px; }
-
-/* Buttons */
-.btn-cesl {
-  background:var(--cesl-blue);
-  color:#fff;
-  padding:.6rem .9rem;
-  border-radius:6px;
-  font-weight:600;
-}
-
-/* Footer */
-.cesl-footer { background:var(--cesl-blue); color:#fff; padding:2rem 0; display:flex; justify-content:center; align-items:center; }
-
-/* Responsive */
-@media (max-width:768px){
-  .cesl-event-media{ height:220px; }
-  .cesl-logo{ width:90px; }
-  .cesl-title{ font-size:1.25rem; }
+@media (max-width: 639px) {
+  .diagonal-header {
+    background-image:
+      linear-gradient(135deg,
+        #3b4799 0px, #3b4799 18px,
+        #ffffff 18px, #ffffff 36px,
+        #d32f2f 36px, #d32f2f 54px,
+        transparent 54px
+      ),
+      linear-gradient(-135deg,
+        #3b4799 0px, #3b4799 18px,
+        #ffffff 18px, #ffffff 36px,
+        #d32f2f 36px, #d32f2f 54px,
+        transparent 54px
+      );
+  }
 }

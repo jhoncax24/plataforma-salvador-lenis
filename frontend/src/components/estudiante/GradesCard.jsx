@@ -1,21 +1,17 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { DashboardCard } from "../shared/DashboardCard";
 
 export default function GradesCard({ grades = [] }) {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-[#e9ecef] border-2 border-gray-400 rounded-xl flex flex-col h-full shadow-sm overflow-hidden animate-fade-in-up">
-      
-      {/* CABECERA */}
-      <h3 className="text-xl text-center text-gray-800 py-4 border-b-2 border-gray-400 m-0 font-bold shrink-0">
-        Materias y Notas
-      </h3>
-      
-      {/* ========================================== */}
-      {/* ÁREA BLANCA PRINCIPAL (Crece dinámicamente)  */}
-      {/* ========================================== */}
-      <div className="bg-white p-4 flex-1 flex flex-col min-h-0">
+    <DashboardCard
+      titulo="Materias y Notas"
+      accionPrincipal="Ver Notas por Periodo"
+      onAccion={() => navigate("/estudiante/notas")}
+    >
+      <div className="flex-1 flex flex-col min-h-0">
         
         {/* Tabla con Scroll Automático solo si es necesario */}
         <div className="flex-1 overflow-y-auto overflow-x-auto pr-1">
@@ -63,22 +59,12 @@ export default function GradesCard({ grades = [] }) {
           </table>
         </div>
 
-        {/* Botón Principal pegado a la tabla */}
-        <div className="pt-4 mt-2 border-t border-gray-100 shrink-0">
-          <button 
-            onClick={() => navigate("/estudiante/notas")}
-            className="w-full bg-[#0033a0] text-white px-4 py-2.5 rounded-lg font-bold hover:bg-blue-800 transition-all shadow-md hover:shadow-lg"
-          >
-            Ver Notas por Periodo
-          </button>
-        </div>
-
       </div>
 
       {/* ========================================== */}
       {/* ÁREA GRIS INFERIOR (Historial Académico)     */}
       {/* ========================================== */}
-      <div className="bg-[#e9ecef] flex flex-col items-center justify-center border-t-2 border-gray-400 p-5 shrink-0">
+      <div className="flex flex-col items-center justify-center border-t border-gray-100 pt-5 mt-5 shrink-0">
         <p className="text-xs text-gray-600 mb-2 font-medium text-center">
           Consulta tus notas de años anteriores
         </p>
@@ -91,6 +77,6 @@ export default function GradesCard({ grades = [] }) {
         </button>
       </div>
 
-    </div>
+    </DashboardCard>
   );
 }

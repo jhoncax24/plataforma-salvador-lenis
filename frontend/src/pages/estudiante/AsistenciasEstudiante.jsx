@@ -63,16 +63,16 @@ export default function AsistenciasEstudiante() {
   return (
     <div className="w-[95%] max-w-[1800px] mx-auto pt-6 pb-12 animate-fade-in-up">
       
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 md:p-5 mb-8 bg-white rounded-xl shadow-sm border border-gray-200 border-l-[5px] border-l-[#0033a0] gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 md:p-5 mb-8 bg-white rounded-xl shadow-sm border border-gray-200 border-l-[6px] border-modulo-asistencia gap-4">
         <div className="flex items-center gap-3">
-          <MdLightbulb className="text-2xl text-[#0033a0]" />
+          <MdLightbulb className="text-2xl text-modulo-asistencia" />
           <p className="text-gray-700 text-sm md:text-base m-0 font-medium">
-            <span className="text-[#0033a0] font-bold">Ayuda</span> Haz clic en la fila principal para ver el historial exacto de tus faltas o retrasos en el curso.
+            <span className="text-modulo-asistencia font-bold">Ayuda</span> Haz clic en la fila principal para ver el historial exacto de tus faltas o retrasos en el curso.
           </p>
         </div>
         <button 
           onClick={() => navigate('/estudiante')}
-          className="w-full md:w-auto px-5 py-2.5 bg-[#0033a0] hover:bg-blue-800 text-white text-sm font-bold rounded-lg transition-all shadow-md hover:shadow-lg"
+          className="w-full md:w-auto px-5 py-2.5 bg-modulo-asistencia hover:bg-orange-600 text-white text-sm font-bold rounded-lg transition-all shadow-md hover:shadow-lg"
         >
           Volver al Menú
         </button>
@@ -128,9 +128,9 @@ export default function AsistenciasEstudiante() {
                     {materiaExpandida === asistencia.id_materia && (
                       <tr className="bg-blue-50/50 border-b border-gray-200">
                         <td colSpan="6" className="p-0">
-                          <div className="py-6 px-10 border-l-[4px] border-[#0033a0] ml-6">
+                          <div className="py-6 px-10 border-l-[6px] border-modulo-asistencia ml-6">
                             
-                            <h4 className="text-[#0033a0] font-bold mb-4">Historial Completo de Asistencia</h4>
+                            <h4 className="text-modulo-asistencia font-bold mb-4">Historial Completo de Asistencia</h4>
                             
                             {asistencia.detalle_faltas.length === 0 ? (
                               <div className="text-gray-500 italic p-4 text-sm">

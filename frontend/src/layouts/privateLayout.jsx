@@ -1,5 +1,4 @@
 import { Outlet } from "react-router-dom";
-import logo from "../assets/logo.webp";
 import Footer from '../components/public/Footer';
 
 export default function PrivateLayout() {

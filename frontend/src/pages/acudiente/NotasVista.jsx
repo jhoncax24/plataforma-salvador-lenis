@@ -89,18 +89,18 @@ export default function NotasVista() {
     <div className="w-full min-h-screen bg-gray-50 p-2 sm:p-4 lg:p-6 animate-fade-in-up font-sans flex flex-col">
       
       {/* HEADER */}
-      <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 sm:p-6 rounded-xl shadow-sm border-l-[6px] border-[#0033a0] mb-4 sm:mb-6 gap-4">
+      <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 sm:p-6 rounded-xl shadow-sm border-l-[6px] border-modulo-notas mb-4 sm:mb-6 gap-4">
         <div className="w-full">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-800 m-0">Detalle de Calificaciones</h2>
           <p className="text-sm sm:text-base text-gray-500 mt-1 font-medium">
-            Consultando actividades de: <strong className="text-[#0033a0] uppercase">{estudiante?.nombre || "Estudiante"}</strong>
+            Consultando actividades de: <strong className="text-modulo-notas uppercase">{estudiante?.nombre || "Estudiante"}</strong>
             
             {/* 👇 MOSTRAMOS EL DOCENTE SOLO SI YA SE CARGÓ LA PLANILLA */}
             {planillaCargada && docenteCargado && (
               <>
                 <span className="mx-2 hidden sm:inline">|</span>
                 <br className="sm:hidden" />
-                Docente: <strong className="text-[#0033a0] uppercase">{docenteCargado}</strong>
+                Docente: <strong className="text-modulo-notas uppercase">{docenteCargado}</strong>
               </>
             )}
           </p>

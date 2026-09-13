@@ -1,11 +1,7 @@
 export default function ComponentsAyuda() {
   return (
-    <section className="w-full md:w-2/3 flex flex-col justify-center bg-white shadow-md rounded-xl m-6 p-6">
+    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col justify-center bg-white shadow-md rounded-xl">
       <h2 className="text-2xl font-semibold text-center mb-6">Ayuda</h2>
-
-      <br />
-      <br />
-
 
       {/* Contenedor gris */}
       <div className="bg-gray-200 p-10 rounded-lg flex flex-col items-center text-center">
@@ -41,7 +37,7 @@ export default function ComponentsAyuda() {
 
           <a
             href="mailto:Desarrolladores@gmail.com"
-            className="text-blue-600 hover:text-blue-800 underline"
+            className="text-blue-600 hover:text-blue-800 underline break-words"
           >
             Desarrolladores@gmail.com
           </a>

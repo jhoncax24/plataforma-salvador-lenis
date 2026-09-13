@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import feria_ciencias from "../../assets/feria_ciencias.webp";
-import dia_del_idioma from "../../assets/dia_del_idioma.png";
-import semana_cultural from "../../assets/semana_cultural.png";
+import dia_del_idioma from "../../assets/dia_del_idioma.webp";
+import semana_cultural from "../../assets/semana_cultural.webp";
 // import backgroundImage from "../../assets/fondoInicio.jpg";
 
 // Se mueve fuera del componente para no recrear el arreglo en cada renderizado
@@ -49,20 +49,17 @@ export default function EventosInicio() {
         Nuestros eventos
       </h1>
 
-      <br />
-      <br />
-
-      <section className="relative w-full max-w-4xl mx-auto rounded-xl overflow-hidden">
+      <section className="relative w-full max-w-4xl mx-auto aspect-[16/9] rounded-xl overflow-hidden">
         <img
           src={eventos[indice].imagen}
           alt={eventos[indice].titulo}
           loading={indice === 0 ? "eager" : "lazy"}
-          className="w-full h-[250px] sm:h-[350px] md:h-[450px] object-cover w-full rounded-lg shadow-sm transition-all duration-700"
+          className="absolute inset-0 w-full h-full object-cover rounded-lg shadow-sm transition-all duration-700"
         />
 
         <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-3 rounded-b-xl align-middle text-center">
           <h3 className="font-semibold text-lg text-white">{eventos[indice].titulo}</h3>
-          <p className="text-sm leading-snug">{eventos[indice].descripcion}</p>
+          <p className="text-sm leading-snug break-words">{eventos[indice].descripcion}</p>
         </div>
 
         <button

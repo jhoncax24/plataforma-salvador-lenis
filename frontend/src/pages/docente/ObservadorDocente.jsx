@@ -96,7 +96,7 @@ export default function ObservadorDocente() {
       setNuevaObs({ tipo: "Llamado de atención", descripcion: "" });
       handleSeleccionarEstudiante(estudianteActivo);
       
-    } catch (error) {
+    } catch {
       alert("Error al guardar la observación.");
     }
   };
@@ -105,11 +105,11 @@ export default function ObservadorDocente() {
     <div className="w-full min-h-screen bg-gray-50 p-4 md:p-6 animate-fade-in-up font-sans flex flex-col">
       
       {/* HEADER PRINCIPAL */}
-      <div className="w-full flex flex-col sm:flex-row justify-between items-center bg-white p-6 rounded-xl shadow-sm border-l-[6px] border-green-600 mb-6 shrink-0">
+      <div className="w-full flex flex-col sm:flex-row justify-between items-center bg-white p-6 rounded-xl shadow-sm border-l-[6px] border-modulo-observador mb-6 shrink-0">
         <div>
           <h2 className="text-3xl font-extrabold text-gray-800 m-0 flex items-center gap-2">
             {/* Reemplazo del emoji 📖 por MdMenuBook */}
-            <MdMenuBook className="text-green-600" /> 
+            <MdMenuBook className="text-modulo-observador" /> 
             <span>Observador del Estudiante</span>
           </h2>
           <p className="text-gray-500 m-0 mt-1 font-medium">Gestión de convivencia y comportamiento</p>
